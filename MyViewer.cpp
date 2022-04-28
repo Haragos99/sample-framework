@@ -32,7 +32,7 @@
 MyViewer::MyViewer(QWidget *parent) :
   QGLViewer(parent), model_type(ModelType::NONE),
   mean_min(0.0), mean_max(0.0), cutoff_ratio(0.05),
-  show_control_points(true), show_solid(true), show_wireframe(false),
+  show_control_points(true), show_solid(true), show_wireframe(false), show_skelton(false),
   visualization(Visualization::PLAIN), slicing_dir(0, 0, 1), slicing_scaling(1),
   last_filename("")
 {
@@ -440,19 +440,19 @@ void MyViewer::ininitSkelton()
 
 void MyViewer::weigh()
 {
-      int indexof=0;
- 
+
 
       for (auto v : mesh.vertices())
       {
           double min_val = std::numeric_limits<double>::infinity();
           mesh.data(v).weigh.clear();
-          for (int i = 0; i < b.size(); i++)
-          {
-              mesh.data(v).weigh.push_back(0);
-          }
+          mesh.data(v).weigh.resize(b.size(), 0.0);
+          mesh.data(v).tavolsag.clear();
+          mesh.data(v).tavolsag.resize(b.size(), min_val);
+          
           // az aktuális pont
           Vec d = Vec(mesh.point(v)[0], mesh.point(v)[1], mesh.point(v)[2]);
+          int indexof = 0;
           for (int i = 0; i < b.size(); i++)
           {
               double f = std::numeric_limits<double>::infinity(); ;
@@ -473,15 +473,12 @@ void MyViewer::weigh()
                      f = t;
                  }
                  
-                 
               }
-              mesh.data(v).tavolsag.push_back(f);
+              mesh.data(v).tavolsag[i] = f;
           }
           mesh.data(v).weigh[indexof] = 1;
+          mesh.data(v).idx_of_closest_bone = indexof;
       }
-
-
-  
 }
 
 
@@ -489,30 +486,40 @@ void MyViewer::Smooth()
 {
     int n = mesh.n_vertices();
     // az aktuálos pont folyamatosan növeljük
-    Eigen::SparseMatrix<double> L = createL();
+    Eigen::SparseMatrix<double> L;
+    createL(L);
+
+    Eigen::SparseMatrix<double> D(n, n);
+    Eigen::VectorXd nnz = Eigen::VectorXd::Zero(n);
+    for (auto v : mesh.vertices()) {
+        nnz(v.idx()) = 1;
+    }
+    D.makeCompressed();
+    D.reserve(nnz);
+    for (auto v : mesh.vertices()) {
+        double er = 1.0 / pow(mesh.data(v).tavolsag[mesh.data(v).idx_of_closest_bone], 2);
+
+        // a D mátrix átloja feltöltése
+        D.coeffRef(v.idx(), v.idx()) = er;
+    }
+    D.makeCompressed();
+    Eigen::SparseMatrix<double> O = L + D;
+    Eigen::SparseLU< Eigen::SparseMatrix<double> > solver;
+    solver.compute(O); // M inverz mátrixának (valójában: "LU felbontásának") kiszámítása
+
+
     for (int k = 0; k < b.size(); k++)
     {
-        int i = 0;
         Eigen::VectorXd w1(n);
         w1 = Eigen::VectorXd::Zero(n); // Feltöltjük 0-kkal
-        Eigen::SparseMatrix<double> D(n, n);
         for (auto v : mesh.vertices()) {
-
-
-                w1[i] = mesh.data(v).weigh[k];
-                
-                double er = 1 / pow(mesh.data(v).tavolsag[k],2);
-                
-                // a D mátrix átloja feltöltése
-                D.coeffRef(i, i) = er;
-                i++;
+            w1[v.idx()] = mesh.data(v).weigh[k];
         }
-        D.makeCompressed();
-        Eigen::SparseMatrix<double> O = L + D;
+
         Eigen::VectorXd Sw1(n);
-        Eigen::SparseLU< Eigen::SparseMatrix<double> > solver;
+
         Sw1 = D * w1;
-        solver.compute(O); // M inverz mátrixának (valójában: "LU felbontásának") kiszámítása
+
 
         if (solver.info() == Eigen::Success) { // Teszteljük, hogy sikerült-e invertálni
 
@@ -520,15 +527,20 @@ void MyViewer::Smooth()
             
             if (solver.info() == Eigen::Success) { // Teszteljük, hogy sikerült-e megoldani
 
-                int j = 0;
                 for (auto v : mesh.vertices()) {
                     
-                    mesh.data(v).weigh[k] = x[j];
-                    //omerr() << "Ez egy szöveg, ez egy szám: " << x[j] << std::endl;
-                    j++;
-                }
+                    mesh.data(v).weigh[k] = x[v.idx()];
 
+                    //omerr() << "Ez egy szöveg, ez egy szám: " << x[j] << std::endl;
+                }
+               
             }
+            else {
+                emit displayMessage("System solve FAIL!!!");
+            }
+        }
+        else {
+            emit displayMessage("Matrix inversion FAIL!!!");
         }
 
     }
@@ -541,13 +553,32 @@ void MyViewer::Smooth()
         }
     }
     */
+    for (auto v : mesh.vertices()) {
+        double sum = 0.0;
+        for (int i = 0; i < b.size(); i++) {
+            sum += mesh.data(v).weigh[i];
+        }
+        if (abs(sum - 1.0) > 1E-10) {
+            displayMessage("SUM != 1 !!! @ vertex " + v.idx());
+        }
+    }
 }
 
-Eigen::SparseMatrix<double> MyViewer::createL()
+void MyViewer::createL(Eigen::SparseMatrix<double>& L)
 {
     
     int n = mesh.n_vertices();
-    Eigen::SparseMatrix<double> L(n, n);
+    if (L.rows() < n || L.cols() < n) {
+        L.resize(n, n);
+    }
+
+    Eigen::VectorXd nnz = Eigen::VectorXd::Zero(n);
+    for (auto v : mesh.vertices()) {
+        nnz(v.idx()) = 1 + mesh.valence(v);
+    }
+    L.makeCompressed();
+    L.reserve(nnz);
+
     int i = 0;
     for (auto v : mesh.vertices()) {
 
@@ -578,8 +609,6 @@ Eigen::SparseMatrix<double> MyViewer::createL()
         L.coeffRef(i, i) = -L.row(i).sum();
     }
     L.makeCompressed();
-
-    return L;
 
 }
 
@@ -1280,7 +1309,7 @@ void MyViewer::keyPressEvent(QKeyEvent *e) {
         if (dlg->exec() == QDialog::Accepted) {
             update();
         }
-        mehet = false;
+        //mehet = false;
         break;
 
     case Qt::Key_3:

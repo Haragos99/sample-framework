@@ -18,6 +18,7 @@ MyWindow::MyWindow(QApplication *parent) :
   connect(viewer, SIGNAL(startComputation(QString)), this, SLOT(startComputation(QString)));
   connect(viewer, SIGNAL(midComputation(int)), this, SLOT(midComputation(int)));
   connect(viewer, SIGNAL(endComputation()), this, SLOT(endComputation()));
+  connect(viewer, SIGNAL(displayMessage(const QString&)), this, SLOT(displayMessage(const QString&)));
   setCentralWidget(viewer);
 
   /////////////////////////
@@ -250,4 +251,9 @@ void MyWindow::midComputation(int percent) {
 void MyWindow::endComputation() {
   progress->hide();
   statusBar()->clearMessage();
+}
+
+void MyWindow::displayMessage(const QString& message) {
+    statusBar()->showMessage(message);
+    parent->processEvents(QEventLoop::ExcludeUserInputEvents);
 }

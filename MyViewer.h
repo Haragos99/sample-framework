@@ -39,6 +39,7 @@ signals:
   void startComputation(QString message);
   void midComputation(int percent);
   void endComputation();
+  void displayMessage(const QString& message);
 
 protected:
   virtual void init() override;
@@ -57,6 +58,7 @@ private:
       double mean;              // approximated mean curvature
       std::vector<double> weigh;
       std::vector<double> tavolsag;
+      int idx_of_closest_bone;
     };
   };
   using MyMesh = OpenMesh::TriMesh_ArrayKernelT<MyTraits>;
@@ -221,11 +223,12 @@ private:
           glVertex3dv(p);
           glEnd();
           glPointSize(10.0);
-          
+          glEnable(GL_LIGHTING);
           for (int i = 0; i < t.child.size(); i++)
           {
               drawchild(t.child[i]);
           }
+         
       }
   };
 
@@ -262,7 +265,7 @@ private:
 
   double tav(Vec p, Vec p1)
   {
-      double len = sqrtf(pow(p.x - p1.x, 2) + pow(p.y - p1.y, 2) + pow(p.z - p1.z, 2));
+      double len = sqrt(pow(p.x - p1.x, 2) + pow(p.y - p1.y, 2) + pow(p.z - p1.z, 2));
 
       return len;
   }
@@ -270,7 +273,7 @@ private:
   void weigh();
 
   void ininitSkelton();
-  Eigen::SparseMatrix<double> createL();
+  void createL(Eigen::SparseMatrix<double>& L);
 
   void Smooth();
   

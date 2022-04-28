@@ -26,12 +26,12 @@ struct Bones
     {
 
         Vec ir = End - start;
-        double len = sqrtf(pow(End.x - start.x, 2) + pow(End.y - start.y, 2) + pow(End.z - start.z, 2));
+        double len = sqrt(pow(End.x - start.x, 2) + pow(End.y - start.y, 2) + pow(End.z - start.z, 2));
         int res = 100;
         for (int i = 0; i < res; i++)
         {
             Vec t;
-            t = start + ir * 1.0 / res * i;
+            t = start + ir * 1.0 / (res-1) * i;
             points.push_back(t);
         }
     }
