@@ -1,15 +1,9 @@
 #include <algorithm>
 #include <cmath>
-#include <fstream>
-#include <iostream>
 #include <map>
-#include <vector>
 #include "Bone.h"
-#include <QtGui/QKeyEvent>
-#include <QtWidgets>
-#include <OpenMesh/Core/IO/MeshIO.hh>
-#include <OpenMesh/Tools/Smoother/JacobiLaplaceSmootherT.hh>
-#include <QGLViewer/quaternion.h>
+
+#include "Openfiler.hpp"
 
 #ifdef BETTER_MEAN_CURVATURE
 #include "Eigen/Eigenvalues"
@@ -265,6 +259,58 @@ static Vec HSV2RGB(Vec hsv) {
   return rgb;
 }
 
+
+static Vec RGB2HSV(Vec rgb) {
+
+    Vec hsv;
+    double min, max, delta;
+    double r, g, b;
+    r = rgb[0];
+    g = rgb[1];
+    b = rgb[2];
+    min = r < g ? r : g;
+    min = min < b ? min : b;
+
+    max = r > g ? r : g;
+    max = max > b ? max : b;
+
+    delta = max - min;
+    hsv.z = max;
+    if (delta < 0.00001)
+    {
+        hsv.x = 0;
+        hsv.y = 0;
+        return hsv;
+    }
+    if (max > 0.0)
+    {
+        hsv.y = (delta / max);
+    }
+    else
+    {
+        hsv.y = 0;
+        hsv.x = NAN;
+        return hsv;
+    }
+    if (r >= max)
+    {
+        hsv.x = (g - b) / delta;
+    }
+    else
+        if (g >= max)
+            hsv.x = 2.0 + (b - r) / delta; 
+        else
+            hsv.x = 4.0 + (r - g) / delta; 
+
+    hsv.x *= 60.0;                            
+
+    if (hsv.x < 0.0)
+        hsv.x += 360.0;
+
+    return hsv;
+}
+
+
 Vec MyViewer::meanMapColor(double d) const {
   double red = 0, green = 120, blue = 240; // Hue
   if (d < 0) {
@@ -391,364 +437,7 @@ void MyViewer::setupCamera() {
   update();
 }
 
-bool MyViewer::openMesh(const std::string &filename, bool update_view) {
-  if (!OpenMesh::IO::read_mesh(mesh, filename) || mesh.n_vertices() == 0)
-    return false;
-  model_type = ModelType::MESH;
-  last_filename = filename;
-  updateMesh(update_view);
 
-  if (update_view)
-    setupCamera();
-
-  return true;
-}
-
-void MyViewer::ininitSkelton()
-{
-
-    int size = indexes.size();
-    for (int i = 0; i < size; i+=2)
-    {
-        Bones bo;
-        bo.start = points[indexes[i] -1];
-        bo.End = points[indexes[i + 1]-1];
-        b.push_back(bo);
-
-
-    }
-
-    for (int i = 0; i < b.size(); i++)
-    {
-        b[i].setColor(colors_bone[i].x, colors_bone[i].y, colors_bone[i].z);
-        b[i].manypoints();
-    }
-        
-    if (skellton_type == SkelltonType::MAN) {
-        manSkellton();
-    }
-    if (skellton_type == SkelltonType::WRIST) {
-        csukloSkellton();
-    }
-    if(skellton_type == SkelltonType::ARM)
-    {
-        armSkellton();
-    }
-
-}
-
-
-void MyViewer::weigh()
-{
-
-
-      for (auto v : mesh.vertices())
-      {
-          double min_val = std::numeric_limits<double>::infinity();
-          mesh.data(v).weigh.clear();
-          mesh.data(v).weigh.resize(b.size(), 0.0);
-          mesh.data(v).tavolsag.clear();
-          mesh.data(v).tavolsag.resize(b.size(), min_val);
-          
-          // az aktuális pont
-          Vec d = Vec(mesh.point(v)[0], mesh.point(v)[1], mesh.point(v)[2]);
-          int indexof = 0;
-          for (int i = 0; i < b.size(); i++)
-          {
-              double f = std::numeric_limits<double>::infinity(); ;
-              for (int j = 0; j < b[i].points.size(); j++)
-              {
-                 // printf("%d %d", i, j);
-                 double t = tav( b[i].points[j],d);
-                
-                 // legközelebbi súly
-                 if (t < min_val)
-                 {
-                     min_val = t;
-                     indexof = i;
-                 }
-                 // csonton lévõ legközelebbi távolság
-                 if (t < f)
-                 {
-                     f = t;
-                 }
-                 
-              }
-              mesh.data(v).tavolsag[i] = f;
-          }
-          mesh.data(v).weigh[indexof] = 1;
-          mesh.data(v).idx_of_closest_bone = indexof;
-      }
-}
-
-
-void MyViewer::Smooth()
-{
-    int n = mesh.n_vertices();
-    // az aktuálos pont folyamatosan növeljük
-    Eigen::SparseMatrix<double> L;
-    createL(L);
-
-    Eigen::SparseMatrix<double> D(n, n);
-    Eigen::VectorXd nnz = Eigen::VectorXd::Zero(n);
-    for (auto v : mesh.vertices()) {
-        nnz(v.idx()) = 1;
-    }
-    D.makeCompressed();
-    D.reserve(nnz);
-    for (auto v : mesh.vertices()) {
-        double er = 1.0 / pow(mesh.data(v).tavolsag[mesh.data(v).idx_of_closest_bone], 2);
-
-        // a D mátrix átloja feltöltése
-        D.coeffRef(v.idx(), v.idx()) = er;
-    }
-    D.makeCompressed();
-    Eigen::SparseMatrix<double> O = L + D;
-    Eigen::SparseLU< Eigen::SparseMatrix<double> > solver;
-    solver.compute(O); // M inverz mátrixának (valójában: "LU felbontásának") kiszámítása
-
-
-    for (int k = 0; k < b.size(); k++)
-    {
-        Eigen::VectorXd w1(n);
-        w1 = Eigen::VectorXd::Zero(n); // Feltöltjük 0-kkal
-        for (auto v : mesh.vertices()) {
-            w1[v.idx()] = mesh.data(v).weigh[k];
-        }
-
-        Eigen::VectorXd Sw1(n);
-
-        Sw1 = D * w1;
-
-
-        if (solver.info() == Eigen::Success) { // Teszteljük, hogy sikerült-e invertálni
-
-            Eigen::VectorXd x = solver.solve(Sw1); // Megoldjuk az M*x = v egyenletrendszert
-            
-            if (solver.info() == Eigen::Success) { // Teszteljük, hogy sikerült-e megoldani
-
-                for (auto v : mesh.vertices()) {
-                    
-                    mesh.data(v).weigh[k] = x[v.idx()];
-
-                    //omerr() << "Ez egy szöveg, ez egy szám: " << x[j] << std::endl;
-                }
-               
-            }
-            else {
-                emit displayMessage("System solve FAIL!!!");
-            }
-        }
-        else {
-            emit displayMessage("Matrix inversion FAIL!!!");
-        }
-
-    }
-    /*
-    for (auto v : mesh.vertices()) {
-        double d = mesh.data(v).weigh[0] + mesh.data(v).weigh[1] + mesh.data(v).weigh[2];
-        if (d != 1)
-        {
-            
-        }
-    }
-    */
-    for (auto v : mesh.vertices()) {
-        double sum = 0.0;
-        for (int i = 0; i < b.size(); i++) {
-            sum += mesh.data(v).weigh[i];
-        }
-        if (abs(sum - 1.0) > 1E-10) {
-            displayMessage("SUM != 1 !!! @ vertex " + v.idx());
-        }
-    }
-}
-
-void MyViewer::createL(Eigen::SparseMatrix<double>& L)
-{
-    
-    int n = mesh.n_vertices();
-    if (L.rows() < n || L.cols() < n) {
-        L.resize(n, n);
-    }
-
-    Eigen::VectorXd nnz = Eigen::VectorXd::Zero(n);
-    for (auto v : mesh.vertices()) {
-        nnz(v.idx()) = 1 + mesh.valence(v);
-    }
-    L.makeCompressed();
-    L.reserve(nnz);
-
-    int i = 0;
-    for (auto v : mesh.vertices()) {
-
-        
-        for (auto vi : mesh.vv_range(v)) { // v vertex-szel szomszédos vertexek
-
-
-           auto eij = mesh.find_halfedge(v, vi);
-          auto m1= mesh.next_halfedge_handle(eij);
-          double theta1 = mesh.calc_sector_angle(m1);
-
-
-           auto eji= mesh.find_halfedge(vi, v);
-           auto m2= mesh.next_halfedge_handle(eji);
-           double theta2 = mesh.calc_sector_angle(m2);
-
-           double result = (tan(M_PI_2 - theta1) + tan(M_PI_2 - theta2)) / 2;
-           if (i == vi.idx()) continue;
-           L.coeffRef(i, vi.idx()) = result;
-        }
-
-
-        i++;
-    }
-    for (int i = 0; i < n; i++)
-    {
-       
-        L.coeffRef(i, i) = -L.row(i).sum();
-    }
-    L.makeCompressed();
-
-}
-
-
-
-bool MyViewer::openSkelton(const std::string& filename, bool update_view)
-{
-   
-    if (filename.find("csuk") != std::string::npos) {
-        skellton_type = SkelltonType::WRIST;
-
-    }
-    else if(filename.find("arm") != std::string::npos)
-    {
-        skellton_type = SkelltonType::ARM;
-    }
-    else if (filename.find("man") != std::string::npos)
-    {
-        skellton_type = SkelltonType::MAN;
-    }
-    else
-    {
-        return false;
-    }
-    std::string myText;
-    std::vector<double> linepoint;
-    // Read from the text file
-    std::ifstream MyReadFile(filename);
-    bool isindex = false;
-    // Use a while loop together with the getline() function to read the file line by line
-    while (std::getline(MyReadFile, myText)) {
-        size_t pos = 0;
-        std::string delimiter = ";";
-        std::string token;
-
-        if (myText != "#")
-        {
-            while ((pos = myText.find(delimiter)) != std::string::npos) {
-                token = myText.substr(0, pos);
-                std::cout << token << " ";
-                if (isindex)
-                {
-                    indexes.push_back(std::stoi(token));
-                }
-                if (pos != 1 && !isindex)
-                {
-                    linepoint.push_back(std::stod(token));
-                }
-                myText.erase(0, pos + delimiter.length());
-            }
-            std::cout << '\n';
-        }
-        else {
-            std::cout << myText << '\n';
-            isindex = true;
-        }
-        if (!isindex)
-        {
-            points.push_back(Vec(linepoint[0], linepoint[1], linepoint[2]));
-            linepoint.clear();
-        }
-    }
-
-    // Close the file
-    MyReadFile.close();
-    model_type = ModelType::SKELTON;
-    last_filename = filename;
-    ininitSkelton();
-    updateMesh(update_view);
-    if (update_view)
-        setupCameraBone();
-
-    return true;
-}
-
-bool MyViewer::openBezier(const std::string &filename, bool update_view) {
-  size_t n, m;
-  try {
-    std::ifstream f(filename.c_str());
-    f.exceptions(std::ios::failbit | std::ios::badbit);
-    f >> n >> m;
-    degree[0] = n++; degree[1] = m++;
-    control_points.resize(n * m);
-    for (size_t i = 0, index = 0; i < n; ++i)
-      for (size_t j = 0; j < m; ++j, ++index)
-        f >> control_points[index][0] >> control_points[index][1] >> control_points[index][2];
-  } catch(std::ifstream::failure &) {
-    return false;
-  }
-  model_type = ModelType::BEZIER_SURFACE;
-  last_filename = filename;
-  updateMesh(update_view);
-  if (update_view)
-    setupCamera();
-  return true;
-}
-
-
-
-bool MyViewer::saveBone(const std::string& filename) {
-    if (model_type != ModelType::SKELTON)
-        return false;
-
-    try {
-        getallpoints(sk);
-        points = ve;
-        ve.clear();
-        std::ofstream f(filename.c_str());
-        f.exceptions(std::ios::failbit | std::ios::badbit);
-        for (const auto& p : points)
-            f << 'b'<< ';' << p[0] << ';' << p[1] << ';' << p[2] << ';' << std::endl;
-        f << '#' << std::endl;
-        for (int i = 0; i < indexes.size(); i+=2)
-        {
-            f << indexes[i] << ';' << indexes[i + 1] << ';'<< std::endl;
-        }
-        f << '#' << std::endl;
-    }
-    catch (std::ifstream::failure&) {
-        return false;
-    }
-    return true;
-}
-
-
-bool MyViewer::saveBezier(const std::string &filename) {
-  if (model_type != ModelType::BEZIER_SURFACE)
-    return false;
-
-  try {
-    std::ofstream f(filename.c_str());
-    f.exceptions(std::ios::failbit | std::ios::badbit);
-    f << degree[0] << ' ' << degree[1] << std::endl;
-    for (const auto &p : control_points)
-      f << p[0] << ' ' << p[1] << ' ' << p[2] << std::endl;
-  } catch(std::ifstream::failure &) {
-    return false;
-  }
-  return true;
-}
 
 void MyViewer::init() {
   glLightModeli(GL_LIGHT_MODEL_TWO_SIDE, 1);
@@ -782,161 +471,6 @@ void MyViewer::init() {
   glTexImage1D(GL_TEXTURE_1D, 0, GL_RGB, 2, 0, GL_RGB, GL_UNSIGNED_BYTE_3_3_2, &slicing_img);
 }
 
-void MyViewer::draw() {
-  if (model_type == ModelType::BEZIER_SURFACE && show_control_points)
-    drawControlNet();
-  if (model_type == ModelType::SKELTON)
-  {
-
-  }
-  if(show_skelton)
-      drawSkleton();
-
-  glPolygonMode(GL_FRONT_AND_BACK, !show_solid && show_wireframe ? GL_LINE : GL_FILL);
-  glEnable(GL_POLYGON_OFFSET_FILL);
-  glPolygonOffset(1, 1);
-
-  if (show_solid || show_wireframe) {
-    if (visualization == Visualization::PLAIN)
-      glColor3d(1.0, 1.0, 1.0);
-    else if (visualization == Visualization::ISOPHOTES) {
-      glBindTexture(GL_TEXTURE_2D, current_isophote_texture);
-      glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_DECAL);
-      glEnable(GL_TEXTURE_2D);
-      glTexGeni(GL_S, GL_TEXTURE_GEN_MODE, GL_SPHERE_MAP);
-      glTexGeni(GL_T, GL_TEXTURE_GEN_MODE, GL_SPHERE_MAP);
-      glEnable(GL_TEXTURE_GEN_S);
-      glEnable(GL_TEXTURE_GEN_T);
-    } else if (visualization == Visualization::SLICING) {
-      glBindTexture(GL_TEXTURE_1D, slicing_texture);
-      glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_DECAL);
-      glEnable(GL_TEXTURE_1D);
-    }
-   
-    for (auto f : mesh.faces()) {
-      glBegin(GL_POLYGON);
-      for (auto v : mesh.fv_range(f)) {
-        if (visualization == Visualization::MEAN)
-          glColor3dv(meanMapColor(mesh.data(v).mean));
-        else if (visualization == Visualization::SLICING)
-          glTexCoord1d(mesh.point(v) | slicing_dir * slicing_scaling);
-        else if (visualization == Visualization::WEIGH) //Itt adjuk meg a súlyokat
-        {
-
-            Vec color = Vec(0,0,0);
-            for (int i = 0; i < b.size(); i++)
-            {
-                if (mesh.data(v).weigh[i] != 0)
-                {
-                    color += mesh.data(v).weigh[i] * b[i].getColor();
-   
-                }
-                
-
-
-            }
-            glColor3d(color.x, color.y, color.z);
-        }
-        else if (visualization == Visualization::WEIGH2)
-        {
-            if (wi == b.size())
-            {
-                wi = 0;
-            }
-           Vec color = mesh.data(v).weigh[wi] * b[wi].getColor();
-
-            glColor3d(color.x, color.y, color.z);
-        }
-        glNormal3dv(mesh.normal(v).data());
-        glVertex3dv(mesh.point(v).data());
-        
-       
-      }
-      glEnd();
-    }
-    if (visualization == Visualization::ISOPHOTES) {
-      glDisable(GL_TEXTURE_GEN_S);
-      glDisable(GL_TEXTURE_GEN_T);
-      glDisable(GL_TEXTURE_2D);
-      glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
-    } else if (visualization == Visualization::SLICING) {
-      glDisable(GL_TEXTURE_1D);
-    }
-  }
-
-  if (show_solid && show_wireframe) {
-    glPolygonMode(GL_FRONT, GL_LINE);
-    glColor3d(0.0, 0.0, 0.0);
-    glDisable(GL_LIGHTING);
-    for (auto f : mesh.faces()) {
-      glBegin(GL_POLYGON);
-      for (auto v : mesh.fv_range(f))
-        glVertex3dv(mesh.point(v).data());
-      glEnd();
-    }
-    glEnable(GL_LIGHTING);
-  }
-
-  if (axes.shown)
-    drawAxes();
-}
-/// <summary>
-/// ezt rajzoljuk ku
-/// </summary>
-void MyViewer::drawSkleton()
-{
-
-    glPointSize(30.0);
-    glColor3d(0.3, 0.0, 1.0);
-    glLineWidth(200.0);
-    int i = 0;
-    
-    for (const auto& p : b)
-    {
-        if(i<b.size())
-        {
-        glBegin(GL_LINES);
-            glColor3d(p.x, p.y, p.z);
-            glVertex3dv(p.start);
-            glVertex3dv(p.End);
-        glEnd();
-        }
-        i++;
-
-    }
-    
-    sk.drawchild(sk);
-   /*
-
-    glColor3d(1.0, 0.0, 1.0);
-    glPointSize(50.0);
-    glBegin(GL_POINTS);
-    
-    for (const auto& p : points)
-    {
-
-        
-        glVertex3dv(p);
-        
-    }
-
-    glEnd();
-    */
-    //glColor3d(0.3, 0.0, 1.0);
-    //glPointSize(60.0);
-    //glBegin(GL_POINTS);
-    //for (const auto& p : b)
-    //{
-    //    for (int i = 0; i < p.points.size(); i++)
-    //    {
-    //        glColor3d(p.x, p.y, p.z);
-    //       // glVertex3dv(p.points[i]);
-    //    }
-    //    
-    //}
-
-    //glEnd();
-}
 
 
 
@@ -1067,135 +601,6 @@ void MyViewer::Rotate()
      
 }
 
-
-void MyViewer::drawControlNet() const {
-  glDisable(GL_LIGHTING);
-  glLineWidth(3.0);
-  glColor3d(0.3, 0.3, 1.0);
-  size_t m = degree[1] + 1;
-  for (size_t k = 0; k < 2; ++k)
-    for (size_t i = 0; i <= degree[k]; ++i) {
-      glBegin(GL_LINE_STRIP);
-      for (size_t j = 0; j <= degree[1-k]; ++j) {
-        size_t const index = k ? j * m + i : i * m + j;
-        const auto &p = control_points[index];
-        glVertex3dv(p);
-      }
-      glEnd();
-    }
-  glLineWidth(1.0);
-  glPointSize(8.0);
-  glColor3d(1.0, 0.0, 1.0);
-  glBegin(GL_POINTS);
-  for (const auto &p : control_points)
-    glVertex3dv(p);
-  glEnd();
-  glPointSize(1.0);
-  glEnable(GL_LIGHTING);
-}
-
-void MyViewer::drawAxes() const {
-  const Vec &p = axes.position;
-  glColor3d(1.0, 0.0, 0.0);
-  drawArrow(p, p + Vec(axes.size, 0.0, 0.0), axes.size / 50.0);
-  glColor3d(0.0, 1.0, 0.0);
-  drawArrow(p, p + Vec(0.0, axes.size, 0.0), axes.size / 50.0);
-  glColor3d(0.0, 0.0, 1.0);
-  drawArrow(p, p + Vec(0.0, 0.0, axes.size), axes.size / 50.0);
-  glEnd();
-}
-
-void MyViewer::drawWithNames() {
-  if (axes.shown)
-    return drawAxesWithNames();
-
-  switch (model_type) {
-  case ModelType::NONE: break;
-  case ModelType::MESH:
-    if (!show_wireframe)
-      return;
-    for (auto v : mesh.vertices()) {
-      glPushName(v.idx());
-      glRasterPos3dv(mesh.point(v).data());
-      glPopName();
-    }
-    break;
-  case ModelType::BEZIER_SURFACE:
-    if (!show_control_points)
-      return;
-    for (size_t i = 0, ie = control_points.size(); i < ie; ++i) {
-      Vec const &p = control_points[i];
-      glPushName(i);
-      glRasterPos3fv(p);
-      glPopName();
-    }
-    break;
-  case  ModelType::SKELTON:
-      /*
-      for (int i = 0; i < points.size(); i++)
-      {
-          Vec const& p = points[i];
-          glPushName(i);
-          glRasterPos3fv(p);
-          glPopName();
-      }
-      */
-      sk.drawarrow(sk);
-
-
-      break;
-  }
-}
-
-void MyViewer::drawAxesWithNames() const {
-  const Vec &p = axes.position;
-  glPushName(0);
-  drawArrow(p, p + Vec(axes.size, 0.0, 0.0), axes.size / 50.0);
-  glPopName();
-  glPushName(1);
-  drawArrow(p, p + Vec(0.0, axes.size, 0.0), axes.size / 50.0);
-  glPopName();
-  glPushName(2);
-  drawArrow(p, p + Vec(0.0, 0.0, axes.size), axes.size / 50.0);
-  glPopName();
-}
-
-void MyViewer::postSelection(const QPoint &p) {
-  int sel = selectedName();
-  if (sel == -1) {
-    axes.shown = false;
-    return;
-  }
-
-  if (axes.shown) {
-    axes.selected_axis = sel;
-    bool found;
-    axes.grabbed_pos = camera()->pointUnderPixel(p, found);
-    axes.original_pos = axes.position;
-    if (!found)
-      axes.shown = false;
-    return;
-  }
-
-  selected_vertex = sel;
-  if (model_type == ModelType::MESH)
-    axes.position = Vec(mesh.point(MyMesh::VertexHandle(sel)).data());
-  if (model_type == ModelType::BEZIER_SURFACE)
-    axes.position = control_points[sel];
-  if (model_type == ModelType::SKELTON)
-  {
-      Tree* t = sk.searchbyid(sk, sel);
-      axes.position = t->point;
-      //axes.position = points[sel];
-      //sk.searchbyid(sk, 1);
-  }
-  double depth = camera()->projectedCoordinatesOf(axes.position)[2];
-  Vec q1 = camera()->unprojectedCoordinatesOf(Vec(0.0, 0.0, depth));
-  Vec q2 = camera()->unprojectedCoordinatesOf(Vec(width(), height(), depth));
-  axes.size = (q1 - q2).norm() / 10.0;
-  axes.shown = true;
-  axes.selected_axis = -1;
-}
 
 void MyViewer::keyPressEvent(QKeyEvent *e) {
 
@@ -1421,11 +826,14 @@ void MyViewer::generateMesh(size_t resolution) {
 }
 
 void MyViewer::mouseMoveEvent(QMouseEvent *e) {
-  if (!axes.shown ||
-      (axes.selected_axis < 0 && !(e->modifiers() & Qt::ControlModifier)) ||
-      !(e->modifiers() & (Qt::ShiftModifier | Qt::ControlModifier)) ||
-      !(e->buttons() & Qt::LeftButton))
-    return QGLViewer::mouseMoveEvent(e);
+    if (!axes.shown ||
+        (axes.selected_axis < 0 && !(e->modifiers() & Qt::ControlModifier)) ||
+        !(e->modifiers() & (Qt::ShiftModifier | Qt::ControlModifier)) ||
+        !(e->buttons() & Qt::LeftButton))
+    {
+        sk.makefalse(sk);
+        return QGLViewer::mouseMoveEvent(e);
+    }
   Vec p;
   float d;
   Vec axis(axes.selected_axis == 0, axes.selected_axis == 1, axes.selected_axis == 2);
@@ -1450,7 +858,6 @@ void MyViewer::mouseMoveEvent(QMouseEvent *e) {
 
   if (model_type == ModelType::SKELTON)
   {
-     // Vec t = points[selected_vertex];
 
       /*
       * 
@@ -1458,13 +865,10 @@ void MyViewer::mouseMoveEvent(QMouseEvent *e) {
       */
       Tree* to = sk.searchbyid(sk, selected_vertex);
       int des = -1;
+      
       getallpoints(*to);
       std::vector<Vec> old = ve;
       ve.clear();
-     // points[selected_vertex] = axes.position;
-      /*
-      * itt vátoztatjuk meg a kordinátát
-      */
       sk.change_all_position(*to, axes.position - old_pos);
       Vec dif = axes.position - old_pos;
       getallpoints(*to);
@@ -1503,38 +907,10 @@ void MyViewer::mouseMoveEvent(QMouseEvent *e) {
       }
       newp.clear();
       old.clear();
-      //Megnézük az összes csonton keresztül
-      /*
-      for (int i = 0; i < b.size(); i++)
-      {
-          if (t == b[i].start) {
-              b[i].start = axes.position;
-              des = i;
-          }
-          if (t == b[i].End) {
-              b[i].End = axes.position;
-              des = i;
-          }
-          if (des != -1)
-          {
-              Vec d = t - points[selected_vertex];
-              OpenMesh::Vec3d diffrents = OpenMesh::Vec3d(d.x, d.y, d.z);
-              if (isweight)
-              {
-                  for (auto v : mesh.vertices())
-                  {
-                      mesh.point(v) -= diffrents * mesh.data(v).weigh[des];
-
-                  }
-              }
-          }
-      }
-      */
   }
   updateMesh();
   update();
 }
-
 
 void MyViewer::getallpoints(Tree t)
 {
