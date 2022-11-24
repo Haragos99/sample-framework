@@ -5,8 +5,17 @@
 
 bool MyViewer::openSkelton(const std::string& filename, bool update_view)
 {
+    Tree t;
+    sk = t;
+    indexes.clear();
+    b.clear();
+    points.clear();
+    if (filename.find("fac") != std::string::npos) {
+        skellton_type = SkelltonType::FACE;
 
-    if (filename.find("csuk") != std::string::npos) {
+    }
+
+    else if (filename.find("csuk") != std::string::npos) {
         skellton_type = SkelltonType::WRIST;
 
     }
@@ -107,6 +116,11 @@ bool MyViewer::openMesh(const std::string& filename, bool update_view) {
 
     if (update_view)
         setupCamera();
+    
+    for (auto v : mesh.vertices())
+    {
+        mesh.data(v).original = mesh.point(v);
+    }
 
     return true;
 }
@@ -120,9 +134,11 @@ void MyViewer::ininitSkelton()
         Bones bo;
         bo.start = points[indexes[i] - 1];
         bo.End = points[indexes[i + 1] - 1];
+        bo.originalS = bo.start;
+        bo.originalE = bo.End;
         b.push_back(bo);
 
-
+        
     }
 
     for (int i = 0; i < b.size(); i++)
@@ -141,6 +157,11 @@ void MyViewer::ininitSkelton()
     {
         armSkellton();
     }
+    if (skellton_type == SkelltonType::FACE)
+    {
+        faceSkellton();
+    }
+    start = sk;
 
 }
 

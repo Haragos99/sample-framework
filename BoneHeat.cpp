@@ -3,7 +3,10 @@
 
 void MyViewer::weigh()
 {
-
+    visualization = Visualization::WEIGH;
+    model_type = ModelType::SKELTON;
+    mehet = true;
+    isweight = true;
     for (auto v : mesh.vertices())
     {
         double min_val = std::numeric_limits<double>::infinity();
@@ -64,7 +67,8 @@ void MyViewer::Smooth()
         D.coeffRef(v.idx(), v.idx()) = er;
     }
     D.makeCompressed();
-    Eigen::SparseMatrix<double> O = L + D;
+    D *= epsilon;
+    Eigen::SparseMatrix<double> O = -L + D;
     Eigen::SparseLU< Eigen::SparseMatrix<double> > solver;
     solver.compute(O); // M inverz mátrixának (valójában: "LU felbontásának") kiszámítása
 
@@ -92,7 +96,7 @@ void MyViewer::Smooth()
 
                     mesh.data(v).weigh[k] = x[v.idx()];
 
-                    //omerr() << "Ez egy szöveg, ez egy szám: " << x[j] << std::endl;
+                    //std::cerr << "Ez egy szöveg, ez egy szám: " << x[v.idx()] << std::endl;
                 }
 
             }

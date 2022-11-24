@@ -16,6 +16,21 @@ public:
   ~MyWindow();
 
 private slots:
+
+  void set2bone() { viewer->setBone(); viewer->update(); }
+  void set2mesh() { viewer->setMesh(); viewer->update(); }
+  void skining()  { viewer->weigh(); viewer->update(); }
+  void boneheat() { viewer->Boneheat(); }
+  void getpoint() { viewer->selectedvert(); viewer->update(); }
+  void wierframeon() { viewer->wierframe(); }
+  void weightindex() { viewer->index_of_weight(); std::string s = "weight: " + std::to_string(viewer->wi); wlayer->setText(s.c_str()); }
+  void start() { viewer->Frame(); }
+  void end() { viewer->stopAnimation(); }
+  void rotation() { viewer->Rotate(); }
+  void showm() { viewer->show(); }
+  void resetall() { viewer->Reset(); }
+  void skin() { viewer->skining(); viewer->update();}
+  void open_bone();
   void open();
   void save();
   void setCutoff();
@@ -31,4 +46,6 @@ private:
   MyViewer *viewer;
   QProgressBar *progress;
   QString last_directory;
+  QLabel* wlayer = new QLabel(tr("weight: "));
+  QLabel* layer = new QLabel(tr("Bones: "));
 };

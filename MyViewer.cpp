@@ -3,7 +3,6 @@
 #include <map>
 #include "Bone.h"
 
-#include "Openfiler.hpp"
 
 #ifdef BETTER_MEAN_CURVATURE
 #include "Eigen/Eigenvalues"
@@ -474,6 +473,11 @@ void MyViewer::init() {
 
 
 
+
+
+
+
+
 void MyViewer::Rotate()
 {
 
@@ -522,6 +526,8 @@ void MyViewer::Rotate()
         double pr = sb_P->value();
         double br = sb_B->value();
         Vec angles = Vec(hr,pr,br);
+        angels = angles;
+        rotation = angles;
         Tree* to = sk.searchbyid(sk, selected_vertex);
    
     
@@ -556,9 +562,7 @@ void MyViewer::Rotate()
             if (des != -1)
             {
                 //Vec dif = newp[des] - old[des];
-                qglviewer::Quaternion qx = qglviewer::Quaternion(Vec(1, 0, 0), angles.x / 180.0 * M_PI);
-                qglviewer::Quaternion qy = qglviewer::Quaternion(Vec(0, 1, 0), angles.y / 180.0 * M_PI);
-                qglviewer::Quaternion qz = qglviewer::Quaternion(Vec(0, 0, 1), angles.z / 180.0 * M_PI);
+
                 /// <summary>
                 /// EULER SZÖGEK MEG CSINÁLÁSA
                 /// </summary>
@@ -566,26 +570,29 @@ void MyViewer::Rotate()
                 {
                     for (auto v : mesh.vertices())
                     {
-                        if (mesh.data(v).weigh[des] != 0) 
-                        {
+                        qglviewer::Quaternion qx = qglviewer::Quaternion(Vec(1, 0, 0), (angles.x * mesh.data(v).weigh[des]) / 180.0 * M_PI);
+                        qglviewer::Quaternion qy = qglviewer::Quaternion(Vec(0, 1, 0), (angles.y * mesh.data(v).weigh[des]) / 180.0 * M_PI);
+                        qglviewer::Quaternion qz = qglviewer::Quaternion(Vec(0, 0, 1), (angles.z * mesh.data(v).weigh[des]) / 180.0 * M_PI);
+
+
                             Vec p = Vec(mesh.point(v)[0], mesh.point(v)[1], mesh.point(v)[2]);
                             Vec result = to->point + qx.rotate(p- to->point);
                             OpenMesh::Vec3d diffrents = OpenMesh::Vec3d(result.x, result.y, result.z);
-                            mesh.point(v) = diffrents * mesh.data(v).weigh[des];
+                            mesh.point(v) = diffrents;
 
                       
                             p = Vec(mesh.point(v)[0], mesh.point(v)[1], mesh.point(v)[2]);
                             Vec result2 = to->point + qy.rotate(p - to->point);
                             OpenMesh::Vec3d diffrents2 = OpenMesh::Vec3d(result2.x, result2.y, result2.z);      
-                            mesh.point(v) = diffrents2 * mesh.data(v).weigh[des];
+                            mesh.point(v) = diffrents2;
 
                         
                             p = Vec(mesh.point(v)[0], mesh.point(v)[1], mesh.point(v)[2]);
                             Vec result3 = to->point + qz.rotate(p - to->point);
                             OpenMesh::Vec3d diffrents3 = OpenMesh::Vec3d(result3.x, result3.y, result3.z);
-                            mesh.point(v) = diffrents3 * mesh.data(v).weigh[des];
+                            mesh.point(v) = diffrents3;
 
-                        }
+                        
 
                     }
                     des = -1;
@@ -601,13 +608,63 @@ void MyViewer::Rotate()
      
 }
 
+void MyViewer::selectedvert()
+{
+
+    if (axes.shown && model_type == ModelType::MESH) {
+        auto v = MyMesh::VertexHandle(selected_vertex);
+        auto selcted_point = mesh.data(v);
+        auto dlg = std::make_unique<QDialog>(this);
+        auto* hb1 = new QHBoxLayout,
+            * hb2 = new QHBoxLayout,
+            * hb3 = new QHBoxLayout;
+        auto* vb = new QVBoxLayout;
+
+       
+        for (int i = 0; i < selcted_point.weigh.size(); i++)
+        {
+            auto color = b[i].getColor()*255;
+            QColor rgb(color[0], color[1], color[2]);
+            QString style = QString("QLabel { background-color : rgb(%1, %2, %3) }").arg(rgb.red()).arg(rgb.green()).arg(rgb.blue());
+
+            auto* text_H = new QLabel(tr("X: "));
+            auto* text_b = new QLabel(tr("X: "));
+            text_H->setStyleSheet(style);
+            std::string s = std::to_string(i) + " :" + std::to_string(selcted_point.distance[i]);
+            text_H->setText(s.c_str());
+
+            text_b->setStyleSheet(style);
+            std::string se = std::to_string(i) + " :" + std::to_string(selcted_point.weigh[i]);
+            text_b->setText(se.c_str());
+
+            hb1->addWidget(text_H);
+
+            hb2->addWidget(text_b);
+        }
+
+        vb->addLayout(hb1);
+        vb->addLayout(hb2);
+        vb->addLayout(hb3);
+
+        dlg->setWindowTitle(tr("Data of vertex"));
+        dlg->setLayout(vb);
+
+        if (dlg->exec() == QDialog::Accepted) {
+
+
+        }
+    }
+}
 
 void MyViewer::keyPressEvent(QKeyEvent *e) {
 
     auto dlg = std::make_unique<QDialog>(this);
     auto* hb1 = new QHBoxLayout;
     auto* vb = new QVBoxLayout;
+
     QLabel* text;
+    
+    Tree* to = sk.searchbyid(sk, selected_vertex);
   if (e->modifiers() == Qt::NoModifier)
 
     switch (e->key()) {
@@ -637,6 +694,14 @@ void MyViewer::keyPressEvent(QKeyEvent *e) {
       visualization = Visualization::SLICING;
       update();
       break;
+    case Qt::Key_5:
+        //ani = true;
+
+        sk.change_all_rotason(*to, to->point, -rotation);
+        startAnimation();
+        //animate();
+        update();
+        break;
     case Qt::Key_I:
       visualization = Visualization::ISOPHOTES;
       current_isophote_texture = isophote_texture;
@@ -672,10 +737,7 @@ void MyViewer::keyPressEvent(QKeyEvent *e) {
     case Qt::Key_T:
         if (points.size() != 0 && mesh.n_vertices() != 0)
         {
-            visualization = Visualization::WEIGH;
-            model_type = ModelType::SKELTON;
-            mehet = true;
-            isweight = true;
+
             weigh();
         }
         update();
@@ -688,7 +750,7 @@ void MyViewer::keyPressEvent(QKeyEvent *e) {
             
             if (isweight == true && mehet == true)
             {
-                visualization = Visualization::WEIGH;
+                visualization = Visualization::WEIGH2;
                 Smooth();
                 model_type = ModelType::SKELTON;
                
@@ -699,9 +761,6 @@ void MyViewer::keyPressEvent(QKeyEvent *e) {
             {
                 text = new QLabel(tr("Error: No weight in the mesh"));
             }
-
-
-           
         }
         else
         {
@@ -737,6 +796,15 @@ void MyViewer::keyPressEvent(QKeyEvent *e) {
       show_solid = !show_solid;
       update();
       break;
+
+    case Qt::Key_7:
+        Reset();
+        break;
+    case Qt::Key_6:
+        
+        stopAnimation();
+        //end.endframe = to->point;
+        break;
     case Qt::Key_W:
       show_wireframe = !show_wireframe;
       update();
@@ -831,7 +899,7 @@ void MyViewer::mouseMoveEvent(QMouseEvent *e) {
         !(e->modifiers() & (Qt::ShiftModifier | Qt::ControlModifier)) ||
         !(e->buttons() & Qt::LeftButton))
     {
-        sk.makefalse(sk);
+        //sk.makefalse(sk);
         return QGLViewer::mouseMoveEvent(e);
     }
   Vec p;
@@ -858,14 +926,12 @@ void MyViewer::mouseMoveEvent(QMouseEvent *e) {
 
   if (model_type == ModelType::SKELTON)
   {
-
       /*
       * 
       * megkersük a kiválasztot ágakat
       */
       Tree* to = sk.searchbyid(sk, selected_vertex);
       int des = -1;
-      
       getallpoints(*to);
       std::vector<Vec> old = ve;
       ve.clear();
@@ -886,7 +952,6 @@ void MyViewer::mouseMoveEvent(QMouseEvent *e) {
               if (b[i].End == old[j])
               {
                   b[i].End = newp[j];
-                  des = i;
               }
           }
           if (des != -1)

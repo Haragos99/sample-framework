@@ -7,6 +7,10 @@ struct Bones
 {
     Vec start;
     Vec End;
+
+    Vec originalS; 
+    Vec originalE;
+
     std::vector<Vec> points;
     double x, y, z;
 
@@ -43,12 +47,53 @@ struct Tree {
     Vec point;
     int id;
     bool choose = false;
+    Vec original;
+    Vec endframe;
+
+
     Tree() {}
     Tree(Vec p, int i)
     {
         point = p;
         id = i;
+        original = point;
+
     }
+
+    void reset_all(Tree& t)
+    {
+        t.point = t.original;
+        for (int i = 0; i < t.child.size(); i++)
+        {
+            reset_all(t.child[i]);
+        }
+    }
+
+
+    void animatepoziton(Tree& t)
+    {
+            endframe.x += 0.001f;
+            Vec ir = 0.01f * endframe;
+           
+            
+                change_all_position(t, ir);
+            
+        
+
+    }
+
+    void animaterotaion(Tree& t )
+    {
+        Vec angels;
+        angels.x += 0.1;
+        if (angels.x < 50)
+        {
+            change_all_rotason(t, t.point, angels);
+        }
+    }
+
+
+
     /// <summary>
     /// 
     /// </summary>
@@ -65,6 +110,8 @@ struct Tree {
         }
 
     }
+
+
 
 
     void change_all_rotason(Tree& t, Vec orginal, Vec angles)

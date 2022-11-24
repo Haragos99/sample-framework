@@ -5,21 +5,21 @@
 void MyViewer::draw() {
     if (model_type == ModelType::BEZIER_SURFACE && show_control_points)
         drawControlNet();
-    if (model_type == ModelType::SKELTON)
-    {
 
-    }
     if (show_skelton)
         if (!axes.shown)
         {
             sk.makefalse(sk);
         }
-    drawSkleton();
-
+    
+    if (model_type == ModelType::SKELTON)
+    {
+        drawSkleton();
+    }
     glPolygonMode(GL_FRONT_AND_BACK, !show_solid && show_wireframe ? GL_LINE : GL_FILL);
     glEnable(GL_POLYGON_OFFSET_FILL);
     glPolygonOffset(1, 1);
-
+    glLineWidth(1.0);
     if (show_solid || show_wireframe) {
         if (visualization == Visualization::PLAIN)
             glColor3d(1.0, 1.0, 1.0);
@@ -107,6 +107,7 @@ void MyViewer::draw() {
         drawAxes();
 
 }
+
 /// <summary>
 /// ezt rajzoljuk ku
 /// </summary>

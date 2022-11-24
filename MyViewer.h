@@ -45,7 +45,111 @@ public:
   bool openBezier(const std::string &filename, bool update_view = true);
   bool saveBezier(const std::string &filename);
   bool saveBone(const std::string& filename);
+  int getbone_size() { return b.size(); }
+  void setMesh() { model_type = ModelType::MESH; }
+  void setBone() { model_type = ModelType::SKELTON; }
+  void selectedvert();
+  void wierframe(){
+      show_wireframe = !show_wireframe;
+      update();
+  }
 
+  void skining() { visualization = Visualization::WEIGH; }
+
+  void Boneheat()
+  {
+      auto dlg = std::make_unique<QDialog>(this);
+      auto* hb1 = new QHBoxLayout;
+      auto* vb = new QVBoxLayout;
+
+      QLabel* text;
+      if (points.size() != 0 && mesh.n_vertices() != 0)
+      {
+
+          Epsil();
+          if (isweight == true && mehet == true)
+          {
+              Smooth();
+              model_type = ModelType::SKELTON;
+
+              text = new QLabel(tr("Success"));
+
+          }
+          else
+          {
+              text = new QLabel(tr("Error: No weight in the mesh"));
+          }
+      }
+      else
+      {
+          text = new QLabel(tr("Error: No mesh or skellton"));
+      }
+      hb1->addWidget(text);
+      vb->addLayout(hb1);
+      dlg->setWindowTitle(tr("Message"));
+      dlg->setLayout(vb);
+      if (dlg->exec() == QDialog::Accepted) {
+          update();
+      }
+  }
+
+
+  void Epsil() {
+      auto dlg = std::make_unique<QDialog>(this);
+      auto* hb1 = new QHBoxLayout;
+      auto* vb = new QVBoxLayout;
+      auto* ok = new QPushButton(tr("Ok"));
+      connect(ok, SIGNAL(pressed()), dlg.get(), SLOT(accept()));
+      ok->setDefault(true);
+      QLabel* text;
+      auto* sb_H = new QDoubleSpinBox;
+      sb_H->setDecimals(4);
+      sb_H->setSingleStep(0.0001);
+      sb_H->setRange(0.0001, 1);
+      hb1->addWidget(sb_H);
+      hb1->addWidget(ok);
+      vb->addLayout(hb1);
+      dlg->setWindowTitle(tr("Skalar"));
+      dlg->setLayout(vb);
+      if (dlg->exec() == QDialog::Accepted) {
+          epsilon = sb_H->value();
+          update();
+      }
+
+
+
+
+
+
+  }
+    
+  double epsilon = 0.001;
+  void Reset();
+  int wi = 2;
+  void index_of_weight(){
+      if (points.size() != 0 && mesh.n_vertices() != 0)
+      {
+          model_type = ModelType::SKELTON;
+          visualization = Visualization::WEIGH2;
+          wi++;
+      }
+      update();
+  }
+  void show(){
+      show_solid = !show_solid;
+      update();
+  }
+  
+  void Invers();
+
+  void Databone();
+
+  void Frame();
+  Vec angels;
+  Vec ang;
+  void Smooth();
+  void weigh();
+  void Rotate();
 signals:
   void startComputation(QString message);
   void midComputation(int percent);
@@ -55,6 +159,7 @@ signals:
 protected:
   virtual void init() override;
   virtual void draw() override;
+  virtual void animate()override;
   virtual void drawWithNames() override;
   virtual void postSelection(const QPoint &p) override;
   virtual void keyPressEvent(QKeyEvent *e) override;
@@ -65,7 +170,8 @@ private:
   struct MyTraits : public OpenMesh::DefaultTraits {
     using Point  = OpenMesh::Vec3d; // the default would be Vec3f
     using Normal = OpenMesh::Vec3d;
-    VertexTraits {
+    VertexTraits{
+      OpenMesh::Vec3d original;
       double mean;              // approximated mean curvature
       std::vector<double> weigh;
       std::vector<double> distance;
@@ -107,7 +213,7 @@ private:
   //////////////////////
 
   enum class ModelType { NONE, MESH, BEZIER_SURFACE,SKELTON } model_type;
-  enum class SkelltonType { MAN,WRIST,ARM } skellton_type;
+  enum class SkelltonType { MAN,WRIST,ARM,FACE } skellton_type;
   // Mesh
   MyMesh mesh;
 
@@ -148,15 +254,18 @@ private:
       return len;
   }
 
-  void weigh();
+  
 
   void ininitSkelton();
   void createL(Eigen::SparseMatrix<double>& L);
 
-  void Smooth();
   
 
-  void Rotate();
+  QHBoxLayout* hb1 = new QHBoxLayout;
+  QLabel* text_ = new QLabel;
+  QVBoxLayout* vBox = new QVBoxLayout;
+
+
 
   void getallpoints(Tree t);
 
@@ -220,18 +329,60 @@ private:
   }
 
 
+  void faceSkellton()
+  {
+      sk = Tree(points[0], 0);
+
+      sk.child.push_back(Tree(points[1], 1));
+      sk.child[0].child.push_back(Tree(points[2], 2));
+      sk.child[0].child[0].child.push_back(Tree(points[3], 3));
+      sk.child[0].child[0].child.push_back(Tree(points[4], 4));
+      sk.child[0].child[0].child.push_back(Tree(points[5], 5));
+      sk.child[0].child[0].child[1].child.push_back(Tree(points[6], 6));
+      sk.child[0].child[0].child[1].child[0].child.push_back(Tree(points[7], 7));
+      sk.child[0].child[0].child[1].child[0].child[0].child.push_back(Tree(points[8], 8));
+      sk.child[0].child[0].child[1].child[0].child[0].child.push_back(Tree(points[9], 9));
+      sk.child[0].child[0].child[1].child[0].child.push_back(Tree(points[10], 10));
+
+      sk.child[0].child.push_back(Tree(points[11], 11));
+      sk.child[0].child[1].child.push_back(Tree(points[12], 12));
+      sk.child[0].child[1].child.push_back(Tree(points[13], 13));
+      sk.child[0].child[1].child.push_back(Tree(points[14], 14));
+      sk.child[0].child[1].child[1].child.push_back(Tree(points[15], 15));
+      sk.child[0].child[1].child[1].child[0].child.push_back(Tree(points[16], 16));
+      sk.child[0].child[1].child[1].child[0].child[0].child.push_back(Tree(points[17], 17));
+      sk.child[0].child[1].child[1].child[0].child[0].child.push_back(Tree(points[18], 18));
+      sk.child[0].child[1].child[1].child[0].child.push_back(Tree(points[19], 19));
+      
+
+  }
+
+
   // this collect the bones
   std::vector<Bones> b;
   // this is the skeleton
   Tree sk;
+  
+
+  // for the animation api (it is simpal)
+  Tree start;
+  Tree end;
+
+
+
+  void move(std::vector<Vec> newp, std::vector<Vec> old);
+
 
   std::vector<int>indexes;
   std::vector<Vec> points;
   std::vector<Vec> ve;
+
+  Vec rotation;
+
   // Bezier
   size_t degree[2];
   std::vector<Vec> control_points;
-  int wi = 2;
+
   void setupCameraBone();
   bool mehet = false;
   bool isweight = false;

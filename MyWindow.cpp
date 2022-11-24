@@ -60,18 +60,140 @@ MyWindow::MyWindow(QApplication *parent) :
   visMenu->addAction(cutoffAction);
   visMenu->addAction(rangeAction);
   visMenu->addAction(slicingAction);
+
+  auto hSplitter = new QSplitter(Qt::Horizontal, this);
+  auto controlWidget = new QWidget(this);
+  auto sa = new QScrollArea;
+
+
+  controlWidget->setAutoFillBackground(true);
+  QGridLayout* controlLayout = new QGridLayout();
+  
+  auto buttonOpen = new QPushButton("Open Mesh");
+  controlLayout->addWidget(buttonOpen, 0, 0, 1, 1);
+  connect(buttonOpen, SIGNAL(clicked()), this, SLOT(open()));
+
+
+  auto buttonOpenB = new QPushButton("Open Bone");
+  controlLayout->addWidget(buttonOpenB, 0, 1, 1, 1);
+  connect(buttonOpenB, SIGNAL(clicked()), this, SLOT(open_bone()));
+
+  auto buttonMesh = new QPushButton("Mesh");
+  controlLayout->addWidget(buttonMesh, 1, 0, 1, 1);
+  connect(buttonMesh, SIGNAL(clicked()), this, SLOT(set2mesh()));
+
+  auto buttonBone = new QPushButton("Bone");
+  controlLayout->addWidget(buttonBone, 1, 1, 1, 1);
+  connect(buttonBone, SIGNAL(clicked()), this, SLOT(set2bone()));
+
+
+
+
+  controlLayout->addWidget(layer, 3, 1, 1, 1);
+
+  auto buttonSkining = new QPushButton("Skining");
+  controlLayout->addWidget(buttonSkining, 2, 0, 1, 1);
+  connect(buttonSkining, SIGNAL(clicked()), this, SLOT(skining()));
+
+
+  auto buttonHeat= new QPushButton("Bone Heat");
+  controlLayout->addWidget(buttonHeat, 2, 1, 1, 1);
+  connect(buttonHeat, SIGNAL(clicked()), this, SLOT(boneheat()));
+
+
+  auto buttonPoint = new QPushButton("Vertex");
+  controlLayout->addWidget(buttonPoint, 3 ,0, 1, 1);
+  connect(buttonPoint, SIGNAL(clicked()), this, SLOT(getpoint()));
+
+
+  controlLayout->addWidget(wlayer, 5, 1, 1, 1);
+  auto buttonW = new QPushButton("Weigh");
+  controlLayout->addWidget(buttonW, 5, 0, 1, 1);
+  connect(buttonW, SIGNAL(clicked()), this, SLOT(weightindex()));
+
+
+
+
+
+
+  auto buttonwier = new QPushButton("Wierframe");
+  controlLayout->addWidget(buttonwier, 4, 0, 1, 1);
+  connect(buttonwier, SIGNAL(clicked()), this, SLOT(wierframeon()));
+
+
+  auto buttonshow = new QPushButton("Show");
+  controlLayout->addWidget(buttonshow, 4, 1, 1, 1);
+  connect(buttonshow, SIGNAL(clicked()), this, SLOT(showm()));
+
+
+  auto buttonrot = new QPushButton("Rotation");
+  controlLayout->addWidget(buttonrot, 6, 1, 1, 1);
+  connect(buttonrot, SIGNAL(clicked()), this, SLOT(rotation()));
+
+
+  auto buttrest = new QPushButton("Reset");
+  controlLayout->addWidget(buttrest, 6, 0, 1, 1);
+  connect(buttrest, SIGNAL(clicked()), this, SLOT(resetall()));
+
+
+  auto buttonstart = new QPushButton("Start");
+  controlLayout->addWidget(buttonstart, 7, 0, 1, 1);
+  connect(buttonstart, SIGNAL(clicked()), this, SLOT(start()));
+
+
+  auto buttonend = new QPushButton("End");
+  controlLayout->addWidget(buttonend, 7, 1, 1, 1);
+  connect(buttonend, SIGNAL(clicked()), this, SLOT(end()));
+
+  auto buttonskin = new QPushButton("Skin");
+  controlLayout->addWidget(buttonskin, 8, 0, 1, 1);
+  connect(buttonskin, SIGNAL(clicked()), this, SLOT(skin()));
+
+
+  controlWidget->setLayout(controlLayout);
+
+
+  sa->setWidget(controlWidget);
+  sa->setFixedWidth(sa->sizeHint().width());
+
+  hSplitter->insertWidget(0, sa);
+  hSplitter->insertWidget(1, viewer);
+  setCentralWidget(hSplitter);
+
 }
 
 MyWindow::~MyWindow() {
 }
 
+
+void MyWindow::open_bone() {
+    auto filename = QFileDialog::getOpenFileName(this, tr("Open File"), last_directory,
+        tr("Readable files ( *.bone);;"
+            "Bone (*.bone);;"
+            "All files (*.*)"));
+    if (filename.isEmpty())
+        return;
+    last_directory = QFileInfo(filename).absolutePath();
+
+    bool ok;
+    if (filename.endsWith(".bone"))
+        ok = viewer->openSkelton(filename.toUtf8().data());
+
+    if (!ok)
+        QMessageBox::warning(this, tr("Cannot open file"),
+            tr("Could not open file: ") + filename + ".");
+
+    int n = viewer->getbone_size();
+    layer->setText(tr("Bones: ") + std::to_string(n).c_str());
+}
+
+
 void MyWindow::open() {
   auto filename =
     QFileDialog::getOpenFileName(this, tr("Open File"), last_directory,
-                                 tr("Readable files (*.obj *.ply *.stl *.bzr *.bone);;"
+                                 tr("Readable files (*.obj *.ply *.stl *.bzr );;"
                                     "Mesh (*.obj *.ply *.stl);;"
                                     "Bézier surface (*.bzr);;"
-                                    "Bone (*.bone);;"
                                     "All files (*.*)"));
   if(filename.isEmpty())
     return;
@@ -80,9 +202,6 @@ void MyWindow::open() {
   bool ok;
   if (filename.endsWith(".bzr"))
       ok = viewer->openBezier(filename.toUtf8().data());
-  else if (filename.endsWith(".bone"))
-      
-      ok = viewer->openSkelton(filename.toUtf8().data());
   else
     ok = viewer->openMesh(filename.toUtf8().data());
 
