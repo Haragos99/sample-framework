@@ -117,10 +117,6 @@ public:
       }
 
 
-
-
-
-
   }
     
   double epsilon = 0.001;
