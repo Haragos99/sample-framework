@@ -29,11 +29,12 @@ MyViewer::MyViewer(QWidget *parent) :
   visualization(Visualization::PLAIN), slicing_dir(0, 0, 1), slicing_scaling(1),
   last_filename("")
 {
-    QDir* logdir = new QDir();
-    logdir->mkdir("logs");
-    QString log_path("logs/log_");
-    log_path += QDateTime::currentDateTime().toString("yyyy-MM-dd__hh-mm-ss-zzz") + ".txt";
-    std::ofstream of = std::ofstream(log_path.toStdString());
+    //QDir* logdir = new QDir();
+    //logdir->mkdir("logs");
+    //QString log_path("logs/log_");
+    //log_path += QDateTime::currentDateTime().toString("yyyy-MM-dd__hh-mm-ss-zzz") + ".txt";
+    //std::ofstream of = std::ofstream(log_path.toStdString());
+    of = std::ofstream("log.txt");
     std::cerr.rdbuf(of.rdbuf());
     omerr().rdbuf(of.rdbuf());
   setSelectRegionWidth(10);
@@ -694,6 +695,10 @@ void MyViewer::keyPressEvent(QKeyEvent *e) {
       visualization = Visualization::SLICING;
       update();
       break;
+    case Qt::Key_V:
+        transparent = !transparent;
+        update();
+        break;
     case Qt::Key_5:
         //ani = true;
 
@@ -778,14 +783,14 @@ void MyViewer::keyPressEvent(QKeyEvent *e) {
 
     case Qt::Key_3:
 
-        if (mesh.n_vertices() != 0)
-        {
-            for (auto v : mesh.vertices()) {
-                mesh.data(v).weigh.clear();
-            }
-            model_type = ModelType::MESH;
-            visualization = Visualization::PLAIN;
-        }
+        //if (mesh.n_vertices() != 0)
+        //{
+        //    for (auto v : mesh.vertices()) {
+        //        mesh.data(v).weigh.clear();
+        //    }
+        //    model_type = ModelType::MESH;
+        //    visualization = Visualization::PLAIN;
+        //}
         update();
         break;
     case Qt::Key_C:

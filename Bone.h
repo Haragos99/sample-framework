@@ -3,11 +3,29 @@
 #include <QGLViewer/qglviewer.h>
 using qglviewer::Vec;
 
+
+
+struct Keyframe {
+    Keyframe(float time, const Vec& position)
+        : time_(time), position_(position) {}
+
+    float time() const { return time_; }
+    const Vec& position() const { return position_; }
+    const Vec& position() const { return angles_; }
+
+private:
+    float time_;
+    Vec position_;
+    Vec angles_;
+};
+
+
+
 struct Bones
 {
     Vec start;
     Vec End;
-
+    
     Vec originalS; 
     Vec originalE;
 
@@ -49,8 +67,7 @@ struct Tree {
     bool choose = false;
     Vec original;
     Vec endframe;
-
-
+    std::vector<Keyframe> keyframes;
     Tree() {}
     Tree(Vec p, int i)
     {
@@ -69,30 +86,34 @@ struct Tree {
         }
     }
 
+    void Addframe(Tree& t, Keyframe frame)
+    {
+        t.keyframes.push_back(frame);
+        for (int i = 0; i < t.child.size(); i++)
+        {
+            Addframe(t.child[i], frame);
+        }
+    }
 
     void animatepoziton(Tree& t)
     {
             endframe.x += 0.001f;
             Vec ir = 0.01f * endframe;
-           
-            
-                change_all_position(t, ir);
+            change_all_position(t, ir);
             
         
 
     }
 
-    void animaterotaion(Tree& t )
+    void animaterotaion(Tree& t, int i)
     {
+
+        const Keyframe& startKeyframe = keyframes[i];
+        const Keyframe& endKeyframe = keyframes[i + 1];
+
         Vec angels;
-        angels.x += 0.1;
-        if (angels.x < 50)
-        {
-            change_all_rotason(t, t.point, angels);
-        }
+        change_all_rotason(t, t.point, angels);
     }
-
-
 
     /// <summary>
     /// 

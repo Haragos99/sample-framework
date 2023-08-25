@@ -118,7 +118,10 @@ public:
 
 
   }
-    
+  
+  bool transparent = false;
+
+
   double epsilon = 0.001;
   void Reset();
   int wi = 2;
@@ -372,12 +375,23 @@ private:
   std::vector<int>indexes;
   std::vector<Vec> points;
   std::vector<Vec> ve;
-
+  float startAnimationTime_ = 0.0;
+  float animationDuration_ = 1.0;
+  std::vector<Keyframe> keyframes_;
+  bool isAnimating_;
   Vec rotation;
 
   // Bezier
   size_t degree[2];
   std::vector<Vec> control_points;
+
+  float currentTime() {
+      auto now = std::chrono::high_resolution_clock::now();
+      auto duration = now.time_since_epoch();
+      return std::chrono::duration_cast<std::chrono::duration<float>>(duration).count();
+  }
+
+
 
   void setupCameraBone();
   bool mehet = false;
@@ -397,6 +411,7 @@ private:
     Vec position, grabbed_pos, original_pos;
   } axes;
   std::string last_filename;
+  std::ofstream of;
 };
 
 #include "MyViewer.hpp"

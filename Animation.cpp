@@ -3,6 +3,26 @@
 void MyViewer::animate()
 {
     
+    //rewrite this part
+    //second
+    if (isAnimating_)
+    {
+        float current_time = (currentTime() - startAnimationTime_) / 1000.0;
+        if (current_time < animationDuration_)
+        {
+            // Cheacking frame status
+            size_t i = 0;
+            while (i < keyframes_.size() - 1 && currentTime() >= keyframes_[i + 1].time()) {
+                i++;
+            }
+            const Keyframe& startKeyframe = keyframes_[i];
+            const Keyframe& endKeyframe = keyframes_[i + 1];
+
+        }
+    }
+
+
+    //-----------------------------------------------------
     if (ang.x <= angels.x )
     {
         Tree* to = sk.searchbyid(sk, selected_vertex);
