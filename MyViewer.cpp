@@ -478,7 +478,6 @@ void MyViewer::init() {
 
 
 
-
 void MyViewer::Rotate()
 {
 
@@ -530,7 +529,7 @@ void MyViewer::Rotate()
         angels = angles;
         rotation = angles;
         Tree* to = sk.searchbyid(sk, selected_vertex);
-   
+       // to->angel += angles;
     
         int des = -1;
         getallpoints(*to);
@@ -780,9 +779,10 @@ void MyViewer::keyPressEvent(QKeyEvent *e) {
         }
         //mehet = false;
         break;
+    
 
     case Qt::Key_3:
-
+        keyframe_add();
         //if (mesh.n_vertices() != 0)
         //{
         //    for (auto v : mesh.vertices()) {

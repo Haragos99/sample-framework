@@ -29,7 +29,7 @@ class MyViewer : public QGLViewer {
 public:
   explicit MyViewer(QWidget *parent);
   virtual ~MyViewer();
-
+  void keyframe_add();  
   inline double getCutoffRatio() const;
   inline void setCutoffRatio(double ratio);
   inline double getMeanMin() const;

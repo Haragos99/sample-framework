@@ -27,6 +27,7 @@ private slots:
   void start() { viewer->Frame(); }
   void end() { viewer->stopAnimation(); }
   void rotation() { viewer->Rotate(); }
+  void keyframe() { viewer->keyframe_add(); }
   void showm() { viewer->show(); }
   void resetall() { viewer->Reset(); }
   void skin() { viewer->skining(); viewer->update();}
