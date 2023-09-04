@@ -17,7 +17,7 @@ void MyViewer::animate()
     if (isAnimating_)
     {
         float z = currentTime();
-        float current_time = (currentTime() - startAnimationTime_) / 7001;
+        float current_time = (currentTime() - startAnimationTime_) * 10;
         if (current_time < animationDuration_)
         {
             // Cheacking frame status
