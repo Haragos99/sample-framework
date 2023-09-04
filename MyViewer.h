@@ -20,6 +20,7 @@
 #include <QtWidgets>
 #include <QGLViewer/quaternion.h>
 
+
 using qglviewer::Vec;
 
 
@@ -268,6 +269,8 @@ private:
 
   void getallpoints(Tree t);
 
+  void get_change_points(Tree t);
+
   void armSkellton()
   {
       sk = Tree(points[0], 0);
@@ -369,9 +372,44 @@ private:
 
 
 
+  void animate_mesh(Vec angles, int des,Vec point)
+  {
+      if (isweight)
+      {
+          for (auto v : mesh.vertices())
+          {
+              qglviewer::Quaternion qx = qglviewer::Quaternion(Vec(1, 0, 0), (angles.x * mesh.data(v).weigh[des]) / 180.0 * M_PI);
+              qglviewer::Quaternion qy = qglviewer::Quaternion(Vec(0, 1, 0), (angles.y * mesh.data(v).weigh[des]) / 180.0 * M_PI);
+              qglviewer::Quaternion qz = qglviewer::Quaternion(Vec(0, 0, 1), (angles.z * mesh.data(v).weigh[des]) / 180.0 * M_PI);
+
+
+              Vec p = Vec(mesh.point(v)[0], mesh.point(v)[1], mesh.point(v)[2]);
+              Vec result = point + qx.rotate(p - point);
+              OpenMesh::Vec3d diffrents = OpenMesh::Vec3d(result.x, result.y, result.z);
+              mesh.point(v) = diffrents;
+
+
+              p = Vec(mesh.point(v)[0], mesh.point(v)[1], mesh.point(v)[2]);
+              Vec result2 = point + qy.rotate(p - point);
+              OpenMesh::Vec3d diffrents2 = OpenMesh::Vec3d(result2.x, result2.y, result2.z);
+              mesh.point(v) = diffrents2;
+
+
+              p = Vec(mesh.point(v)[0], mesh.point(v)[1], mesh.point(v)[2]);
+              Vec result3 = point + qz.rotate(p - point);
+              OpenMesh::Vec3d diffrents3 = OpenMesh::Vec3d(result3.x, result3.y, result3.z);
+              mesh.point(v) = diffrents3;
+
+
+
+          }
+      }
+  }
+
+
   void move(std::vector<Vec> newp, std::vector<Vec> old);
 
-
+  int elapsedTime;
   std::vector<int>indexes;
   std::vector<Vec> points;
   std::vector<Vec> ve;
@@ -413,5 +451,5 @@ private:
   std::string last_filename;
   std::ofstream of;
 };
-
+// idó kivonva a másikból
 #include "MyViewer.hpp"

@@ -5,6 +5,9 @@ using qglviewer::Vec;
 
 
 
+
+// Probáljuk majd meg hogy csak a kiválasztot csont részen csináljuk a key framet.
+
 struct Keyframe {
     Keyframe(float time, Vec& position,const Vec& angles)
         : time_(time), position_(position),angles_(angles) {}
@@ -14,6 +17,8 @@ struct Keyframe {
     const Vec& angeles() const { return angles_; }
     Vec angles_;
     Vec position_;
+    Vec selected_point;
+    qglviewer::Quaternion rotation_;
 private:
     float time_;
     
@@ -26,10 +31,10 @@ struct Bones
 {
     Vec start;
     Vec End;
-    
+    bool last_bone = false;
     Vec originalS; 
     Vec originalE;
-
+    std::vector<Keyframe> keyframes;
     std::vector<Vec> points;
     double x, y, z;
 
@@ -68,7 +73,9 @@ struct Tree {
     bool choose = false;
     Vec original;
     Vec endframe;
-    Vec angel;
+    Vec position;
+    Vec angel_;
+    bool used = false;
     std::vector<Keyframe> keyframes;
     Tree() {}
     Tree(Vec p, int i)
@@ -88,14 +95,11 @@ struct Tree {
         }
     }
 
-    void Addframe(Tree& t, Keyframe frame)
+    void Addframe(Tree& t, Keyframe& frame)
     {
         frame.angles_ = frame.angles_ + t.point;
         t.keyframes.push_back(frame);
-        for (int i = 0; i < t.child.size(); i++)
-        {
-            Addframe(t.child[i], frame);
-        }
+        
     }
 
     void animatepoziton(Tree& t)
@@ -108,7 +112,7 @@ struct Tree {
 
     }
 
-    void animaterotaion(Tree& t, int i,float current_time,Vec original)
+    void animaterotaion(Tree& t, int i,float current_time)
     {
          
         if (t.keyframes.size()!=0)
@@ -116,29 +120,18 @@ struct Tree {
             const Keyframe& startKeyframe = t.keyframes[i];
             const Keyframe& endKeyframe = t.keyframes[i + 1];
             float time = (current_time - startKeyframe.time()) / (endKeyframe.time() - startKeyframe.time());
-            Vec angels = startKeyframe.angeles() + 1 * (endKeyframe.angeles() - startKeyframe.angeles());
-
-            //change_all_rotason(t, original, angels);
-            qglviewer::Quaternion qx = qglviewer::Quaternion(Vec(1, 0, 0), angels.x / 180.0 * M_PI);
-            qglviewer::Quaternion qy = qglviewer::Quaternion(Vec(0, 1, 0), angels.y / 180.0 * M_PI);
-            qglviewer::Quaternion qz = qglviewer::Quaternion(Vec(0, 0, 1), angels.z / 180.0 * M_PI);
-            //t.angel = angles;
-            if (t.point != original)
-            {
-                t.point = original + qx.rotate(t.point - original);
-
-                t.point = original + qy.rotate(t.point - original);
-
-
-                t.point = original + qz.rotate(t.point - original);
-
-            }
+            float timediff = (endKeyframe.time() - startKeyframe.time());
+            Vec rotated = (endKeyframe.angeles() - startKeyframe.angeles());
+            Vec angels = rotated / timediff;
+            t.angel_ = angels;
+            t.position = startKeyframe.position();
+            change_all_rotason(t, startKeyframe.position(), angels);
 
 
         }
         for (int j = 0; j < t.child.size(); j++)
         {
-            animaterotaion(t.child[j], i, current_time,original);
+            animaterotaion(t.child[j], i, current_time);
         }
        
     }
@@ -171,17 +164,31 @@ struct Tree {
         //t.angel = angles;
         if (t.point != orginal)
         {
+            Vec o = t.point;
+            
+            t.angel_ += angles;
+
             t.point = orginal + qx.rotate(t.point - orginal);
 
             t.point = orginal + qy.rotate(t.point - orginal);
 
 
             t.point = orginal + qz.rotate(t.point - orginal);
-
+              
         }
         for (int i = 0; i < t.child.size(); i++)
         {
             change_all_rotason(t.child[i], orginal, angles);
+        }
+    }
+
+
+    void used_points(Tree& t)
+    {
+        t.used = true;
+        for (int i = 0; i < t.child.size(); i++)
+        {
+            used_points(t.child[i]);
         }
     }
 

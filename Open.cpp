@@ -131,6 +131,7 @@ void MyViewer::ininitSkelton()
     int size = indexes.size();
     for (int i = 0; i < size; i += 2)
     {
+        // ide kelle majd
         Bones bo;
         bo.start = points[indexes[i] - 1];
         bo.End = points[indexes[i + 1] - 1];

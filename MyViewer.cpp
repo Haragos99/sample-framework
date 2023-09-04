@@ -539,12 +539,13 @@ void MyViewer::Rotate()
          // itt vátoztatjuk meg a kordinátát
      
         sk.change_all_rotason(*to, to->point, angles);
-   
+        sk.used_points(*to);
         getallpoints(*to);
         std::vector<Vec> newp = ve;
         ve.clear();
         for (int i = 0; i < b.size(); i++)
         {
+            Vec rotason_point;
             for (int j = 0; j < old.size(); j++)
             {
                 if (b[i].start == old[j])
@@ -555,7 +556,8 @@ void MyViewer::Rotate()
                 if (b[i].End == old[j])
                 {
                     b[i].End = newp[j];
-                   
+                    rotason_point = newp[j];
+                
                 }
             }
             
@@ -568,33 +570,10 @@ void MyViewer::Rotate()
                 /// </summary>
                 if (isweight)
                 {
-                    for (auto v : mesh.vertices())
-                    {
-                        qglviewer::Quaternion qx = qglviewer::Quaternion(Vec(1, 0, 0), (angles.x * mesh.data(v).weigh[des]) / 180.0 * M_PI);
-                        qglviewer::Quaternion qy = qglviewer::Quaternion(Vec(0, 1, 0), (angles.y * mesh.data(v).weigh[des]) / 180.0 * M_PI);
-                        qglviewer::Quaternion qz = qglviewer::Quaternion(Vec(0, 0, 1), (angles.z * mesh.data(v).weigh[des]) / 180.0 * M_PI);
-
-
-                            Vec p = Vec(mesh.point(v)[0], mesh.point(v)[1], mesh.point(v)[2]);
-                            Vec result = to->point + qx.rotate(p- to->point);
-                            OpenMesh::Vec3d diffrents = OpenMesh::Vec3d(result.x, result.y, result.z);
-                            mesh.point(v) = diffrents;
-
-                      
-                            p = Vec(mesh.point(v)[0], mesh.point(v)[1], mesh.point(v)[2]);
-                            Vec result2 = to->point + qy.rotate(p - to->point);
-                            OpenMesh::Vec3d diffrents2 = OpenMesh::Vec3d(result2.x, result2.y, result2.z);      
-                            mesh.point(v) = diffrents2;
-
-                        
-                            p = Vec(mesh.point(v)[0], mesh.point(v)[1], mesh.point(v)[2]);
-                            Vec result3 = to->point + qz.rotate(p - to->point);
-                            OpenMesh::Vec3d diffrents3 = OpenMesh::Vec3d(result3.x, result3.y, result3.z);
-                            mesh.point(v) = diffrents3;
-
-                        
-
-                    }
+                    Tree* to2 = sk.searchbyid(sk, des);
+                    Vec p = to2->point;
+                    Vec p2= to->point;
+                    animate_mesh(angles, des, to->point);
                     des = -1;
                 }
             }
@@ -943,6 +922,7 @@ void MyViewer::mouseMoveEvent(QMouseEvent *e) {
       sk.change_all_position(*to, axes.position - old_pos);
       Vec dif = axes.position - old_pos;
       getallpoints(*to);
+      
       std::vector<Vec> newp = ve;
       ve.clear();
       for (int i = 0; i < b.size(); i++)
@@ -990,6 +970,21 @@ void MyViewer::getallpoints(Tree t)
         getallpoints(t.child[i]);
     }
 }
+
+
+void MyViewer::get_change_points(Tree t)
+{
+    if (t.used)
+    {
+        ve.push_back(t.point);
+    }
+    
+    for (int i = 0; i < t.child.size(); i++)
+    {
+        get_change_points(t.child[i]);
+    }
+}
+
 
 QString MyViewer::helpString() const {
   QString text("<h2>Sample Framework</h2>"

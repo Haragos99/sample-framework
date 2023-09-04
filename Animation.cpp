@@ -6,35 +6,43 @@
 
 void MyViewer::animate()
 {
-    if (animationDuration_ >=9.0)
+   
+    if (!isAnimating_)
     {
-        isAnimating_ = false;
+        //isAnimating_ = false;
+        int e = 2;
     }
     //rewrite this part
     //second
     if (isAnimating_)
     {
-        float current_time = (currentTime() - startAnimationTime_) / 1000.0;
-        if (0 < animationDuration_)
+        float z = currentTime();
+        float current_time = (currentTime() - startAnimationTime_) / 7001;
+        if (current_time < animationDuration_)
         {
             // Cheacking frame status
-            size_t i = 0;
+            size_t s = 0;
             //while (i < keyframes_.size() - 1 && currentTime() >= keyframes_[i + 1].time()) {
                 //i++;
             //}
-            const Keyframe& startKeyframe = keyframes_[i];
-            const Keyframe& endKeyframe = keyframes_[i + 1];
+            if (current_time > 12)
+            {
+                int wf = 10;
+            }
 
-            getallpoints(sk);
+            get_change_points(sk);
             std::vector<Vec> old = ve;
             ve.clear();
-            sk.animaterotaion(sk, i, 1, sk.child[0].child[0].point);
-            getallpoints(sk);
+            sk.animaterotaion(sk, s, current_time);
+            get_change_points(sk);
             std::vector<Vec> newp = ve;
             ve.clear();
             int des = -1;
+            Vec frame_angel = Vec(0, 0, 0);
+            Vec frame_positon = Vec(0, 0, 0);
             for (int i = 0; i < b.size(); i++)
             {
+
                 for (int j = 0; j < old.size(); j++)
                 {
                     if (b[i].start == old[j])
@@ -48,13 +56,43 @@ void MyViewer::animate()
                         //  des = i;
                     }
                 }
+                if (des != -1)
+                {
+                    if (b[des].keyframes.size() != 0)
+                    {
+                        Vec difp=Vec(0,0,0);
+                        Vec difa = Vec(0, 0, 0);
+                        if (frame_positon != Vec(0, 0, 0))
+                        {
+                            //difp = frame_positon- b[des].keyframes[0].position();
+                            //difa = frame_angel - b[des].keyframes[1].angeles();
+                            //animate_mesh(frame_angel, des, frame_positon);
+                        }
+                        const Keyframe& startKeyframe = b[des].keyframes[s];
+                        const Keyframe& endKeyframe = b[des].keyframes[s + 1];
+
+                        frame_positon = startKeyframe.position()+ difp;
+                        float timediff = (endKeyframe.time() - startKeyframe.time());
+                        Vec rotated = (endKeyframe.angeles() - startKeyframe.angeles());
+                        frame_angel = rotated / timediff;
+       
+                    }
+                    // csak a keyframekbõl lévõ adatok kellenek itt 3 különbõzö pont körül forgat
+                    Tree* to = sk.searchbyid(sk, des);
+                    animate_mesh(frame_angel, des, frame_positon);
+                    des = -1;
+                }
+                
             }
             newp.clear();
             old.clear();
             update();
 
         }
-        animationDuration_+=1.1;
+        else {
+            isAnimating_ = false;
+        }
+       // animationDuration_+=1.1;
     }
     
      
@@ -87,9 +125,17 @@ void MyViewer::keyframe_add()
 
     if (dlg->exec() == QDialog::Accepted) 
     {
+        qglviewer::Quaternion qx = qglviewer::Quaternion(Vec(1, 0, 0), angels.x / 180.0 * M_PI);
+        qglviewer::Quaternion qy = qglviewer::Quaternion(Vec(0, 1, 0), angels.y / 180.0 * M_PI);
+        qglviewer::Quaternion qz = qglviewer::Quaternion(Vec(0, 0, 1), angels.z / 180.0 * M_PI);
+
+        qglviewer::Quaternion q = qz * qy * qx;
+
         Tree* to = sk.searchbyid(sk, selected_vertex);
         Keyframe k = Keyframe(sb->value(), to->point, angels);
+        k.rotation_ = q;
         sk.Addframe(*to,k);
+        b[to->id].keyframes.push_back(k);
         keyframes_.push_back(k);
     }
 }
@@ -99,6 +145,7 @@ void MyViewer::Frame()
    // angels = Vec(0, 0, 0);
    // Rotate();
    // Reset();
+    /*
     isAnimating_ = true;
     Keyframe k = Keyframe(0.0, sk.child[0].child[0].point,Vec(0,0,0));
     Keyframe k2 = Keyframe(10.0, sk.child[0].child[0].point,Vec(30, 0, 0));
@@ -114,9 +161,11 @@ void MyViewer::Frame()
 
     keyframes_.push_back(k);
     keyframes_.push_back(k2);
-   
-    animationDuration_ = 0.0;
-    //Invers();
+   */
+    isAnimating_ = true;
+    animationDuration_ = 5.0;
+    startAnimationTime_ = currentTime();
+    Invers();
     startAnimation();
 
 }
