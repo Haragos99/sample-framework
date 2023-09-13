@@ -1,6 +1,8 @@
 #pragma once
 
 #include <QGLViewer/qglviewer.h>
+#include "Matrix4.h"
+#include <Eigen/Eigen>
 using qglviewer::Vec;
 
 
@@ -37,7 +39,7 @@ struct Bones
     std::vector<Keyframe> keyframes;
     std::vector<Vec> points;
     double x, y, z;
-
+    // ide egy matrix írjunk
     Vec getColor()
     {
         return Vec(x, y, z);
@@ -67,6 +69,7 @@ struct Bones
 
 struct Tree {
 
+    
     std::vector<Tree> child;
     Vec point;
     int id;
@@ -76,7 +79,10 @@ struct Tree {
     Vec position;
     Vec angel_;
     bool used = false;
+    
+    Mat4 mymatrix;
     std::vector<Keyframe> keyframes;
+  
     Tree() {}
     Tree(Vec p, int i)
     {
@@ -111,27 +117,35 @@ struct Tree {
         
 
     }
-
-    void animaterotaion(Tree& t, int i,float current_time)
+    // TODO: probáljuk  meg matrixokal.
+    void animaterotaion(Tree& t,float current_time)
     {
          
-        if (t.keyframes.size()!=0)
+        if (t.keyframes.size() != 0 && t.keyframes.back().time() > current_time)
         {
-            const Keyframe& startKeyframe = t.keyframes[i];
-            const Keyframe& endKeyframe = t.keyframes[i + 1];
-            float time = (current_time - startKeyframe.time()) / (endKeyframe.time() - startKeyframe.time());
-            float timediff = (endKeyframe.time() - startKeyframe.time());
-            Vec rotated = (endKeyframe.angeles() - startKeyframe.angeles());
-            Vec angels = rotated / timediff;
-            t.angel_ = angels;
-            t.position = startKeyframe.position();
-            change_all_rotason(t, startKeyframe.position(), angels);
+            size_t s = 0;
 
+                // think again -2 
+                while (s < t.keyframes.size() -2  && current_time >= t.keyframes[s + 1].time()) {
+                    s++;
+                }
+
+
+                const Keyframe& startKeyframe = t.keyframes[s];
+                const Keyframe& endKeyframe = t.keyframes[s + 1];
+                float time = (current_time - startKeyframe.time()) / (endKeyframe.time() - startKeyframe.time());
+                float timediff = (endKeyframe.time() - startKeyframe.time());
+                Vec rotated = (endKeyframe.angeles() - startKeyframe.angeles());
+                Vec angels = rotated / timediff;
+                t.angel_ = angels;
+                t.position = startKeyframe.position();
+                change_all_rotason(t, startKeyframe.position(), angels);
+            
 
         }
         for (int j = 0; j < t.child.size(); j++)
         {
-            animaterotaion(t.child[j], i, current_time);
+            animaterotaion(t.child[j], current_time);
         }
        
     }
@@ -156,25 +170,31 @@ struct Tree {
 
 
 
-    void change_all_rotason(Tree& t, Vec orginal, Vec angles)
+    void change_all_rotason(Tree& t, Vec orginal, Vec angles, Mat4 M_ = Mat4())
     {
+        Mat4 e;
         qglviewer::Quaternion qx = qglviewer::Quaternion(Vec(1, 0, 0), angles.x / 180.0 * M_PI);
         qglviewer::Quaternion qy = qglviewer::Quaternion(Vec(0, 1, 0), angles.y / 180.0 * M_PI);
         qglviewer::Quaternion qz = qglviewer::Quaternion(Vec(0, 0, 1), angles.z / 180.0 * M_PI);
         //t.angel = angles;
+        qglviewer::Quaternion q = qz * qy * qx;
+        double qmatrix[4][4];
+        q.getMatrix(qmatrix);
+        Mat4 R = transform_to_mat4(qmatrix);
+        Mat4 T1 = TranslateMatrix(-orginal);
+        Mat4 T2 = TranslateMatrix(orginal);
+        Vec4 point4= Vec4(t.point.x, t.point.y, t.point.z, 1);
+
         if (t.point != orginal)
-        {
-            Vec o = t.point;
-            
+        {   
             t.angel_ += angles;
-
-            t.point = orginal + qx.rotate(t.point - orginal);
-
-            t.point = orginal + qy.rotate(t.point - orginal);
-
-
-            t.point = orginal + qz.rotate(t.point - orginal);
-              
+            //t.point = orginal + q.rotate(t.point - orginal);
+            t.mymatrix = M_;
+            Mat4 M = T1 * R * T2;
+            M = M * t.mymatrix;
+            
+            Vec4 result = point4 * M;
+            t.point = Vec(result.x, result.y, result.z);
         }
         for (int i = 0; i < t.child.size(); i++)
         {
@@ -260,10 +280,3 @@ struct Tree {
 
     }
 };
-
-
-
-
-
-
-

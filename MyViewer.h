@@ -55,6 +55,7 @@ public:
       update();
   }
 
+  
   void skining() { visualization = Visualization::WEIGH; }
 
   void Boneheat()
@@ -122,7 +123,7 @@ public:
   
   bool transparent = false;
 
-
+  float& getFrameSecond() { return FrameSecond; }
   double epsilon = 0.001;
   void Reset();
   int wi = 2;
@@ -155,7 +156,7 @@ signals:
   void midComputation(int percent);
   void endComputation();
   void displayMessage(const QString& message);
-
+  
 protected:
   virtual void init() override;
   virtual void draw() override;
@@ -260,7 +261,7 @@ private:
   void createL(Eigen::SparseMatrix<double>& L);
 
   
-
+  float FrameSecond = 0.0;
   QHBoxLayout* hb1 = new QHBoxLayout;
   QLabel* text_ = new QLabel;
   QVBoxLayout* vBox = new QVBoxLayout;
@@ -383,23 +384,14 @@ private:
               qglviewer::Quaternion qz = qglviewer::Quaternion(Vec(0, 0, 1), (angles.z * mesh.data(v).weigh[des]) / 180.0 * M_PI);
 
 
-              Vec p = Vec(mesh.point(v)[0], mesh.point(v)[1], mesh.point(v)[2]);
-              Vec result = point + qx.rotate(p - point);
-              OpenMesh::Vec3d diffrents = OpenMesh::Vec3d(result.x, result.y, result.z);
-              mesh.point(v) = diffrents;
+              qglviewer::Quaternion q = qz * qy * qx;
 
-
-              p = Vec(mesh.point(v)[0], mesh.point(v)[1], mesh.point(v)[2]);
-              Vec result2 = point + qy.rotate(p - point);
-              OpenMesh::Vec3d diffrents2 = OpenMesh::Vec3d(result2.x, result2.y, result2.z);
-              mesh.point(v) = diffrents2;
-
-
-              p = Vec(mesh.point(v)[0], mesh.point(v)[1], mesh.point(v)[2]);
-              Vec result3 = point + qz.rotate(p - point);
-              OpenMesh::Vec3d diffrents3 = OpenMesh::Vec3d(result3.x, result3.y, result3.z);
-              mesh.point(v) = diffrents3;
-
+              if (mesh.data(v).weigh[des] != 0) {
+                  Vec p = Vec(mesh.point(v)[0], mesh.point(v)[1], mesh.point(v)[2]);
+                  Vec result = point + q.rotate(p - point);
+                  OpenMesh::Vec3d diffrents = OpenMesh::Vec3d(result.x, result.y, result.z);
+                  mesh.point(v) = diffrents;
+              }
 
 
           }

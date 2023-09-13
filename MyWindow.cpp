@@ -148,7 +148,7 @@ MyWindow::MyWindow(QApplication *parent) :
   auto buttonskin = new QPushButton("Skin");
   controlLayout->addWidget(buttonskin, 8, 0, 1, 1);
   connect(buttonskin, SIGNAL(clicked()), this, SLOT(skin()));
-
+  controlLayout->addWidget(flayer, 8, 1, 1, 1);
 
   controlWidget->setLayout(controlLayout);
 

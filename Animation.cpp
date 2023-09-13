@@ -16,24 +16,19 @@ void MyViewer::animate()
     //second
     if (isAnimating_)
     {
-        float z = currentTime();
+        //float z = currentTime();
         float current_time = (currentTime() - startAnimationTime_) * 10;
+        FrameSecond = current_time;
+        update();
         if (current_time < animationDuration_)
         {
             // Cheacking frame status
-            size_t s = 0;
-            //while (i < keyframes_.size() - 1 && currentTime() >= keyframes_[i + 1].time()) {
-                //i++;
-            //}
-            if (current_time > 12)
-            {
-                int wf = 10;
-            }
+
 
             get_change_points(sk);
             std::vector<Vec> old = ve;
             ve.clear();
-            sk.animaterotaion(sk, s, current_time);
+            sk.animaterotaion(sk, current_time);
             get_change_points(sk);
             std::vector<Vec> newp = ve;
             ve.clear();
@@ -58,15 +53,20 @@ void MyViewer::animate()
                 }
                 if (des != -1)
                 {
-                    if (b[des].keyframes.size() != 0)
+                    if (b[des].keyframes.size() != 0 && b[des].keyframes.back().time() > current_time)
                     {
+                        size_t s = 0;
+                        while (s < b[des].keyframes.size() - 2 && current_time >= b[des].keyframes[s + 1].time()) {
+                            s++;
+                        }
+
                         Vec difp=Vec(0,0,0);
                         Vec difa = Vec(0, 0, 0);
                         if (frame_positon != Vec(0, 0, 0))
                         {
                             //difp = frame_positon- b[des].keyframes[0].position();
                             //difa = frame_angel - b[des].keyframes[1].angeles();
-                            //animate_mesh(frame_angel, des, frame_positon);
+                            animate_mesh(frame_angel, des, frame_positon);
                         }
                         const Keyframe& startKeyframe = b[des].keyframes[s];
                         const Keyframe& endKeyframe = b[des].keyframes[s + 1];
@@ -92,7 +92,6 @@ void MyViewer::animate()
         else {
             isAnimating_ = false;
         }
-       // animationDuration_+=1.1;
     }
     
      
@@ -163,7 +162,7 @@ void MyViewer::Frame()
     keyframes_.push_back(k2);
    */
     isAnimating_ = true;
-    animationDuration_ = 5.0;
+    animationDuration_ = 10.0;
     startAnimationTime_ = currentTime();
     Invers();
     startAnimation();

@@ -3,6 +3,12 @@
 
 
 void MyViewer::draw() {
+
+    drawText(10, int(1.5 * ((QApplication::font().pixelSize() > 0)
+        ? QApplication::font().pixelSize()
+        : QApplication::font().pointSize())),
+        QString("Frame:") + QString(std::to_string(FrameSecond).c_str()));
+
     if (model_type == ModelType::BEZIER_SURFACE && show_control_points)
         drawControlNet();
 
@@ -125,7 +131,6 @@ void MyViewer::draw() {
 
     if (axes.shown)
         drawAxes();
-
 }
 
 /// <summary>
