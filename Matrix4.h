@@ -167,6 +167,20 @@ public:
     Vec4& operator[](int i) { return rows[i]; }
     Vec4 operator[](int i) const { return rows[i]; }
     operator float* () const { return (float*)this; }
+    Mat4 skalar(double s)
+    {
+        Vec4 it = Vec4(rows[0].x * s, rows[0].y * s, rows[0].z * s, rows[0].w * s);
+        Vec4 jt = Vec4(rows[1].x * s, rows[1].y * s, rows[1].z * s, rows[1].w * s);
+        Vec4 kt = Vec4(rows[2].x * s, rows[2].y * s, rows[2].z * s, rows[2].w * s);
+        Vec4 ot = Vec4(rows[3].x * s, rows[3].y * s, rows[3].z * s, rows[3].w * s);
+        return Mat4(it, jt, kt, ot);
+    }
+    Mat4& operator+=(const Mat4& other) {
+        for (int i = 0; i < 4; ++i) {
+            rows[i] += other.rows[i];
+        }
+        return *this;
+    }
 };
 
 inline Vec4 operator*(const Vec4& v, const Mat4& mat) {

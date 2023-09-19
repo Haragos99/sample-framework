@@ -38,6 +38,7 @@ struct Bones
     Vec originalE;
     std::vector<Keyframe> keyframes;
     std::vector<Vec> points;
+    Mat4 M;
     double x, y, z;
     // ide egy matrix írjunk
     Vec getColor()
@@ -189,16 +190,27 @@ struct Tree {
         {   
             t.angel_ += angles;
             //t.point = orginal + q.rotate(t.point - orginal);
-            t.mymatrix = M_;
+            //t.mymatrix = M_;
             Mat4 M = T1 * R * T2;
-            M = M * t.mymatrix;
-            
+            M_ = M_* M;
+            t.mymatrix = t.mymatrix * M;
             Vec4 result = point4 * M;
             t.point = Vec(result.x, result.y, result.z);
         }
         for (int i = 0; i < t.child.size(); i++)
         {
             change_all_rotason(t.child[i], orginal, angles);
+        }
+    }
+
+
+
+    void set_deafult_matrix(Tree& t)
+    {
+        t.mymatrix = Mat4();
+        for (int i = 0; i < t.child.size(); i++)
+        {
+            set_deafult_matrix(t.child[i]);
         }
     }
 

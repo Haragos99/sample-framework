@@ -557,6 +557,7 @@ void MyViewer::Rotate()
                 {
                     b[i].End = newp[j];
                     rotason_point = newp[j];
+                   // des = i;
                 
                 }
             }
@@ -568,18 +569,26 @@ void MyViewer::Rotate()
                 /// <summary>
                 /// EULER SZÖGEK MEG CSINÁLÁSA
                 /// </summary>
+                /*
                 if (isweight)
                 {
                     Tree* to2 = sk.searchbyid(sk, des);
                     Vec p = to2->point;
                     Vec p2= to->point;
                     animate_mesh(angles, des, to->point);
-                    des = -1;
+                    
                 }
+                */
+                //b[to->id].M = to->mymatrix;
+                Tree* s = sk.searchbyid(sk, des+1);
+                b[des].M = s->mymatrix;
+                des = -1;
             }
             
 
         }
+        animate_mesh_m();
+        set_mesh_matrix();
         newp.clear();
         old.clear();
         update();

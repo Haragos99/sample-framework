@@ -84,6 +84,8 @@ void MyViewer::animate()
                 }
                 
             }
+            sk.set_deafult_matrix(sk);
+            set_mesh_matrix();
             newp.clear();
             old.clear();
             update();
@@ -141,30 +143,11 @@ void MyViewer::keyframe_add()
 void MyViewer::Frame()
 {
     ang = Vec(0, 0, 0);
-   // angels = Vec(0, 0, 0);
-   // Rotate();
-   // Reset();
-    /*
-    isAnimating_ = true;
-    Keyframe k = Keyframe(0.0, sk.child[0].child[0].point,Vec(0,0,0));
-    Keyframe k2 = Keyframe(10.0, sk.child[0].child[0].point,Vec(30, 0, 0));
-
-    Keyframe k3 = Keyframe(0.0, sk.child[0].child[1].point, Vec(0, 0, 0));
-    Keyframe k4 = Keyframe(10.0, sk.child[0].child[1].point, Vec(30, 0, 0));
-
-    sk.child[0].child[0].Addframe(sk.child[0].child[0],k);
-    sk.child[0].child[0].Addframe(sk.child[0].child[0], k2);
-
-    sk.child[0].child[1].Addframe(sk.child[0].child[1], k3);
-    sk.child[0].child[1].Addframe(sk.child[0].child[1], k4);
-
-    keyframes_.push_back(k);
-    keyframes_.push_back(k2);
-   */
     isAnimating_ = true;
     animationDuration_ = 10.0;
     startAnimationTime_ = currentTime();
-    Invers();
+    //Invers();
+    Reset();
     startAnimation();
 
 }
