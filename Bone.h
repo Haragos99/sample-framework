@@ -124,14 +124,11 @@ struct Tree {
          
         if (t.keyframes.size() != 0 && t.keyframes.back().time() > current_time)
         {
-            size_t s = 0;
-
+                size_t s = 0;
                 // think again -2 
                 while (s < t.keyframes.size() -2  && current_time >= t.keyframes[s + 1].time()) {
                     s++;
                 }
-
-
                 const Keyframe& startKeyframe = t.keyframes[s];
                 const Keyframe& endKeyframe = t.keyframes[s + 1];
                 float time = (current_time - startKeyframe.time()) / (endKeyframe.time() - startKeyframe.time());
@@ -140,8 +137,7 @@ struct Tree {
                 Vec angels = rotated / timediff;
                 t.angel_ = angels;
                 t.position = startKeyframe.position();
-                change_all_rotason(t, startKeyframe.position(), angels);
-            
+                change_all_rotason(t, startKeyframe.position(), angels); 
 
         }
         for (int j = 0; j < t.child.size(); j++)
@@ -171,9 +167,8 @@ struct Tree {
 
 
 
-    void change_all_rotason(Tree& t, Vec orginal, Vec angles, Mat4 M_ = Mat4())
+    void change_all_rotason(Tree& t, Vec orginal, Vec angles)
     {
-        Mat4 e;
         qglviewer::Quaternion qx = qglviewer::Quaternion(Vec(1, 0, 0), angles.x / 180.0 * M_PI);
         qglviewer::Quaternion qy = qglviewer::Quaternion(Vec(0, 1, 0), angles.y / 180.0 * M_PI);
         qglviewer::Quaternion qz = qglviewer::Quaternion(Vec(0, 0, 1), angles.z / 180.0 * M_PI);
@@ -190,9 +185,7 @@ struct Tree {
         {   
             t.angel_ += angles;
             //t.point = orginal + q.rotate(t.point - orginal);
-            //t.mymatrix = M_;
             Mat4 M = T1 * R * T2;
-            M_ = M_* M;
             t.mymatrix = t.mymatrix * M;
             Vec4 result = point4 * M;
             t.point = Vec(result.x, result.y, result.z);

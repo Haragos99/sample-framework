@@ -4,10 +4,10 @@
 
 void MyViewer::draw() {
 
-    drawText(10, int(1.5 * ((QApplication::font().pixelSize() > 0)
+   /* drawText(10, int(1.5 * ((QApplication::font().pixelSize() > 0)
         ? QApplication::font().pixelSize()
         : QApplication::font().pointSize())),
-        QString("Frame:") + QString(std::to_string(FrameSecond).c_str()));
+        QString("Frame:") + QString(std::to_string(FrameSecond).c_str()));*/
 
     if (model_type == ModelType::BEZIER_SURFACE && show_control_points)
         drawControlNet();
@@ -131,6 +131,14 @@ void MyViewer::draw() {
 
     if (axes.shown)
         drawAxes();
+    glDisable(GL_LIGHTING);
+    glDisable(GL_DEPTH_TEST);
+    drawText(10, int(1.5 * ((QApplication::font().pixelSize() > 0)
+        ? QApplication::font().pixelSize()
+        : QApplication::font().pointSize())),
+        QString("Frame:") + QString(std::to_string(FrameSecond).c_str()));
+    glEnable(GL_LIGHTING);
+    glEnable(GL_DEPTH_TEST);
 }
 
 /// <summary>

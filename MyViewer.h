@@ -177,7 +177,6 @@ private:
       std::vector<double> weigh;
       std::vector<double> distance;
       int idx_of_closest_bone;
-      Mat4 M;
     };
   };
   using MyMesh = OpenMesh::TriMesh_ArrayKernelT<MyTraits>;
@@ -368,70 +367,37 @@ private:
   Tree sk;
   
 
+  void set_bone_matrix()
+  {
+      for (int i = 0; i < b.size(); i++)
+      {
+          b[i].M = Mat4();
+      }
+  }
+
+
   // for the animation api (it is simpal)
   Tree start;
   Tree end;
 
 
-
-  void set_mesh_matrix()
+  void animate_mesh()
   {
-      for (auto v : mesh.vertices())
-      {
-          mesh.data(v).M = Mat4();
-      }
-  }
-
-  void animate_mesh_m()
-  {
-      for (auto v : mesh.vertices())
-      {
-          Mat4 M_result = Mat4(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
-          for (int i = 0; i < b.size(); i++)
-          {
-              double w = mesh.data(v).weigh[i];
-              Mat4 M = b[i].M.skalar(w);
-              M_result += M;
-          }
-
-          Vec4 point4 = Vec4(mesh.point(v)[0], mesh.point(v)[1], mesh.point(v)[2], 1);
-          Vec4 result = point4 * M_result;
-          OpenMesh::Vec3d diffrents = OpenMesh::Vec3d(result.x, result.y, result.z);
-          mesh.point(v) = diffrents;
-      }
-  }
-
-
-  void animate_mesh(Vec angles, int des,Vec point)
-  {
-      if (isweight)
-      {
+      if(isweight)
+      { 
           for (auto v : mesh.vertices())
           {
-              qglviewer::Quaternion qx = qglviewer::Quaternion(Vec(1, 0, 0), (angles.x *mesh.data(v).weigh[des]) / 180.0 * M_PI);
-              qglviewer::Quaternion qy = qglviewer::Quaternion(Vec(0, 1, 0), (angles.y *mesh.data(v).weigh[des]) / 180.0 * M_PI);
-              qglviewer::Quaternion qz = qglviewer::Quaternion(Vec(0, 0, 1), (angles.z *mesh.data(v).weigh[des]) / 180.0 * M_PI);
-
-
-              qglviewer::Quaternion q = qz * qy * qx;
-
-              if (mesh.data(v).weigh[des] != 0) {
-                  
-                  double qmatrix[4][4];
-                  q.getMatrix(qmatrix);
-                  Mat4 R = transform_to_mat4(qmatrix);
-                  Mat4 T1 = TranslateMatrix(-point);
-                  Mat4 T2 = TranslateMatrix(point);
-                  Vec4 point4 = Vec4(mesh.point(v)[0], mesh.point(v)[1], mesh.point(v)[2], 1);
-                  Mat4 M = T1 * R * T2;
-                 // M.skalar(mesh.data(v).weigh[des]);
-                 // mesh.data(v).M = mesh.data(v).M * M;
-                  Vec4 result = point4 * M;
-                  OpenMesh::Vec3d diffrents = OpenMesh::Vec3d(result.x, result.y, result.z);
-                  mesh.point(v) = diffrents;
+              Mat4 M_result = Mat4(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
+              for (int i = 0; i < b.size(); i++)
+              {
+                  double w = mesh.data(v).weigh[i];
+                  Mat4 M = b[i].M.skalar(w);
+                  M_result += M;
               }
-
-
+              Vec4 point4 = Vec4(mesh.point(v)[0], mesh.point(v)[1], mesh.point(v)[2], 1);
+              Vec4 result = point4 * M_result;
+              OpenMesh::Vec3d diffrents = OpenMesh::Vec3d(result.x, result.y, result.z);
+              mesh.point(v) = diffrents;
           }
       }
   }

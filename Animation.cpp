@@ -53,6 +53,11 @@ void MyViewer::animate()
                 }
                 if (des != -1)
                 {
+                    Tree* so = sk.searchbyid(sk, des + 1);
+                    b[des].M = so->mymatrix;
+
+
+
                     if (b[des].keyframes.size() != 0 && b[des].keyframes.back().time() > current_time)
                     {
                         size_t s = 0;
@@ -62,30 +67,18 @@ void MyViewer::animate()
 
                         Vec difp=Vec(0,0,0);
                         Vec difa = Vec(0, 0, 0);
-                        if (frame_positon != Vec(0, 0, 0))
-                        {
-                            //difp = frame_positon- b[des].keyframes[0].position();
-                            //difa = frame_angel - b[des].keyframes[1].angeles();
-                            animate_mesh(frame_angel, des, frame_positon);
-                        }
-                        const Keyframe& startKeyframe = b[des].keyframes[s];
-                        const Keyframe& endKeyframe = b[des].keyframes[s + 1];
-
-                        frame_positon = startKeyframe.position()+ difp;
-                        float timediff = (endKeyframe.time() - startKeyframe.time());
-                        Vec rotated = (endKeyframe.angeles() - startKeyframe.angeles());
-                        frame_angel = rotated / timediff;
+      
        
                     }
                     // csak a keyframekbõl lévõ adatok kellenek itt 3 különbõzö pont körül forgat
-                    Tree* to = sk.searchbyid(sk, des);
-                    animate_mesh(frame_angel, des, frame_positon);
                     des = -1;
                 }
                 
             }
+            
+            animate_mesh();
+            set_bone_matrix();
             sk.set_deafult_matrix(sk);
-            set_mesh_matrix();
             newp.clear();
             old.clear();
             update();
@@ -98,6 +91,8 @@ void MyViewer::animate()
     
      
 }
+
+
 
 
 void MyViewer::keyframe_add()
@@ -241,6 +236,7 @@ void MyViewer::Reset()
     {
         b[i].start = b[i].originalS;
         b[i].End = b[i].originalE;
+        b[i].M = Mat4();
     }
 
     for (auto v : mesh.vertices())

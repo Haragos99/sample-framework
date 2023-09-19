@@ -521,7 +521,6 @@ void MyViewer::Rotate()
     dlg->setLayout(vb);
 
     if(dlg->exec() == QDialog::Accepted) {
-        
         double hr = sb_H->value();
         double pr = sb_P->value();
         double br = sb_B->value();
@@ -587,8 +586,9 @@ void MyViewer::Rotate()
             
 
         }
-        animate_mesh_m();
-        set_mesh_matrix();
+        animate_mesh();
+        set_bone_matrix();
+        sk.set_deafult_matrix(sk);
         newp.clear();
         old.clear();
         update();
