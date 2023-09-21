@@ -162,7 +162,6 @@ void MyViewer::ininitSkelton()
     {
         faceSkellton();
     }
-    start = sk;
 
 }
 
