@@ -3,8 +3,23 @@
 
 
 void MyViewer::draw() {
+
+   /* drawText(10, int(1.5 * ((QApplication::font().pixelSize() > 0)
+        ? QApplication::font().pixelSize()
+        : QApplication::font().pointSize())),
+        QString("Frame:") + QString(std::to_string(FrameSecond).c_str()));*/
+
     if (model_type == ModelType::BEZIER_SURFACE && show_control_points)
         drawControlNet();
+
+
+    if (transparent) {
+        glEnable(GL_BLEND);
+        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    }
+    else {
+        glDisable(GL_BLEND);
+    }
 
     if (show_skelton)
         if (!axes.shown)
@@ -16,7 +31,8 @@ void MyViewer::draw() {
     {
         drawSkleton();
     }
-    glPolygonMode(GL_FRONT_AND_BACK, !show_solid && show_wireframe ? GL_LINE : GL_FILL);
+    glPolygonMode(GL_FRONT, !show_solid && show_wireframe ? GL_LINE : GL_FILL);
+    glEnable(GL_CULL_FACE);
     glEnable(GL_POLYGON_OFFSET_FILL);
     glPolygonOffset(1, 1);
     glLineWidth(1.0);
@@ -60,7 +76,12 @@ void MyViewer::draw() {
 
 
                     }
-                    glColor3d(color.x, color.y, color.z);
+                    if (transparent) {
+                        glColor4d(color.x, color.y, color.z, 0.5);
+                    }
+                    else {
+                        glColor3d(color.x,color.y,color.z);
+                    }
                 }
                 else if (visualization == Visualization::WEIGH2)
                 {
@@ -70,7 +91,12 @@ void MyViewer::draw() {
                     }
                     Vec color = mesh.data(v).weigh[wi] * (b[wi].getColor());
 
-                    glColor3d(color.x, color.y, color.z);
+                    if (transparent) {
+                        glColor4d(color.x, color.y, color.z, 0.5);
+                    }
+                    else {
+                        glColor3d(color.x, color.y, color.z);
+                    }
                 }
                 glNormal3dv(mesh.normal(v).data());
                 glVertex3dv(mesh.point(v).data());
@@ -105,7 +131,14 @@ void MyViewer::draw() {
 
     if (axes.shown)
         drawAxes();
-
+    glDisable(GL_LIGHTING);
+    glDisable(GL_DEPTH_TEST);
+    drawText(10, int(1.5 * ((QApplication::font().pixelSize() > 0)
+        ? QApplication::font().pixelSize()
+        : QApplication::font().pointSize())),
+        QString("Frame:") + QString(std::to_string(FrameSecond).c_str()));
+    glEnable(GL_LIGHTING);
+    glEnable(GL_DEPTH_TEST);
 }
 
 /// <summary>
@@ -124,7 +157,17 @@ void MyViewer::drawSkleton()
         if (i < b.size())
         {
             glBegin(GL_LINES);
-            glColor3d(p.x, p.y, p.z);
+            if (transparent)
+            {
+                double color = 0.8;
+                glColor3d(p.x* color, p.y* color, p.z* color);
+            }
+            else
+            {
+                double color = 0.8;
+                glColor3d(p.x, p.y, p.z);
+            }
+           
             glVertex3dv(p.start);
             glVertex3dv(p.End);
             glEnd();

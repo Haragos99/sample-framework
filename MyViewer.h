@@ -20,6 +20,7 @@
 #include <QtWidgets>
 #include <QGLViewer/quaternion.h>
 
+
 using qglviewer::Vec;
 
 
@@ -29,7 +30,7 @@ class MyViewer : public QGLViewer {
 public:
   explicit MyViewer(QWidget *parent);
   virtual ~MyViewer();
-
+  void keyframe_add();  
   inline double getCutoffRatio() const;
   inline void setCutoffRatio(double ratio);
   inline double getMeanMin() const;
@@ -54,6 +55,7 @@ public:
       update();
   }
 
+  
   void skining() { visualization = Visualization::WEIGH; }
 
   void Boneheat()
@@ -118,7 +120,10 @@ public:
 
 
   }
-    
+  
+  bool transparent = false;
+
+  float& getFrameSecond() { return FrameSecond; }
   double epsilon = 0.001;
   void Reset();
   int wi = 2;
@@ -151,7 +156,7 @@ signals:
   void midComputation(int percent);
   void endComputation();
   void displayMessage(const QString& message);
-
+  
 protected:
   virtual void init() override;
   virtual void draw() override;
@@ -256,7 +261,7 @@ private:
   void createL(Eigen::SparseMatrix<double>& L);
 
   
-
+  float FrameSecond = 0.0;
   QHBoxLayout* hb1 = new QHBoxLayout;
   QLabel* text_ = new QLabel;
   QVBoxLayout* vBox = new QVBoxLayout;
@@ -264,6 +269,8 @@ private:
 
 
   void getallpoints(Tree t);
+
+  void get_change_points(Tree t);
 
   void armSkellton()
   {
@@ -360,24 +367,65 @@ private:
   Tree sk;
   
 
+  void set_bone_matrix()
+  {
+      for (int i = 0; i < b.size(); i++)
+      {
+          b[i].M = Mat4();
+      }
+  }
+
+
   // for the animation api (it is simpal)
   Tree start;
   Tree end;
 
 
+  void animate_mesh()
+  {
+      if(isweight)
+      { 
+          for (auto v : mesh.vertices())
+          {
+              Mat4 M_result = Mat4(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
+              for (int i = 0; i < b.size(); i++)
+              {
+                  double w = mesh.data(v).weigh[i];
+                  Mat4 M = b[i].M.skalar(w);
+                  M_result += M;
+              }
+              Vec4 point4 = Vec4(mesh.point(v)[0], mesh.point(v)[1], mesh.point(v)[2], 1);
+              Vec4 result = point4 * M_result;
+              OpenMesh::Vec3d diffrents = OpenMesh::Vec3d(result.x, result.y, result.z);
+              mesh.point(v) = diffrents;
+          }
+      }
+  }
+
 
   void move(std::vector<Vec> newp, std::vector<Vec> old);
 
-
+  int elapsedTime;
   std::vector<int>indexes;
   std::vector<Vec> points;
   std::vector<Vec> ve;
-
+  float startAnimationTime_ = 0.0;
+  float animationDuration_ = 1.0;
+  std::vector<Keyframe> keyframes_;
+  bool isAnimating_;
   Vec rotation;
 
   // Bezier
   size_t degree[2];
   std::vector<Vec> control_points;
+
+  float currentTime() {
+      auto now = std::chrono::high_resolution_clock::now();
+      auto duration = now.time_since_epoch();
+      return std::chrono::duration_cast<std::chrono::duration<float>>(duration).count();
+  }
+
+
 
   void setupCameraBone();
   bool mehet = false;
@@ -397,6 +445,7 @@ private:
     Vec position, grabbed_pos, original_pos;
   } axes;
   std::string last_filename;
+  std::ofstream of;
 };
-
+// idó kivonva a másikból
 #include "MyViewer.hpp"

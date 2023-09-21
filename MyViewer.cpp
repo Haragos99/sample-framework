@@ -29,11 +29,12 @@ MyViewer::MyViewer(QWidget *parent) :
   visualization(Visualization::PLAIN), slicing_dir(0, 0, 1), slicing_scaling(1),
   last_filename("")
 {
-    QDir* logdir = new QDir();
-    logdir->mkdir("logs");
-    QString log_path("logs/log_");
-    log_path += QDateTime::currentDateTime().toString("yyyy-MM-dd__hh-mm-ss-zzz") + ".txt";
-    std::ofstream of = std::ofstream(log_path.toStdString());
+    //QDir* logdir = new QDir();
+    //logdir->mkdir("logs");
+    //QString log_path("logs/log_");
+    //log_path += QDateTime::currentDateTime().toString("yyyy-MM-dd__hh-mm-ss-zzz") + ".txt";
+    //std::ofstream of = std::ofstream(log_path.toStdString());
+    of = std::ofstream("log.txt");
     std::cerr.rdbuf(of.rdbuf());
     omerr().rdbuf(of.rdbuf());
   setSelectRegionWidth(10);
@@ -477,7 +478,6 @@ void MyViewer::init() {
 
 
 
-
 void MyViewer::Rotate()
 {
 
@@ -521,7 +521,6 @@ void MyViewer::Rotate()
     dlg->setLayout(vb);
 
     if(dlg->exec() == QDialog::Accepted) {
-        
         double hr = sb_H->value();
         double pr = sb_P->value();
         double br = sb_B->value();
@@ -529,7 +528,7 @@ void MyViewer::Rotate()
         angels = angles;
         rotation = angles;
         Tree* to = sk.searchbyid(sk, selected_vertex);
-   
+       // to->angel += angles;
     
         int des = -1;
         getallpoints(*to);
@@ -539,12 +538,13 @@ void MyViewer::Rotate()
          // itt vátoztatjuk meg a kordinátát
      
         sk.change_all_rotason(*to, to->point, angles);
-   
+        sk.used_points(*to);
         getallpoints(*to);
         std::vector<Vec> newp = ve;
         ve.clear();
         for (int i = 0; i < b.size(); i++)
         {
+            Vec rotason_point;
             for (int j = 0; j < old.size(); j++)
             {
                 if (b[i].start == old[j])
@@ -555,7 +555,9 @@ void MyViewer::Rotate()
                 if (b[i].End == old[j])
                 {
                     b[i].End = newp[j];
-                   
+                    rotason_point = newp[j];
+                   // des = i;
+                
                 }
             }
             
@@ -566,41 +568,27 @@ void MyViewer::Rotate()
                 /// <summary>
                 /// EULER SZÖGEK MEG CSINÁLÁSA
                 /// </summary>
+                /*
                 if (isweight)
                 {
-                    for (auto v : mesh.vertices())
-                    {
-                        qglviewer::Quaternion qx = qglviewer::Quaternion(Vec(1, 0, 0), (angles.x * mesh.data(v).weigh[des]) / 180.0 * M_PI);
-                        qglviewer::Quaternion qy = qglviewer::Quaternion(Vec(0, 1, 0), (angles.y * mesh.data(v).weigh[des]) / 180.0 * M_PI);
-                        qglviewer::Quaternion qz = qglviewer::Quaternion(Vec(0, 0, 1), (angles.z * mesh.data(v).weigh[des]) / 180.0 * M_PI);
-
-
-                            Vec p = Vec(mesh.point(v)[0], mesh.point(v)[1], mesh.point(v)[2]);
-                            Vec result = to->point + qx.rotate(p- to->point);
-                            OpenMesh::Vec3d diffrents = OpenMesh::Vec3d(result.x, result.y, result.z);
-                            mesh.point(v) = diffrents;
-
-                      
-                            p = Vec(mesh.point(v)[0], mesh.point(v)[1], mesh.point(v)[2]);
-                            Vec result2 = to->point + qy.rotate(p - to->point);
-                            OpenMesh::Vec3d diffrents2 = OpenMesh::Vec3d(result2.x, result2.y, result2.z);      
-                            mesh.point(v) = diffrents2;
-
-                        
-                            p = Vec(mesh.point(v)[0], mesh.point(v)[1], mesh.point(v)[2]);
-                            Vec result3 = to->point + qz.rotate(p - to->point);
-                            OpenMesh::Vec3d diffrents3 = OpenMesh::Vec3d(result3.x, result3.y, result3.z);
-                            mesh.point(v) = diffrents3;
-
-                        
-
-                    }
-                    des = -1;
+                    Tree* to2 = sk.searchbyid(sk, des);
+                    Vec p = to2->point;
+                    Vec p2= to->point;
+                    animate_mesh(angles, des, to->point);
+                    
                 }
+                */
+                //b[to->id].M = to->mymatrix;
+                Tree* s = sk.searchbyid(sk, des+1);
+                b[des].M = s->mymatrix;
+                des = -1;
             }
             
 
         }
+        animate_mesh();
+        set_bone_matrix();
+        sk.set_deafult_matrix(sk);
         newp.clear();
         old.clear();
         update();
@@ -694,6 +682,10 @@ void MyViewer::keyPressEvent(QKeyEvent *e) {
       visualization = Visualization::SLICING;
       update();
       break;
+    case Qt::Key_V:
+        transparent = !transparent;
+        update();
+        break;
     case Qt::Key_5:
         //ani = true;
 
@@ -775,17 +767,18 @@ void MyViewer::keyPressEvent(QKeyEvent *e) {
         }
         //mehet = false;
         break;
+    
 
     case Qt::Key_3:
-
-        if (mesh.n_vertices() != 0)
-        {
-            for (auto v : mesh.vertices()) {
-                mesh.data(v).weigh.clear();
-            }
-            model_type = ModelType::MESH;
-            visualization = Visualization::PLAIN;
-        }
+        keyframe_add();
+        //if (mesh.n_vertices() != 0)
+        //{
+        //    for (auto v : mesh.vertices()) {
+        //        mesh.data(v).weigh.clear();
+        //    }
+        //    model_type = ModelType::MESH;
+        //    visualization = Visualization::PLAIN;
+        //}
         update();
         break;
     case Qt::Key_C:
@@ -938,6 +931,7 @@ void MyViewer::mouseMoveEvent(QMouseEvent *e) {
       sk.change_all_position(*to, axes.position - old_pos);
       Vec dif = axes.position - old_pos;
       getallpoints(*to);
+      
       std::vector<Vec> newp = ve;
       ve.clear();
       for (int i = 0; i < b.size(); i++)
@@ -985,6 +979,21 @@ void MyViewer::getallpoints(Tree t)
         getallpoints(t.child[i]);
     }
 }
+
+
+void MyViewer::get_change_points(Tree t)
+{
+    if (t.used)
+    {
+        ve.push_back(t.point);
+    }
+    
+    for (int i = 0; i < t.child.size(); i++)
+    {
+        get_change_points(t.child[i]);
+    }
+}
+
 
 QString MyViewer::helpString() const {
   QString text("<h2>Sample Framework</h2>"

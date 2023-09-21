@@ -24,9 +24,12 @@ private slots:
   void getpoint() { viewer->selectedvert(); viewer->update(); }
   void wierframeon() { viewer->wierframe(); }
   void weightindex() { viewer->index_of_weight(); std::string s = "weight: " + std::to_string(viewer->wi); wlayer->setText(s.c_str()); }
-  void start() { viewer->Frame(); }
+  void frame() { }
+  void start() { viewer->Frame(); std::string s = "Frame: " + std::to_string(viewer->getFrameSecond()); flayer->setText(s.c_str());
+  }
   void end() { viewer->stopAnimation(); }
   void rotation() { viewer->Rotate(); }
+  void keyframe() { viewer->keyframe_add(); }
   void showm() { viewer->show(); }
   void resetall() { viewer->Reset(); }
   void skin() { viewer->skining(); viewer->update();}
@@ -47,5 +50,6 @@ private:
   QProgressBar *progress;
   QString last_directory;
   QLabel* wlayer = new QLabel(tr("weight: "));
+  QLabel* flayer = new QLabel(tr("Frame: "));
   QLabel* layer = new QLabel(tr("Bones: "));
 };

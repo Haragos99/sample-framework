@@ -48,6 +48,7 @@ void MyViewer::weigh()
 
 void MyViewer::Smooth()
 {
+    omerr() << "Bone heat start: " << QDateTime::currentDateTime().toString("hh:mm:ss:zzz").toStdString() << std::endl ;
     int n = mesh.n_vertices();
     // az aktuálos pont folyamatosan növeljük
     Eigen::SparseMatrix<double> L;
@@ -69,7 +70,8 @@ void MyViewer::Smooth()
     D.makeCompressed();
     D *= epsilon;
     Eigen::SparseMatrix<double> O = -L + D;
-    Eigen::SparseLU< Eigen::SparseMatrix<double> > solver;
+    Eigen::SimplicialLDLT< Eigen::SparseMatrix<double> > solver;
+    //Eigen::SparseLU< Eigen::SparseMatrix<double> > solver;
     solver.compute(O); // M inverz mátrixának (valójában: "LU felbontásának") kiszámítása
 
 
@@ -119,6 +121,7 @@ void MyViewer::Smooth()
             displayMessage("SUM != 1 !!! @ vertex " + v.idx());
         }
     }
+    omerr() << "Bone heat finish:" << QDateTime::currentDateTime().toString("hh:mm:ss:zzz").toStdString() << std::endl;
 }
 
 void MyViewer::createL(Eigen::SparseMatrix<double>& L)
