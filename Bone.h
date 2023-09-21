@@ -46,6 +46,7 @@ struct Bones
         return Vec(x, y, z);
     }
 
+
     void setColor(double _x, double _y, double _z)
     {
         x = _x;
