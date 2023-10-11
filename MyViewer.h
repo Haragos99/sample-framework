@@ -19,7 +19,8 @@
 #include <QtGui/QKeyEvent>
 #include <QtWidgets>
 #include <QGLViewer/quaternion.h>
-
+#include <map>
+#include <algorithm>
 
 using qglviewer::Vec;
 
@@ -257,6 +258,32 @@ private:
 
   
 
+  struct ControlPoint{
+     Vec position;
+     Vec color;
+     ControlPoint(){}
+     ControlPoint(Vec _position)
+     {
+         position = _position;
+         color = Vec(1, 0, 0);
+        
+     }
+     void draw()
+     {
+         glDisable(GL_LIGHTING);
+         glColor3d(color.x, color.y, color.z);
+         glPointSize(50.0);
+         glBegin(GL_POINTS);
+         glVertex3dv(position);
+         glEnd();
+         glEnable(GL_LIGHTING);
+     }
+
+
+  };
+
+  ControlPoint target;
+
   void ininitSkelton();
   void createL(Eigen::SparseMatrix<double>& L);
 
@@ -266,7 +293,73 @@ private:
   QLabel* text_ = new QLabel;
   QVBoxLayout* vBox = new QVBoxLayout;
 
+  //std::map<int, double> faceAreaMap;
+  std::vector<std::pair<int, double>> sortedVector;
+  std::vector<std::pair<int, double>> finalarea;
+  std::map< MyMesh::FaceHandle,int> sortedMap;
 
+  // Custom comparator function to sort by values (double) in ascending order
+  static bool sortByValue(const std::pair<int, double>& a, const std::pair<int, double>& b) {
+      return a.second < b.second;
+  }
+
+
+  bool _homework = false;
+  double median_of_area=0.0;
+
+  void homework()
+  {
+      _homework = true;
+      int size = 0;
+      for (auto f : mesh.faces()) {
+          double area= mesh.calc_sector_area(mesh.halfedge_handle(f));
+          sortedVector.push_back({ f.idx(), area }); 
+          size++;
+      }
+      std::sort(sortedVector.begin(), sortedVector.end(),sortByValue);
+      int partSize = sortedVector.size() / 4;
+
+      std::vector<std::pair<int, double>>::iterator begin = sortedVector.begin();
+      std::vector<std::pair<int, double>>::iterator end = sortedVector.begin() + partSize;
+
+      std::vector<std::pair<int, double>> part1(begin, end);
+
+      begin = end;
+      end = sortedVector.begin() + 2 * partSize;
+
+      std::vector<std::pair<int, double>> part2(begin, end);
+
+      begin = end;
+      end = sortedVector.begin() + 3 * partSize;
+
+      std::vector<std::pair<int, double>> part3(begin, end);
+
+      std::vector<std::pair<int, double>> part4(end, sortedVector.end());
+
+      finalarea.reserve(part2.size() + part3.size());
+
+      finalarea.insert(finalarea.end(), part2.begin(), part2.end());
+
+      finalarea.insert(finalarea.end(), part3.begin(), part3.end());
+
+      median_of_area = median(finalarea);
+      for (const auto& entry : finalarea) {
+          sortedMap[mesh.face_handle(entry.first)] = entry.first;
+      }
+  }
+
+  double median(const std::vector<std::pair<int, double>>& numbers)
+  {
+      int size = numbers.size();
+      if (size % 2 == 0) {
+          double middle1 = numbers[size / 2 - 1].second;
+          double middle2 = numbers[size / 2].second;
+          return (middle1 + middle2) / 2.0;
+      }
+      else {
+          return numbers[size / 2].second;
+      }
+  }
 
   void getallpoints(Tree t);
 
@@ -381,26 +474,8 @@ private:
   Tree end;
 
 
-  void animate_mesh()
-  {
-      if(isweight)
-      { 
-          for (auto v : mesh.vertices())
-          {
-              Mat4 M_result = Mat4(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
-              for (int i = 0; i < b.size(); i++)
-              {
-                  double w = mesh.data(v).weigh[i];
-                  Mat4 M = b[i].M.skalar(w);
-                  M_result += M;
-              }
-              Vec4 point4 = Vec4(mesh.point(v)[0], mesh.point(v)[1], mesh.point(v)[2], 1);
-              Vec4 result = point4 * M_result;
-              OpenMesh::Vec3d diffrents = OpenMesh::Vec3d(result.x, result.y, result.z);
-              mesh.point(v) = diffrents;
-          }
-      }
-  }
+  void animate_mesh();
+
 
 
   void move(std::vector<Vec> newp, std::vector<Vec> old);
@@ -408,7 +483,7 @@ private:
   int elapsedTime;
   std::vector<int>indexes;
   std::vector<Vec> points;
-  std::vector<Vec> ve;
+  std::vector<Vec> selected_points_storage;
   float startAnimationTime_ = 0.0;
   float animationDuration_ = 1.0;
   std::vector<Keyframe> keyframes_;
@@ -425,6 +500,32 @@ private:
       return std::chrono::duration_cast<std::chrono::duration<float>>(duration).count();
   }
 
+  /// <summary>
+  /// 
+  /// </summary>
+  /// <param name="edgeHandle"></param>
+
+  void collapseEdge(MyMesh::EdgeHandle edgeHandle)
+  {
+      MyMesh::HalfedgeHandle heh1 = mesh.halfedge_handle(edgeHandle, 0);
+      MyMesh::HalfedgeHandle heh2 = mesh.halfedge_handle(edgeHandle, 1);
+
+      // Access the vertices connected to these half-edges.
+      MyMesh::VertexHandle vertex1 = mesh.to_vertex_handle(heh1);
+      MyMesh::VertexHandle vertex2 = mesh.to_vertex_handle(heh2);
+
+      // Get the positions of the vertices.
+      MyMesh::Point point1 = mesh.point(vertex1);
+      MyMesh::Point point2 = mesh.point(vertex2);
+
+
+      MyMesh::Point newPoint;
+      newPoint = (point1 + point2) / 2.0f;
+      
+      mesh.set_point(vertex1, newPoint);
+      mesh.delete_vertex(vertex2);
+
+  }
 
 
   void setupCameraBone();

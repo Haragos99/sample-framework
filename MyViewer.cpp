@@ -532,16 +532,16 @@ void MyViewer::Rotate()
     
         int des = -1;
         getallpoints(*to);
-        std::vector<Vec> old = ve;
-        ve.clear();
+        std::vector<Vec> old = selected_points_storage;
+        selected_points_storage.clear();
      
          // itt vátoztatjuk meg a kordinátát
      
         sk.change_all_rotason(*to, to->point, angles);
         sk.used_points(*to);
         getallpoints(*to);
-        std::vector<Vec> newp = ve;
-        ve.clear();
+        std::vector<Vec> newp = selected_points_storage;
+        selected_points_storage.clear();
         for (int i = 0; i < b.size(); i++)
         {
             Vec rotason_point;
@@ -671,8 +671,8 @@ void MyViewer::keyPressEvent(QKeyEvent *e) {
       update();
       break;
     case Qt::Key_P:
-      visualization = Visualization::PLAIN;
-      update();
+      //visualization = Visualization::PLAIN;
+      homework();
       break;
     case Qt::Key_M:
       visualization = Visualization::MEAN;
@@ -926,14 +926,14 @@ void MyViewer::mouseMoveEvent(QMouseEvent *e) {
       Tree* to = sk.searchbyid(sk, selected_vertex);
       int des = -1;
       getallpoints(*to);
-      std::vector<Vec> old = ve;
-      ve.clear();
+      std::vector<Vec> old = selected_points_storage;
+      selected_points_storage.clear();
       sk.change_all_position(*to, axes.position - old_pos);
       Vec dif = axes.position - old_pos;
       getallpoints(*to);
       
-      std::vector<Vec> newp = ve;
-      ve.clear();
+      std::vector<Vec> newp = selected_points_storage;
+      selected_points_storage.clear();
       for (int i = 0; i < b.size(); i++)
       {
           for (int j = 0; j < old.size(); j++)
@@ -973,7 +973,7 @@ void MyViewer::mouseMoveEvent(QMouseEvent *e) {
 
 void MyViewer::getallpoints(Tree t)
 {
-    ve.push_back(t.point);
+    selected_points_storage.push_back(t.point);
     for (int i = 0; i < t.child.size(); i++)
     {
         getallpoints(t.child[i]);
@@ -985,7 +985,7 @@ void MyViewer::get_change_points(Tree t)
 {
     if (t.used)
     {
-        ve.push_back(t.point);
+        selected_points_storage.push_back(t.point);
     }
     
     for (int i = 0; i < t.child.size(); i++)

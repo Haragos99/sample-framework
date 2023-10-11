@@ -137,6 +137,7 @@ void MyViewer::ininitSkelton()
         bo.End = points[indexes[i + 1] - 1];
         bo.originalS = bo.start;
         bo.originalE = bo.End;
+        bo.lenght = tav(bo.start, bo.End);
         b.push_back(bo);
 
         

@@ -7,80 +7,53 @@
 void MyViewer::animate()
 {
    
-    if (!isAnimating_)
-    {
-        //isAnimating_ = false;
-        int e = 2;
-    }
-    //rewrite this part
-    //second
     if (isAnimating_)
     {
-        //float z = currentTime();
         float current_time = (currentTime() - startAnimationTime_) * 10;
         FrameSecond = current_time;
         update();
         if (current_time < animationDuration_)
         {
-            // Cheacking frame status
-
-
+            // we store the changed bone points in selected_points_stotage
             get_change_points(sk);
-            std::vector<Vec> old = ve;
-            ve.clear();
+            // store the old points
+            std::vector<Vec> old_points = selected_points_storage;
+            selected_points_storage.clear();
             sk.animaterotaion(sk, current_time);
             get_change_points(sk);
-            std::vector<Vec> newp = ve;
-            ve.clear();
-            int des = -1;
-            Vec frame_angel = Vec(0, 0, 0);
-            Vec frame_positon = Vec(0, 0, 0);
+            std::vector<Vec> new_points = selected_points_storage;
+            selected_points_storage.clear();
+            int bone_index = -1;
             for (int i = 0; i < b.size(); i++)
             {
 
-                for (int j = 0; j < old.size(); j++)
+                for (int j = 0; j < old_points.size(); j++)
                 {
-                    if (b[i].start == old[j])
+                    if (b[i].start == old_points[j])
                     {
-                        b[i].start = newp[j];
-                        des = i;
+                        b[i].start = new_points[j];
+                        bone_index = i;
                     }
-                    if (b[i].End == old[j])
+                    if (b[i].End == old_points[j])
                     {
-                        b[i].End = newp[j];
+                        b[i].End = new_points[j];
                         //  des = i;
                     }
                 }
-                if (des != -1)
+                if (bone_index != -1)
                 {
-                    Tree* so = sk.searchbyid(sk, des + 1);
-                    b[des].M = so->mymatrix;
-
-
-
-                    if (b[des].keyframes.size() != 0 && b[des].keyframes.back().time() > current_time)
-                    {
-                        size_t s = 0;
-                        while (s < b[des].keyframes.size() - 2 && current_time >= b[des].keyframes[s + 1].time()) {
-                            s++;
-                        }
-
-                        Vec difp=Vec(0,0,0);
-                        Vec difa = Vec(0, 0, 0);
-      
-       
-                    }
-                    // csak a keyframekbõl lévõ adatok kellenek itt 3 különbõzö pont körül forgat
-                    des = -1;
+                    Tree* st = sk.searchbyid(sk, bone_index + 1);
+                    b[bone_index].M = st->mymatrix;
+                    bone_index = -1;
                 }
                 
-            }
-            
-            animate_mesh();
+            }   
+            animate_mesh(); // animate the mesh
+            // reset the matrecies
             set_bone_matrix();
             sk.set_deafult_matrix(sk);
-            newp.clear();
-            old.clear();
+            new_points.clear();
+            old_points.clear();
             update();
 
         }
@@ -93,6 +66,27 @@ void MyViewer::animate()
 }
 
 
+void MyViewer::animate_mesh()
+{
+    if (isweight)
+    {
+        for (auto v : mesh.vertices())
+        {
+            Mat4 M_result = Mat4(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
+            for (int i = 0; i < b.size(); i++)
+            {
+                double w = mesh.data(v).weigh[i];
+                Mat4 M = b[i].M.skalar(w);
+                M_result += M;
+            }
+            //origanal részt újra gondolni
+            Vec4 point4 = Vec4(mesh.data(v).original[0], mesh.data(v).original[1], mesh.data(v).original[2], 1);
+            Vec4 result = point4 * M_result;
+            OpenMesh::Vec3d diffrents = OpenMesh::Vec3d(result.x, result.y, result.z);
+            mesh.point(v) = diffrents;
+        }
+    }
+}
 
 
 void MyViewer::keyframe_add()
@@ -151,25 +145,18 @@ void MyViewer::Frame()
 
 
 
-void move(std::vector<Vec> newp, std::vector<Vec> old) 
-{
-
-}
-
-
-
 void MyViewer::Invers()
 {
 
     Tree* to = sk.searchbyid(sk, selected_vertex);
     //to->endframe = end.endframe;
     getallpoints(*to);
-    std::vector<Vec> old = ve;
-    ve.clear();
+    std::vector<Vec> old = selected_points_storage;
+    selected_points_storage.clear();
     sk.change_all_rotason(*to, to->point, -angels);
     getallpoints(*to);
-    std::vector<Vec> newp = ve;
-    ve.clear();
+    std::vector<Vec> newp = selected_points_storage;
+    selected_points_storage.clear();
     int des = -1;
     //double d = 0;
     for (int i = 0; i < b.size(); i++)
@@ -232,6 +219,7 @@ void MyViewer::Invers()
 void MyViewer::Reset()
 {
     sk.reset_all(sk);
+    sk.set_deafult_matrix(sk);
     for (int i = 0; i < b.size(); i++)
     {
         b[i].start = b[i].originalS;

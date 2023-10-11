@@ -7,8 +7,8 @@ bool MyViewer::saveBone(const std::string& filename) {
 
     try {
         getallpoints(sk);
-        points = ve;
-        ve.clear();
+        points = selected_points_storage;
+        selected_points_storage.clear();
         std::ofstream f(filename.c_str());
         f.exceptions(std::ios::failbit | std::ios::badbit);
         for (const auto& p : points)

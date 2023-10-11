@@ -98,6 +98,21 @@ void MyViewer::draw() {
                         glColor3d(color.x, color.y, color.z);
                     }
                 }
+                if (_homework)
+                {
+                    bool found = false;
+                    for (const auto& entry : sortedMap) {
+                        if (entry.first == f) {
+                            found = true;
+                            glColor3d(1,0,0);
+                            break; // Value found, exit the loop
+                        }
+                        else
+                        {
+                            glColor3d(0, 1, 0);
+                        }
+                    }
+                }
                 glNormal3dv(mesh.normal(v).data());
                 glVertex3dv(mesh.point(v).data());
 
