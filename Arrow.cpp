@@ -37,19 +37,12 @@ void MyViewer::drawWithNames() {
             glPopName();
         }
         break;
+
+    case  ModelType::INVERZ:
+        target.drawarrow();
+        break;
     case  ModelType::SKELTON:
-        /*
-        for (int i = 0; i < points.size(); i++)
-        {
-            Vec const& p = points[i];
-            glPushName(i);
-            glRasterPos3fv(p);
-            glPopName();
-        }
-        */
         sk.drawarrow(sk);
-
-
         break;
     }
 }
@@ -96,8 +89,11 @@ void MyViewer::postSelection(const QPoint& p) {
         sk.maketrue(*t);
         axes.position = t->point;
         drawSkleton();
-        //axes.position = points[sel];
-        //sk.searchbyid(sk, 1);
+       
+    }
+    if (model_type == ModelType::INVERZ)
+    {
+        axes.position = target.position;
     }
     double depth = camera()->projectedCoordinatesOf(axes.position)[2];
     Vec q1 = camera()->unprojectedCoordinatesOf(Vec(0.0, 0.0, depth));

@@ -43,7 +43,9 @@ void Tree::animaterotaion(Tree& t, float current_time)
         float timediff_key = (endKeyframe.time() - startKeyframe.time());
         float dt = current_time - startKeyframe.time();
         Vec rotated = (endKeyframe.angeles() - startKeyframe.angeles());
-        Vec angels = rotated * (dt / timediff_key);
+        float r = (dt / timediff_key);
+        Vec angels = rotated * r/10 ;
+        if (dt >= endKeyframe.time())angels = Vec(0, 0, 0);
         t.angel_ = angels;
         t.position = startKeyframe.position();
         change_all_rotason(t, startKeyframe.position(), angels);
@@ -79,7 +81,7 @@ void Tree::change_all_rotason(Tree& t, Vec pivot, Vec angles)
     Mat4 R = transform_to_mat4(qmatrix);
     Mat4 T1 = TranslateMatrix(-pivot);
     Mat4 T2 = TranslateMatrix(pivot);
-    Vec4 point4 = Vec4(t.original.x, t.original.y, t.original.z, 1);
+    Vec4 point4 = Vec4(t.point.x, t.point.y, t.point.z, 1);
 
     if (t.point != pivot)
     {

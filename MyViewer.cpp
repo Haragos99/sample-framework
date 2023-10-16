@@ -672,7 +672,11 @@ void MyViewer::keyPressEvent(QKeyEvent *e) {
       break;
     case Qt::Key_P:
       //visualization = Visualization::PLAIN;
-      homework();
+      //homework();
+        for (MyMesh::EdgeIter edgeIt = mesh.edges_begin(); edgeIt != mesh.edges_end(); ++edgeIt) {
+            MyMesh::EdgeHandle edgeHandle = *edgeIt;
+            collapseEdge(edgeHandle);
+        }
       break;
     case Qt::Key_M:
       visualization = Visualization::MEAN;
@@ -695,8 +699,9 @@ void MyViewer::keyPressEvent(QKeyEvent *e) {
         update();
         break;
     case Qt::Key_I:
-      visualization = Visualization::ISOPHOTES;
-      current_isophote_texture = isophote_texture;
+      //visualization = Visualization::ISOPHOTES;
+      model_type = ModelType::INVERZ;
+     // current_isophote_texture = isophote_texture;
       update();
       break;
     case Qt::Key_E:
@@ -806,6 +811,13 @@ void MyViewer::keyPressEvent(QKeyEvent *e) {
       fairMesh();
       update();
       break;
+    case Qt::Key_X:
+        homework();
+        //QMessageBox();
+        QMessageBox::information(this, "Median", "Median of Array: " + QString::number(median_of_area));
+
+        update();
+        break;
     default:
       QGLViewer::keyPressEvent(e);
     }
@@ -917,12 +929,20 @@ void MyViewer::mouseMoveEvent(QMouseEvent *e) {
   if (model_type == ModelType::BEZIER_SURFACE)
     control_points[selected_vertex] = axes.position;
 
+  if (model_type == ModelType::INVERZ)
+  {
+      target.position = axes.position;
+      inverse_kinematics(target, sk);
+  }
+
   if (model_type == ModelType::SKELTON)
   {
       /*
       * 
       * megkersük a kiválasztot ágakat
       */
+
+      
       Tree* to = sk.searchbyid(sk, selected_vertex);
       int des = -1;
       getallpoints(*to);
@@ -966,6 +986,7 @@ void MyViewer::mouseMoveEvent(QMouseEvent *e) {
       }
       newp.clear();
       old.clear();
+      
   }
   updateMesh();
   update();

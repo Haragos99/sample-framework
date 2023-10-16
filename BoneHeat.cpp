@@ -24,7 +24,7 @@ void MyViewer::weigh()
             for (int j = 0; j < b[i].points.size(); j++)
             {
                 // printf("%d %d", i, j);
-                double t = tav(b[i].points[j], d);
+                double t = distance(b[i].points[j], d);
 
                 // legközelebbi súly
                 if (t < min_val)

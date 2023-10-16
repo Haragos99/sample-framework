@@ -27,9 +27,10 @@ void MyViewer::draw() {
             sk.makefalse(sk);
         }
     
-    if (model_type == ModelType::SKELTON)
+    if (model_type == ModelType::SKELTON|| model_type == ModelType::INVERZ)
     {
         drawSkleton();
+        target.draw();
     }
     glPolygonMode(GL_FRONT, !show_solid && show_wireframe ? GL_LINE : GL_FILL);
     glEnable(GL_CULL_FACE);

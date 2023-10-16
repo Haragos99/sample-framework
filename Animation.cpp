@@ -44,6 +44,7 @@ void MyViewer::animate()
                 {
                     Tree* st = sk.searchbyid(sk, bone_index + 1);
                     b[bone_index].M = st->mymatrix;
+                    mteszt.push_back(st->mymatrix);
                     bone_index = -1;
                 }
                 
@@ -80,7 +81,7 @@ void MyViewer::animate_mesh()
                 M_result += M;
             }
             //origanal részt újra gondolni
-            Vec4 point4 = Vec4(mesh.data(v).original[0], mesh.data(v).original[1], mesh.data(v).original[2], 1);
+            Vec4 point4 = Vec4(mesh.point(v)[0], mesh.point(v)[1], mesh.point(v)[2], 1);
             Vec4 result = point4 * M_result;
             OpenMesh::Vec3d diffrents = OpenMesh::Vec3d(result.x, result.y, result.z);
             mesh.point(v) = diffrents;
@@ -123,7 +124,7 @@ void MyViewer::keyframe_add()
 
         Tree* to = sk.searchbyid(sk, selected_vertex);
         Keyframe k = Keyframe(sb->value(), to->point, angels);
-        k.rotation_ = q;
+        //k.rotation_ = q;
         sk.Addframe(*to,k);
         b[to->id].keyframes.push_back(k);
         keyframes_.push_back(k);

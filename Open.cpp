@@ -76,6 +76,9 @@ bool MyViewer::openSkelton(const std::string& filename, bool update_view)
     model_type = ModelType::SKELTON;
     last_filename = filename;
     ininitSkelton();
+    target = ControlPoint(points.back());
+    target.position *= 1.1;
+
     updateMesh(update_view);
     if (update_view)
         setupCameraBone();
@@ -127,7 +130,7 @@ bool MyViewer::openMesh(const std::string& filename, bool update_view) {
 
 void MyViewer::ininitSkelton()
 {
-
+    b.clear();
     int size = indexes.size();
     for (int i = 0; i < size; i += 2)
     {
@@ -137,7 +140,7 @@ void MyViewer::ininitSkelton()
         bo.End = points[indexes[i + 1] - 1];
         bo.originalS = bo.start;
         bo.originalE = bo.End;
-        bo.lenght = tav(bo.start, bo.End);
+        bo.lenght = distance(bo.start, bo.End);
         b.push_back(bo);
 
         

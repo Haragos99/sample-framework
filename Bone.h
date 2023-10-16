@@ -20,14 +20,11 @@ struct Keyframe {
     Vec angles_;
     Vec position_;
     Vec selected_point;
-    qglviewer::Quaternion rotation_;
 private:
     float time_;
     
     
 };
-
-
 
 struct Bones
 {
@@ -82,7 +79,6 @@ struct Tree {
     Vec position;
     Vec angel_;
     bool used = false;
-    
     Mat4 mymatrix;
     std::vector<Keyframe> keyframes;
   

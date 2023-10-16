@@ -178,7 +178,10 @@ private:
       std::vector<double> weigh;
       std::vector<double> distance;
       int idx_of_closest_bone;
+
     };
+    VertexAttributes(OpenMesh::Attributes::Normal |
+        OpenMesh::Attributes::Color| OpenMesh::Attributes::Status);
   };
   using MyMesh = OpenMesh::TriMesh_ArrayKernelT<MyTraits>;
   using Vector = OpenMesh::VectorT<double,3>;
@@ -214,7 +217,7 @@ private:
   // Member variables //
   //////////////////////
 
-  enum class ModelType { NONE, MESH, BEZIER_SURFACE,SKELTON } model_type;
+  enum class ModelType { NONE, MESH, BEZIER_SURFACE,SKELTON,INVERZ } model_type;
   enum class SkelltonType { MAN,WRIST,ARM,FACE } skellton_type;
   // Mesh
   MyMesh mesh;
@@ -249,7 +252,7 @@ private:
 
 
 
-  double tav(Vec p, Vec p1)
+  double distance(Vec p, Vec p1)
   {
       double len = sqrt(pow(p.x - p1.x, 2) + pow(p.y - p1.y, 2) + pow(p.z - p1.z, 2));
 
@@ -267,6 +270,15 @@ private:
          position = _position;
          color = Vec(1, 0, 0);
         
+     }
+
+     void drawarrow()
+     {
+         Vec const& p = position;
+         glPushName(0);
+         glRasterPos3fv(p);
+         glPopName();
+         
      }
      void draw()
      {
@@ -315,6 +327,11 @@ private:
           double area= mesh.calc_sector_area(mesh.halfedge_handle(f));
           sortedVector.push_back({ f.idx(), area }); 
           size++;
+          auto d= mesh.calc_face_normal(f);
+         auto r = d | d;
+         MyMesh::Normal n;
+         if(n<n){}
+          
       }
       std::sort(sortedVector.begin(), sortedVector.end(),sortByValue);
       int partSize = sortedVector.size() / 4;
@@ -342,7 +359,7 @@ private:
 
       finalarea.insert(finalarea.end(), part3.begin(), part3.end());
 
-      median_of_area = median(finalarea);
+      median_of_area = median(sortedVector);
       for (const auto& entry : finalarea) {
           sortedMap[mesh.face_handle(entry.first)] = entry.first;
       }
@@ -454,11 +471,15 @@ private:
   }
 
 
+
+  void inverse_kinematics(ControlPoint t, Tree& tree);
+
   // this collect the bones
   std::vector<Bones> b;
   // this is the skeleton
   Tree sk;
   
+  std::vector<Mat4> mteszt;
 
   void set_bone_matrix()
   {
@@ -500,6 +521,9 @@ private:
       return std::chrono::duration_cast<std::chrono::duration<float>>(duration).count();
   }
 
+  void tree_to_array(Tree& t);
+  std::vector<Vec> ik;
+  double sum_len();
   /// <summary>
   /// 
   /// </summary>
@@ -517,13 +541,16 @@ private:
       // Get the positions of the vertices.
       MyMesh::Point point1 = mesh.point(vertex1);
       MyMesh::Point point2 = mesh.point(vertex2);
-
+      
 
       MyMesh::Point newPoint;
       newPoint = (point1 + point2) / 2.0f;
       
       mesh.set_point(vertex1, newPoint);
-      mesh.delete_vertex(vertex2);
+      if (mesh.is_valid_handle(vertex2)) {
+          mesh.delete_vertex(vertex2, false);
+          mesh.garbage_collection();
+      }
 
   }
 
