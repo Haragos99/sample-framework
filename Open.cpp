@@ -124,6 +124,9 @@ bool MyViewer::openMesh(const std::string& filename, bool update_view) {
     {
         mesh.data(v).original = mesh.point(v);
     }
+    mesh.request_vertex_status();
+    mesh.request_edge_status();
+    mesh.request_face_status();
 
     return true;
 }

@@ -81,6 +81,7 @@ struct Tree {
     bool used = false;
     Mat4 mymatrix;
     std::vector<Keyframe> keyframes;
+    qglviewer::Quaternion quaternion;
   
     Tree() {}
     Tree(Vec p, int i)
@@ -90,6 +91,9 @@ struct Tree {
         original = point;
 
     }
+    void Quaternion_to_Matrix();
+
+    void reset_quaternion(Tree& t);
 
     void reset_all(Tree& t);
 

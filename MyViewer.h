@@ -96,6 +96,7 @@ public:
       }
   }
 
+  void put_original(Tree& oldTree, Tree& newTree);
 
   void Epsil() {
       auto dlg = std::make_unique<QDialog>(this);
@@ -315,6 +316,26 @@ private:
       return a.second < b.second;
   }
 
+  struct Ecolleps {
+      int id;
+      float error;
+      MyMesh::HalfedgeHandle h;
+
+      Ecolleps(int id_, float error_, MyMesh::HalfedgeHandle h_)
+      {
+          id = id_;
+          error = error_;
+          h = h_;
+      }
+  };
+
+  static bool sortByError(const Ecolleps& a, const Ecolleps& b) {
+      return a.error < b.error;
+  }
+
+
+
+
 
   bool _homework = false;
   double median_of_area=0.0;
@@ -523,38 +544,46 @@ private:
 
   void tree_to_array(Tree& t);
   std::vector<Vec> ik;
+  void IK_matrices();
   double sum_len();
   /// <summary>
   /// 
   /// </summary>
   /// <param name="edgeHandle"></param>
 
-  void collapseEdge(MyMesh::EdgeHandle edgeHandle)
+  void collapseEdge(MyMesh::HalfedgeHandle h);
+  float ErrorDistance(MyMesh::VertexHandle p1, MyMesh::VertexHandle p2, MyMesh::Point newp);
+  float Calculate_Min(MyMesh::VertexHandle p1, MyMesh::Point newp);
+  std::vector<Ecolleps> Edgecolleps;
+
+  void Calculate_collapses(MyMesh::HalfedgeHandle h);
+
+  std::vector<MyMesh::FaceHandle> connacted_faces(MyMesh::VertexHandle v)
   {
-      MyMesh::HalfedgeHandle heh1 = mesh.halfedge_handle(edgeHandle, 0);
-      MyMesh::HalfedgeHandle heh2 = mesh.halfedge_handle(edgeHandle, 1);
-
-      // Access the vertices connected to these half-edges.
-      MyMesh::VertexHandle vertex1 = mesh.to_vertex_handle(heh1);
-      MyMesh::VertexHandle vertex2 = mesh.to_vertex_handle(heh2);
-
-      // Get the positions of the vertices.
-      MyMesh::Point point1 = mesh.point(vertex1);
-      MyMesh::Point point2 = mesh.point(vertex2);
-      
-
-      MyMesh::Point newPoint;
-      newPoint = (point1 + point2) / 2.0f;
-      
-      mesh.set_point(vertex1, newPoint);
-      if (mesh.is_valid_handle(vertex2)) {
-          mesh.delete_vertex(vertex2, false);
-          mesh.garbage_collection();
+      std::vector<MyMesh::FaceHandle> conected;
+      for (MyMesh::VertexFaceIter vf_it = mesh.vf_iter(v); vf_it.is_valid(); ++vf_it) {
+          MyMesh::FaceHandle face_handle = *vf_it;
+          conected.push_back(face_handle);
       }
+      return conected;
+  }
+  MyMesh::Point roundPoint(MyMesh::Point p)
+  {
+      float x = p[0];
+      x = (int)(x * 10000 + .5);
+      x = x / 10000;
+
+      float y = p[1];
+      y = (int)(y * 10000 + .5);
+      y = y / 10000;
+
+      float z = p[2];
+      z = (int)(z * 10000 + .5);
+      z = z / 10000;
+      MyMesh::Point res(x, y, z);
+      return res;
 
   }
-
-
   void setupCameraBone();
   bool mehet = false;
   bool isweight = false;

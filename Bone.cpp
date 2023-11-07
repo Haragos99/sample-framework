@@ -87,7 +87,7 @@ void Tree::change_all_rotason(Tree& t, Vec pivot, Vec angles)
     {
         t.angel_ += angles;
         Mat4 M = T1 * R * T2;
-        t.mymatrix = M;//t.mymatrix * M;
+        t.mymatrix = t.mymatrix * M;
         Vec4 result = point4 * t.mymatrix;
         t.point = Vec(result.x, result.y, result.z);
 
@@ -95,6 +95,22 @@ void Tree::change_all_rotason(Tree& t, Vec pivot, Vec angles)
     for (int i = 0; i < t.child.size(); i++)
     {
         change_all_rotason(t.child[i], pivot, angles);
+    }
+}
+
+void Tree::Quaternion_to_Matrix()
+{
+    double qmatrix[4][4];
+    quaternion.getMatrix(qmatrix);
+    this->mymatrix = transform_to_mat4(qmatrix);
+}
+
+void Tree::reset_quaternion(Tree& t)
+{
+    t.quaternion = qglviewer::Quaternion();
+    for (int i = 0; i < t.child.size(); i++)
+    {
+        reset_quaternion(t.child[i]);
     }
 }
 
