@@ -63,7 +63,7 @@ void MyViewer::inverse_kinematics(ControlPoint t, Tree& tree)
     for (int i = start_index; i < points.size(); i++)
     {
         //points[i] = ik[j];
-        Tree* s = tree.searchbyid(tree, i);
+        //Tree* s = tree.searchbyid(tree, i);
        
         //s->point = ik[j];
         j++;
@@ -72,6 +72,25 @@ void MyViewer::inverse_kinematics(ControlPoint t, Tree& tree)
     
     int bone_index = -1;
     IK_matrices();
+    for (int i = 0; i < b.size(); i++)
+    {
+        for (int j = 0; j < points.size(); j++)
+        {
+            Tree* s = sk.searchbyid(sk, j);
+            Tree* o = old_sk.searchbyid(old_sk, j);
+
+            if (b[i].start == o->point)
+            {
+                b[i].start = s->point;
+                bone_index = i;
+            }
+            if (b[i].End == o->point)
+            {
+                b[i].End = s->point;
+                //  des = i;
+            }
+        }
+    }
     
 
 
@@ -94,37 +113,25 @@ void MyViewer::IK_matrices()
     // TODOO: The piwot is wrong
     int n = ik.size();
     sk.reset_quaternion(sk);
+    Tree* tk = sk.searchbyid(sk, 1);
+    Tree* to = sk.searchbyid(sk, 0);
+    Vec old_point = tk->point- to->point;
+    Vec new_point = ik[1] - ik[0];
+    Vec axis = old_point ^ new_point;
+    axis.unit();
+    old_point.unit();
+    new_point.unit();
+    float mag1 = std::sqrt(old_point.x * old_point.x + old_point.y * old_point.y + old_point.z * old_point.z);
+    float mag2 = std::sqrt(new_point.x * new_point.x + new_point.y * new_point.y + new_point.z * new_point.z);
+    float dot = old_point.x * new_point.x + old_point.y * new_point.y + old_point.z * new_point.z;
+    float rotAngle = std::acos(dot / (mag1 * mag2));
+
     qglviewer::Quaternion parentRotation = qglviewer::Quaternion();
-    for (int i = 0; i < n-1; ++i)
+    for (int i = 0; i < n; ++i)
     {
-
-        if (i > 0)
-        {
-            Tree* parent = sk.searchbyid(sk, i - 1);
-            parentRotation = parent->quaternion;
-        }
-        Vec baseDir = Vec(0, 1, 0);
-        Vec newDir = parentRotation.inverse() * (ik[i + 1] - ik[i]);
-        Vec rotAxis = normalize(normalize(baseDir) ^ normalize(newDir));
-        rotAxis.x = 0;
-        float mag1 = std::sqrt(baseDir.x * baseDir.x + baseDir.y * baseDir.y + baseDir.z * baseDir.z);
-        float mag2 = std::sqrt(newDir.x * newDir.x + newDir.y * newDir.y + newDir.z * newDir.z);
-
-        float dot = baseDir.x * newDir.x + baseDir.y * newDir.y + baseDir.z * newDir.z;
+        Tree* t = sk.searchbyid(sk, i);
         
-        float rotAngle = std::atan2((baseDir.unit() ^ newDir.unit()).norm(), dot);//std::acos(dot / (mag1 * mag2));
-        if ((baseDir.unit() ^ newDir.unit()).norm() < 0.00001) { rotAngle = 0.0; }
-
-
-        Tree* t = sk.searchbyid(sk, i );
-        if (rotAngle < 0.001)
-        {
-            t->quaternion = qglviewer::Quaternion();
-        }
-        else
-        {
-            t->quaternion.setAxisAngle(rotAxis, rotAngle);
-        }
+        t->quaternion.setAxisAngle(axis, rotAngle);
         t->point = t->quaternion.rotate(t->point);
 
     }

@@ -678,7 +678,7 @@ void MyViewer::collapseEdge(MyMesh::HalfedgeHandle h)
     MyMesh::Point point2 = mesh.point(v2);
     MyMesh::Point newPoint;
     newPoint = (point1 + point2) / 2.0f;
-    
+   
     mesh.collapse(h);
     mesh.set_point(v, newPoint);
 }
@@ -691,7 +691,10 @@ void MyViewer::Calculate_collapses(MyMesh::HalfedgeHandle h)
     MyMesh::Point point2 = mesh.point(v2);
     MyMesh::Point newPoint;
     newPoint = (point1 + point2) / 2.0f;
+    if (mesh.is_boundary(h))
+    {
 
+    }
     float error_distance = ErrorDistance(v, v2, newPoint);
     Edgecolleps.push_back(Ecolleps(h.idx(),error_distance,h));
     std::sort(Edgecolleps.begin(), Edgecolleps.end(), sortByError);
@@ -742,6 +745,7 @@ void MyViewer::keyPressEvent(QKeyEvent *e) {
             if (mesh.is_collapse_ok(Edgecolleps[i].h))
                 collapseEdge(Edgecolleps[i].h);
         }
+        mesh.update_vertex_normals();
         
 
         update();
