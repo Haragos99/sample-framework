@@ -10,6 +10,7 @@
 #include <QTextStream>
 #include <QGLViewer/quaternion.h>
 #include"Bone.h"
+#include "bezier.h"
 #include "Openfiler.hpp"
 #include <fstream>
 #include <iostream>
@@ -168,7 +169,6 @@ protected:
   virtual void keyPressEvent(QKeyEvent *e) override;
   virtual void mouseMoveEvent(QMouseEvent *e) override;
   virtual QString helpString() const override;
-
 private:
   struct MyTraits : public OpenMesh::DefaultTraits {
     using Point  = OpenMesh::Vec3d; // the default would be Vec3f
@@ -223,6 +223,17 @@ private:
   // Mesh
   MyMesh mesh;
 
+  struct BSpline {
+      size_t du;
+      size_t dv;
+      size_t nu;
+      size_t nv;
+      std::vector<double> knots;
+      std::vector<Vec> control_points;
+
+      void open(std::string& filname);
+
+  };
 
   std::vector<Vec> colors_bone{
       Vec(0.0, 1.0, 1.0),
@@ -316,16 +327,26 @@ private:
       return a.second < b.second;
   }
 
+
+
   struct Ecolleps {
       int id;
       float error;
       MyMesh::HalfedgeHandle h;
-
-      Ecolleps(int id_, float error_, MyMesh::HalfedgeHandle h_)
+      std::vector<MyMesh::FaceHandle> conected;
+      MyMesh::VertexHandle v;
+      MyMesh::Point p;
+      MyMesh::Point p_deleted;
+      Ecolleps(int id_, float error_, MyMesh::HalfedgeHandle h_, 
+          std::vector<MyMesh::FaceHandle> _conected, MyMesh::VertexHandle _v, MyMesh::Point _v2, MyMesh::Point _p)
       {
           id = id_;
           error = error_;
           h = h_;
+          conected = _conected;
+          v = _v;
+          p = _v2;
+          p_deleted = _p;
       }
   };
 
@@ -518,6 +539,8 @@ private:
 
   void animate_mesh();
 
+  std::vector<Vec> FABRIK;
+
 
 
   void move(std::vector<Vec> newp, std::vector<Vec> old);
@@ -555,9 +578,33 @@ private:
   float ErrorDistance(MyMesh::VertexHandle p1, MyMesh::VertexHandle p2, MyMesh::Point newp);
   float Calculate_Min(MyMesh::VertexHandle p1, MyMesh::Point newp);
   std::vector<Ecolleps> Edgecolleps;
-
+  int kell = 0;
   void Calculate_collapses(MyMesh::HalfedgeHandle h);
+  void VertexSplit(Ecolleps e);
+  std::vector<MyMesh::FaceHandle> getFaces(MyMesh::VertexHandle p1, MyMesh::VertexHandle p2) {
+      // Get all faces connected to point1
+      std::vector<MyMesh::FaceHandle> connected_faces;
+      for (auto fv_it = mesh.vf_iter(p1); fv_it.is_valid(); ++fv_it) {
+          connected_faces.push_back(fv_it.handle());
+      }
+      // Filter out faces connected to point2
+      std::vector<MyMesh::FaceHandle> result_faces;
+      for (const auto& face : connected_faces) {
+          bool connected_to_point2 = false;
+          for (auto fv_it = mesh.fv_iter(face); fv_it.is_valid(); ++fv_it) {
+              if (fv_it.handle() == p2) {
+                  connected_to_point2 = true;
+                  break;
+              }
+          }
 
+          if (!connected_to_point2) {
+              result_faces.push_back(face);
+          }
+      }
+
+      return result_faces;
+  }
   std::vector<MyMesh::FaceHandle> connacted_faces(MyMesh::VertexHandle v)
   {
       std::vector<MyMesh::FaceHandle> conected;
@@ -567,6 +614,11 @@ private:
       }
       return conected;
   }
+
+
+
+
+
   MyMesh::Point roundPoint(MyMesh::Point p)
   {
       float x = p[0];

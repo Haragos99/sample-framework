@@ -145,6 +145,7 @@ void MyViewer::draw() {
         glEnable(GL_LIGHTING);
     }
 
+
     if (axes.shown)
         drawAxes();
     glDisable(GL_LIGHTING);

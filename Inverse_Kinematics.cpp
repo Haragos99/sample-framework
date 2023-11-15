@@ -89,13 +89,24 @@ void MyViewer::inverse_kinematics(ControlPoint t, Tree& tree)
                 b[i].End = s->point;
                 //  des = i;
             }
+            if (bone_index != -1)
+            {
+                if (isweight)
+                {
+                    Tree* st = sk.searchbyid(sk, bone_index + 1);
+                    b[bone_index].M = st->mymatrix;
+                    bone_index = -1;
+                }
+            }
         }
     }
+
+    animate_mesh();
+    
     
 
-
     //ininitSkelton();
-   // put_original(old_sk,sk);
+    //put_original(old_sk,sk);
 }
 
 
@@ -113,29 +124,45 @@ void MyViewer::IK_matrices()
     // TODOO: The piwot is wrong
     int n = ik.size();
     sk.reset_quaternion(sk);
-    Tree* tk = sk.searchbyid(sk, 1);
-    Tree* to = sk.searchbyid(sk, 0);
-    Vec old_point = tk->point- to->point;
-    Vec new_point = ik[1] - ik[0];
-    Vec axis = old_point ^ new_point;
-    axis.unit();
-    old_point.unit();
-    new_point.unit();
-    float mag1 = std::sqrt(old_point.x * old_point.x + old_point.y * old_point.y + old_point.z * old_point.z);
-    float mag2 = std::sqrt(new_point.x * new_point.x + new_point.y * new_point.y + new_point.z * new_point.z);
-    float dot = old_point.x * new_point.x + old_point.y * new_point.y + old_point.z * new_point.z;
-    float rotAngle = std::acos(dot / (mag1 * mag2));
 
+
+    getallpoints(sk);
+    std::vector<Vec> old_p = points;
+    selected_points_storage.clear();
+
+    sk.set_deafult_matrix(sk);
     qglviewer::Quaternion parentRotation = qglviewer::Quaternion();
-    for (int i = 0; i < n; ++i)
+    for (int i = 1; i < n; ++i)
     {
         Tree* t = sk.searchbyid(sk, i);
-        
-        t->quaternion.setAxisAngle(axis, rotAngle);
-        t->point = t->quaternion.rotate(t->point);
+
+
+        Vec old_point = old_p[i] - old_p[i - 1];
+        Vec new_point = ik[i] - ik[i - 1];
+        old_point = old_point.unit();
+        new_point = new_point.unit();
+        Vec axis = old_point ^ new_point;
+        float dot = old_point.x * new_point.x + old_point.y * new_point.y + old_point.z * new_point.z;
+        float rotAngle = std::atan2((old_point ^ new_point).norm(), dot); //std::acos(dot / (mag1 * mag2));
+
+        Vec pivot = old_p[i - 1];
+        Mat4 T1 = TranslateMatrix(-pivot);
+        Mat4 T2 = TranslateMatrix(pivot);
+
+        Mat4 R;
+        if (axis.norm() > 1E-12) {
+            axis = axis.unit();
+            R = RotationMatrix(rotAngle, axis);
+            t->quaternion.setAxisAngle(axis, rotAngle);
+        }
+        Mat4 M = T1 * R * T2;
+        Vec4 p = Vec4(old_p[i]) * M;
+        t->mymatrix = M;
+        t->point = Vec(p.x,p.y,p.z);
 
     }
 
+    
     for (int i = 0; i < n; i++)
     {
         Tree* t = sk.searchbyid(sk, i);

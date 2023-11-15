@@ -2,7 +2,7 @@
 #include <cmath>
 #include <map>
 #include "Bone.h"
-
+#include "Bspline.h"
 
 #ifdef BETTER_MEAN_CURVATURE
 #include "Eigen/Eigenvalues"
@@ -679,6 +679,10 @@ void MyViewer::collapseEdge(MyMesh::HalfedgeHandle h)
     MyMesh::Point newPoint;
     newPoint = (point1 + point2) / 2.0f;
    
+    if(mesh.is_boundary(v2))
+    {
+        newPoint = point2;
+    }
     mesh.collapse(h);
     mesh.set_point(v, newPoint);
 }
@@ -691,16 +695,40 @@ void MyViewer::Calculate_collapses(MyMesh::HalfedgeHandle h)
     MyMesh::Point point2 = mesh.point(v2);
     MyMesh::Point newPoint;
     newPoint = (point1 + point2) / 2.0f;
-    if (mesh.is_boundary(h))
-    {
-
-    }
     float error_distance = ErrorDistance(v, v2, newPoint);
-    Edgecolleps.push_back(Ecolleps(h.idx(),error_distance,h));
-    std::sort(Edgecolleps.begin(), Edgecolleps.end(), sortByError);
+
+    Edgecolleps.push_back(Ecolleps(h.idx(),error_distance,h,getFaces(v2,v),v,point1, point2));
+    
 }
 
+void MyViewer::VertexSplit(Ecolleps e)
+{
+    MyMesh::VertexHandle v = e.v;
+    MyMesh::VertexHandle v2 = mesh.add_vertex(e.p_deleted);
 
+   
+    auto faces = e.conected;
+    std::vector<MyMesh::VertexHandle> face_hadel;
+    for (auto f : faces)
+    {
+        for (auto ve : mesh.fv_range(f)) {
+            if (ve == v)
+            {
+              face_hadel.push_back(v2);
+            }
+            else
+            {
+              face_hadel.push_back(ve);
+            }
+        }
+        mesh.delete_face(f);
+        mesh.add_face(face_hadel);
+        face_hadel.clear();
+
+    }
+    mesh.set_point(v, e.p);
+       
+}
 void MyViewer::keyPressEvent(QKeyEvent *e) {
 
     auto dlg = std::make_unique<QDialog>(this);
@@ -728,7 +756,7 @@ void MyViewer::keyPressEvent(QKeyEvent *e) {
       break;
     case Qt::Key_P:
       //visualization = Visualization::PLAIN;
-       
+        Edgecolleps.clear();
         for (auto h : mesh.halfedges()){
             if(mesh.is_collapse_ok(h))
 
@@ -737,21 +765,32 @@ void MyViewer::keyPressEvent(QKeyEvent *e) {
 
             
         }
-
+        std::sort(Edgecolleps.begin(), Edgecolleps.end(), sortByError);
         QMessageBox::information(this, "EColeps", "EdgeColleps is calculated ");
         sizek = Edgecolleps.size() / 5;
-        for (int i = 0; i < sizek;i++)
+        for (int i = 10; i < 11;i++)
         {
             if (mesh.is_collapse_ok(Edgecolleps[i].h))
                 collapseEdge(Edgecolleps[i].h);
         }
-        mesh.update_vertex_normals();
+        mesh.garbage_collection();
+        mesh.request_face_normals();
+        mesh.request_vertex_normals();
+        mesh.update_face_normals();
         
 
         update();
       break;
     case Qt::Key_M:
-      visualization = Visualization::MEAN;
+      //visualization = Visualization::MEAN;
+
+        VertexSplit(Edgecolleps[10]);
+    for(int i= kell; i < 20; i++)
+    {
+      //if (mesh.is_collapse_ok(Edgecolleps[i].h))
+        //collapseEdge(Edgecolleps[i].h);
+    }
+      kell++;
       update();
       break;
     case Qt::Key_L:

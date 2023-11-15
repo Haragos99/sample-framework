@@ -21,11 +21,6 @@ void Tree::Addframe(Tree& t, Keyframe& frame)
 
 void Tree::animatepoziton(Tree& t)
 {
-    endframe.x += 0.001f;
-    Vec ir = 0.01f * endframe;
-    change_all_position(t, ir);
-
-
 
 }
 void Tree::animaterotaion(Tree& t, float current_time)
