@@ -11,6 +11,7 @@
 #include <QGLViewer/quaternion.h>
 #include"Bone.h"
 #include "bezier.h"
+#include "Bspline.h"
 #include "Openfiler.hpp"
 #include <fstream>
 #include <iostream>
@@ -223,17 +224,7 @@ private:
   // Mesh
   MyMesh mesh;
 
-  struct BSpline {
-      size_t du;
-      size_t dv;
-      size_t nu;
-      size_t nv;
-      std::vector<double> knots;
-      std::vector<Vec> control_points;
-
-      void open(std::string& filname);
-
-  };
+  BSpline bs;
 
   std::vector<Vec> colors_bone{
       Vec(0.0, 1.0, 1.0),
@@ -337,8 +328,10 @@ private:
       MyMesh::VertexHandle v;
       MyMesh::Point p;
       MyMesh::Point p_deleted;
+      std::vector<MyMesh::VertexHandle> vh;
       Ecolleps(int id_, float error_, MyMesh::HalfedgeHandle h_, 
-          std::vector<MyMesh::FaceHandle> _conected, MyMesh::VertexHandle _v, MyMesh::Point _v2, MyMesh::Point _p)
+          std::vector<MyMesh::FaceHandle> _conected, MyMesh::VertexHandle _v, 
+          MyMesh::Point _v2, MyMesh::Point _p, std::vector<MyMesh::VertexHandle> _vh)
       {
           id = id_;
           error = error_;
@@ -347,6 +340,7 @@ private:
           v = _v;
           p = _v2;
           p_deleted = _p;
+          vh = _vh;
       }
   };
 
@@ -616,6 +610,43 @@ private:
   }
 
 
+  std::vector<MyMesh::VertexHandle> getVertex(MyMesh::VertexHandle p1, MyMesh::VertexHandle p2) {
+      // Get all faces connected to point1
+      std::vector<MyMesh::FaceHandle> connected_faces;
+      for (auto fv_it = mesh.vf_iter(p1); fv_it.is_valid(); ++fv_it) {
+          connected_faces.push_back(fv_it.handle());
+      }
+      // Filter out faces connected to point2
+      std::vector<MyMesh::FaceHandle> result_faces;
+      for (const auto& face : connected_faces) {
+          bool connected_to_point2 = false;
+          for (auto fv_it = mesh.fv_iter(face); fv_it.is_valid(); ++fv_it) {
+              if (fv_it.handle() == p2) {
+                  connected_to_point2 = true;
+                  break;
+              }
+          }
+
+          if (connected_to_point2) {
+              result_faces.push_back(face);
+          }
+      }
+      std::vector<MyMesh::VertexHandle> result;
+
+      for (auto f : result_faces)
+      {
+          for (auto v : mesh.fv_range(f))
+          {
+              if (v != p1 && v != p2)
+              {
+                  result.push_back(v);
+                  break;
+              }
+          }
+      }
+
+      return result;
+  }
 
 
 

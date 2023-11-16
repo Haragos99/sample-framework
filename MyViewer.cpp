@@ -697,7 +697,7 @@ void MyViewer::Calculate_collapses(MyMesh::HalfedgeHandle h)
     newPoint = (point1 + point2) / 2.0f;
     float error_distance = ErrorDistance(v, v2, newPoint);
 
-    Edgecolleps.push_back(Ecolleps(h.idx(),error_distance,h,getFaces(v2,v),v,point1, point2));
+    Edgecolleps.push_back(Ecolleps(h.idx(),error_distance,h,getFaces(v2,v),v,point1, point2,getVertex(v2, v)));
     
 }
 
@@ -705,7 +705,6 @@ void MyViewer::VertexSplit(Ecolleps e)
 {
     MyMesh::VertexHandle v = e.v;
     MyMesh::VertexHandle v2 = mesh.add_vertex(e.p_deleted);
-
    
     auto faces = e.conected;
     std::vector<MyMesh::VertexHandle> face_hadel;
@@ -726,6 +725,21 @@ void MyViewer::VertexSplit(Ecolleps e)
         face_hadel.clear();
 
     }
+
+    face_hadel.push_back(e.vh[1]);
+    face_hadel.push_back(v);
+    face_hadel.push_back(v2);
+    mesh.add_face(face_hadel);
+    face_hadel.clear();
+
+    face_hadel.push_back(e.vh[0]);
+    face_hadel.push_back(v2);
+    face_hadel.push_back(v);
+   
+    mesh.add_face(face_hadel);
+    face_hadel.clear();
+
+
     mesh.set_point(v, e.p);
        
 }
