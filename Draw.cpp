@@ -26,14 +26,28 @@ void MyViewer::draw() {
         {
             sk.makefalse(sk);
         }
+
+    glColor3d(0.0, 1.0, 0.0);
+    glBegin(GL_POINTS);
+    for (const auto& p : FABRIK_p)
+        glVertex3dv(p);
+    glEnd();
+    glPointSize(1.0);
+    glEnable(GL_LIGHTING);
+
+    
+
+    
+
     
     if (model_type == ModelType::SKELTON|| model_type == ModelType::INVERZ)
     {
         drawSkleton();
         target.draw();
     }
-    glPolygonMode(GL_FRONT, !show_solid && show_wireframe ? GL_LINE : GL_FILL);
-    glEnable(GL_CULL_FACE);
+
+    glPolygonMode(GL_FRONT_AND_BACK, !show_solid && show_wireframe ? GL_LINE : GL_FILL);
+    //glEnable(GL_CULL_FACE);
     glEnable(GL_POLYGON_OFFSET_FILL);
     glPolygonOffset(1, 1);
     glLineWidth(1.0);
@@ -99,21 +113,7 @@ void MyViewer::draw() {
                         glColor3d(color.x, color.y, color.z);
                     }
                 }
-                if (_homework)
-                {
-                    bool found = false;
-                    for (const auto& entry : sortedMap) {
-                        if (entry.first == f) {
-                            found = true;
-                            glColor3d(1,0,0);
-                            break; // Value found, exit the loop
-                        }
-                        else
-                        {
-                            glColor3d(0, 1, 0);
-                        }
-                    }
-                }
+               
                 glNormal3dv(mesh.normal(v).data());
                 glVertex3dv(mesh.point(v).data());
 
@@ -133,7 +133,7 @@ void MyViewer::draw() {
     }
 
     if (show_solid && show_wireframe) {
-        glPolygonMode(GL_FRONT, GL_LINE);
+        glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
         glColor3d(0.0, 0.0, 0.0);
         glDisable(GL_LIGHTING);
         for (auto f : mesh.faces()) {

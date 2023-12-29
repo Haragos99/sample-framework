@@ -225,7 +225,7 @@ private:
   MyMesh mesh;
 
   BSpline bs;
-
+  std::vector<int> used;
   std::vector<Vec> colors_bone{
       Vec(0.0, 1.0, 1.0),
       Vec(1.0, 1.0, 0.0),
@@ -302,7 +302,9 @@ private:
   void ininitSkelton();
   void createL(Eigen::SparseMatrix<double>& L);
 
-  
+
+
+
   float FrameSecond = 0.0;
   QHBoxLayout* hb1 = new QHBoxLayout;
   QLabel* text_ = new QLabel;
@@ -320,99 +322,19 @@ private:
 
 
 
-  struct Ecolleps {
-      int id;
-      float error;
-      MyMesh::HalfedgeHandle h;
-      std::vector<MyMesh::FaceHandle> conected;
-      MyMesh::VertexHandle v;
-      MyMesh::Point p;
-      MyMesh::Point p_deleted;
-      std::vector<MyMesh::VertexHandle> vh;
-      Ecolleps(int id_, float error_, MyMesh::HalfedgeHandle h_, 
-          std::vector<MyMesh::FaceHandle> _conected, MyMesh::VertexHandle _v, 
-          MyMesh::Point _v2, MyMesh::Point _p, std::vector<MyMesh::VertexHandle> _vh)
-      {
-          id = id_;
-          error = error_;
-          h = h_;
-          conected = _conected;
-          v = _v;
-          p = _v2;
-          p_deleted = _p;
-          vh = _vh;
-      }
-  };
-
-  static bool sortByError(const Ecolleps& a, const Ecolleps& b) {
-      return a.error < b.error;
-  }
 
 
 
 
 
-  bool _homework = false;
-  double median_of_area=0.0;
+  
 
-  void homework()
-  {
-      _homework = true;
-      int size = 0;
-      for (auto f : mesh.faces()) {
-          double area= mesh.calc_sector_area(mesh.halfedge_handle(f));
-          sortedVector.push_back({ f.idx(), area }); 
-          size++;
-          auto d= mesh.calc_face_normal(f);
-         auto r = d | d;
-         MyMesh::Normal n;
-         if(n<n){}
-          
-      }
-      std::sort(sortedVector.begin(), sortedVector.end(),sortByValue);
-      int partSize = sortedVector.size() / 4;
 
-      std::vector<std::pair<int, double>>::iterator begin = sortedVector.begin();
-      std::vector<std::pair<int, double>>::iterator end = sortedVector.begin() + partSize;
 
-      std::vector<std::pair<int, double>> part1(begin, end);
 
-      begin = end;
-      end = sortedVector.begin() + 2 * partSize;
 
-      std::vector<std::pair<int, double>> part2(begin, end);
 
-      begin = end;
-      end = sortedVector.begin() + 3 * partSize;
 
-      std::vector<std::pair<int, double>> part3(begin, end);
-
-      std::vector<std::pair<int, double>> part4(end, sortedVector.end());
-
-      finalarea.reserve(part2.size() + part3.size());
-
-      finalarea.insert(finalarea.end(), part2.begin(), part2.end());
-
-      finalarea.insert(finalarea.end(), part3.begin(), part3.end());
-
-      median_of_area = median(sortedVector);
-      for (const auto& entry : finalarea) {
-          sortedMap[mesh.face_handle(entry.first)] = entry.first;
-      }
-  }
-
-  double median(const std::vector<std::pair<int, double>>& numbers)
-  {
-      int size = numbers.size();
-      if (size % 2 == 0) {
-          double middle1 = numbers[size / 2 - 1].second;
-          double middle2 = numbers[size / 2].second;
-          return (middle1 + middle2) / 2.0;
-      }
-      else {
-          return numbers[size / 2].second;
-      }
-  }
 
   void getallpoints(Tree t);
 
@@ -533,9 +455,9 @@ private:
 
   void animate_mesh();
 
-  std::vector<Vec> FABRIK;
+ Tree FABRIK;
 
-
+ std::vector<Vec>FABRIK_p;
 
   void move(std::vector<Vec> newp, std::vector<Vec> old);
 
@@ -568,108 +490,10 @@ private:
   /// </summary>
   /// <param name="edgeHandle"></param>
 
-  void collapseEdge(MyMesh::HalfedgeHandle h);
-  float ErrorDistance(MyMesh::VertexHandle p1, MyMesh::VertexHandle p2, MyMesh::Point newp);
-  float Calculate_Min(MyMesh::VertexHandle p1, MyMesh::Point newp);
-  std::vector<Ecolleps> Edgecolleps;
-  int kell = 0;
-  void Calculate_collapses(MyMesh::HalfedgeHandle h);
-  void VertexSplit(Ecolleps e);
-  std::vector<MyMesh::FaceHandle> getFaces(MyMesh::VertexHandle p1, MyMesh::VertexHandle p2) {
-      // Get all faces connected to point1
-      std::vector<MyMesh::FaceHandle> connected_faces;
-      for (auto fv_it = mesh.vf_iter(p1); fv_it.is_valid(); ++fv_it) {
-          connected_faces.push_back(fv_it.handle());
-      }
-      // Filter out faces connected to point2
-      std::vector<MyMesh::FaceHandle> result_faces;
-      for (const auto& face : connected_faces) {
-          bool connected_to_point2 = false;
-          for (auto fv_it = mesh.fv_iter(face); fv_it.is_valid(); ++fv_it) {
-              if (fv_it.handle() == p2) {
-                  connected_to_point2 = true;
-                  break;
-              }
-          }
-
-          if (!connected_to_point2) {
-              result_faces.push_back(face);
-          }
-      }
-
-      return result_faces;
-  }
-  std::vector<MyMesh::FaceHandle> connacted_faces(MyMesh::VertexHandle v)
-  {
-      std::vector<MyMesh::FaceHandle> conected;
-      for (MyMesh::VertexFaceIter vf_it = mesh.vf_iter(v); vf_it.is_valid(); ++vf_it) {
-          MyMesh::FaceHandle face_handle = *vf_it;
-          conected.push_back(face_handle);
-      }
-      return conected;
-  }
-
-
-  std::vector<MyMesh::VertexHandle> getVertex(MyMesh::VertexHandle p1, MyMesh::VertexHandle p2) {
-      // Get all faces connected to point1
-      std::vector<MyMesh::FaceHandle> connected_faces;
-      for (auto fv_it = mesh.vf_iter(p1); fv_it.is_valid(); ++fv_it) {
-          connected_faces.push_back(fv_it.handle());
-      }
-      // Filter out faces connected to point2
-      std::vector<MyMesh::FaceHandle> result_faces;
-      for (const auto& face : connected_faces) {
-          bool connected_to_point2 = false;
-          for (auto fv_it = mesh.fv_iter(face); fv_it.is_valid(); ++fv_it) {
-              if (fv_it.handle() == p2) {
-                  connected_to_point2 = true;
-                  break;
-              }
-          }
-
-          if (connected_to_point2) {
-              result_faces.push_back(face);
-          }
-      }
-      std::vector<MyMesh::VertexHandle> result;
-
-      for (auto f : result_faces)
-      {
-          for (auto v : mesh.fv_range(f))
-          {
-              if (v != p1 && v != p2)
-              {
-                  result.push_back(v);
-                  break;
-              }
-          }
-      }
-
-      return result;
-  }
-
-
-
-  MyMesh::Point roundPoint(MyMesh::Point p)
-  {
-      float x = p[0];
-      x = (int)(x * 10000 + .5);
-      x = x / 10000;
-
-      float y = p[1];
-      y = (int)(y * 10000 + .5);
-      y = y / 10000;
-
-      float z = p[2];
-      z = (int)(z * 10000 + .5);
-      z = z / 10000;
-      MyMesh::Point res(x, y, z);
-      return res;
-
-  }
   void setupCameraBone();
   bool mehet = false;
   bool isweight = false;
+  std::vector<int> _used;
   // Visualization
   double mean_min, mean_max, cutoff_ratio;
   bool show_control_points, show_solid, show_wireframe,show_skelton;

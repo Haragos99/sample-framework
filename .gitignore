@@ -12,7 +12,7 @@ Makefile
 
 debug
 release
-
+.vs
 *.vcxproj
 *.vcxproj.filters
 *.vcxproj.user

@@ -40,6 +40,7 @@ void MyViewer::drawWithNames() {
 
     case  ModelType::INVERZ:
         target.drawarrow();
+        
         break;
     case  ModelType::SKELTON:
         sk.drawarrow(sk);
@@ -93,6 +94,7 @@ void MyViewer::postSelection(const QPoint& p) {
     }
     if (model_type == ModelType::INVERZ)
     {
+        
         axes.position = target.position;
     }
     double depth = camera()->projectedCoordinatesOf(axes.position)[2];

@@ -63,15 +63,16 @@ void MyViewer::inverse_kinematics(ControlPoint t, Tree& tree)
     for (int i = start_index; i < points.size(); i++)
     {
         //points[i] = ik[j];
-        //Tree* s = tree.searchbyid(tree, i);
+        Tree* s = tree.searchbyid(tree, i);
        
-        //s->point = ik[j];
+        s->point = ik[j];
         j++;
 
     }
     
     int bone_index = -1;
-    IK_matrices();
+    FABRIK_p = ik;
+    //IK_matrices();
     for (int i = 0; i < b.size(); i++)
     {
         for (int j = 0; j < points.size(); j++)

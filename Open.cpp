@@ -169,6 +169,6 @@ void MyViewer::ininitSkelton()
     {
         faceSkellton();
     }
-
+    FABRIK = sk;
 }
 
