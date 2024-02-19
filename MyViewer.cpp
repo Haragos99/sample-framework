@@ -656,8 +656,8 @@ void MyViewer::keyPressEvent(QKeyEvent* e) {
             update();
             break;
         case Qt::Key_P:
-            visualization = Visualization::PLAIN;
-            
+            //visualization = Visualization::PLAIN;
+            createL_smooot();
             update();
             break;
         case Qt::Key_M:

@@ -124,6 +124,39 @@ void MyViewer::Smooth()
     omerr() << "Bone heat finish:" << QDateTime::currentDateTime().toString("hh:mm:ss:zzz").toStdString() << std::endl;
 }
 
+
+
+
+
+void MyViewer::createL_smooot()
+{
+    double smootingfactor = 0.5;
+    for(int i = 0; i < 10;i++)
+    { 
+        auto smooth = mesh;
+        for (auto v : mesh.vertices()) {
+            Vec Avg;
+            int n = 0;
+            for (auto vi : mesh.vv_range(v)) {
+                Vec vertex = Vec(mesh.point(vi));
+                Avg += vertex;
+                n++;
+            }
+            Avg /= n;
+            MyMesh::Point pointavg = MyMesh::Point(Avg.x, Avg.y, Avg.z);
+
+            smooth.point(v) += smootingfactor * (pointavg - mesh.point(v));
+
+        }
+        for (auto v : mesh.vertices()) {
+            mesh.point(v) = smooth.point(v);
+        }
+    }   
+}
+
+
+
+
 void MyViewer::createL(Eigen::SparseMatrix<double>& L)
 {
 

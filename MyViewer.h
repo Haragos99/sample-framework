@@ -459,6 +459,9 @@ private:
 
  std::vector<Vec>FABRIK_p;
 
+
+ void createL_smooot();
+
   void move(std::vector<Vec> newp, std::vector<Vec> old);
 
   int elapsedTime;
