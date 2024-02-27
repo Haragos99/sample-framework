@@ -321,20 +321,10 @@ private:
   }
 
 
-
-
-
-
-
-
-  
-
-
-
-
-
-
-
+  void smoothvectors(std::vector<Vec>& smoothed);
+  void smoothoriginal(std::vector<Vec>& smoothed);
+  void Delta_Mush(std::vector<Eigen::Vector4d>& v);
+  void Delta_Mush_two(std::vector<Eigen::Vector4d>& v);
 
   void getallpoints(Tree t);
 
