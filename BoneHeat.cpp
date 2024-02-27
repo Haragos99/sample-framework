@@ -24,7 +24,7 @@ void MyViewer::weigh()
             for (int j = 0; j < b[i].points.size(); j++)
             {
                 // printf("%d %d", i, j);
-                double t = tav(b[i].points[j], d);
+                double t = distance(b[i].points[j], d);
 
                 // legközelebbi súly
                 if (t < min_val)
@@ -57,7 +57,7 @@ void MyViewer::Smooth()
     Eigen::SparseMatrix<double> D(n, n);
     Eigen::VectorXd nnz = Eigen::VectorXd::Zero(n);
     for (auto v : mesh.vertices()) {
-        nnz(v.idx()) = 1;
+nnz(v.idx()) = 1;
     }
     D.makeCompressed();
     D.reserve(nnz);
@@ -123,6 +123,213 @@ void MyViewer::Smooth()
     }
     omerr() << "Bone heat finish:" << QDateTime::currentDateTime().toString("hh:mm:ss:zzz").toStdString() << std::endl;
 }
+
+
+
+
+
+void MyViewer::createL_smooot()
+{
+    double smootingfactor = 0.5;
+    for (int i = 0; i < 10; i++)
+    {
+        auto smooth = mesh;
+        for (auto v : mesh.vertices()) {
+            Vec Avg;
+            int n = 0;
+            for (auto vi : mesh.vv_range(v)) {
+                Vec vertex = Vec(mesh.point(vi));
+                Avg += vertex;
+                n++;
+            }
+            Avg /= n;
+            MyMesh::Point pointavg = MyMesh::Point(Avg.x, Avg.y, Avg.z);
+
+            smooth.point(v) += smootingfactor * (pointavg - mesh.point(v));
+
+        }
+
+        for (auto v : mesh.vertices()) {
+            mesh.point(v) = smooth.point(v);
+        }
+    }
+}
+
+
+void MyViewer::smoothvectors(std::vector<Vec>& smoothed)
+{
+    double smootingfactor = 0.5;
+    for (int i = 0; i < 10; i++)
+    {
+        auto smooth = mesh;
+        for (auto v : mesh.vertices()) {
+            Vec Avg;
+            int n = 0;
+            for (auto vi : mesh.vv_range(v)) {
+                Vec vertex = Vec(mesh.point(vi));
+                Avg += vertex;
+                n++;
+            }
+            Avg /= n;
+            MyMesh::Point pointavg = MyMesh::Point(Avg.x, Avg.y, Avg.z);
+
+            smooth.point(v) += smootingfactor * (pointavg - mesh.point(v));
+
+        }
+
+        for (auto v : smooth.vertices()) {
+            smoothed.push_back(Vec(smooth.point(v)));
+        }
+    }
+}
+
+void MyViewer::smoothoriginal(std::vector<Vec>& smoothed)
+{
+    double smootingfactor = 0.5;
+    for (int i = 0; i < 10; i++)
+    {
+        auto smooth = mesh;
+        for (auto v : mesh.vertices()) {
+            Vec Avg;
+            int n = 0;
+            for (auto vi : mesh.vv_range(v)) {
+                Vec vertex = Vec(mesh.data(vi).original);
+                Avg += vertex;
+                n++;
+            }
+            Avg /= n;
+            MyMesh::Point pointavg = MyMesh::Point(Avg.x, Avg.y, Avg.z);
+
+            smooth.point(v) += smootingfactor * (pointavg - mesh.data(v).original);
+
+        }
+
+        for (auto v : smooth.vertices()) {
+            smoothed.push_back(Vec(smooth.point(v)));
+        }
+    }
+
+
+
+}
+
+
+
+
+
+void MyViewer::Delta_Mush(std::vector<Eigen::Vector4d>& v)
+{
+    std::vector<Vec> smoothed;
+    smoothvectors(smoothed);
+    int size = smoothed.size();
+
+    for (auto ve : mesh.vertices()) {
+
+        Eigen::SparseMatrix<double> R;
+        Eigen::SimplicialLDLT< Eigen::SparseMatrix<double>> solver;
+        Eigen::Vector4d p_vector;
+        Eigen::Vector4d v_vector;
+        p_vector << mesh.point(ve)[0], mesh.point(ve)[1], mesh.point(ve)[2], 1;
+        R.resize(4, 4);
+        MyMesh::Normal normal = mesh.normal(ve);
+        Vec t;
+        Vec b;
+        for (MyMesh::VertexOHalfedgeIter voh_it = mesh.voh_iter(ve); voh_it.is_valid(); ++voh_it) {
+            MyMesh::HalfedgeHandle heh = *voh_it;
+            auto ed = mesh.calc_edge_vector(heh);
+            t = Vec((ed -(ed | normal) * normal).normalize());
+
+            b = (t ^ Vec(normal)).unit();
+
+        }
+        R.coeffRef(0, 0) = t[0];
+        R.coeffRef(1, 0) = t[1];
+        R.coeffRef(2, 0) = t[2];
+        R.coeffRef(3, 0) = 0;
+
+        R.coeffRef(0, 1) = normal[0];
+        R.coeffRef(1, 1) = normal[1];
+        R.coeffRef(2, 1) = normal[2];
+        R.coeffRef(3, 1) = 0;
+
+
+        R.coeffRef(0, 2) = b[0];
+        R.coeffRef(1, 2) = b[1];
+        R.coeffRef(2, 2) = b[2];
+        R.coeffRef(3, 2) = 0;
+
+        R.coeffRef(0, 3) = smoothed[0].x;
+        R.coeffRef(1, 3) = smoothed[0].y;
+        R.coeffRef(2, 3) = smoothed[0].z;
+        R.coeffRef(3, 3) = 1;
+
+        Eigen::SparseMatrix<double> I(4, 4);
+        I.setIdentity();
+        solver.compute(R);
+
+        auto R_inv = solver.solve(I);
+
+        v_vector = R * p_vector;
+
+        v.push_back(v_vector);
+        
+        
+    }
+}
+
+
+
+void MyViewer::Delta_Mush_two(std::vector<Eigen::Vector4d>& v)
+{
+    std::vector<Vec> smoothed;
+    smoothvectors(smoothed);
+    int size = smoothed.size();
+    for (auto ve : mesh.vertices()) {
+        Eigen::SparseMatrix<double> C;
+        Eigen::Vector4d p_vector;
+        Eigen::Vector4d v_vector;
+        p_vector << mesh.point(ve)[0], mesh.point(ve)[1], mesh.point(ve)[2], 1;
+        C.resize(4, 4);
+        MyMesh::Normal normal = mesh.normal(ve);
+        Vec t;
+        Vec b;
+        for (MyMesh::VertexOHalfedgeIter voh_it = mesh.voh_iter(ve); voh_it.is_valid(); ++voh_it) {
+            MyMesh::HalfedgeHandle heh = *voh_it;
+            auto ed = mesh.calc_edge_vector(heh);
+            t = Vec((ed - (ed | normal) * normal).normalize());
+
+            b = (t ^ Vec(normal)).unit();
+
+        }
+        C.coeffRef(0, 0) = t[0];
+        C.coeffRef(1, 0) = t[1];
+        C.coeffRef(2, 0) = t[2];
+        C.coeffRef(3, 0) = 0;
+
+        C.coeffRef(0, 1) = normal[0];
+        C.coeffRef(1, 1) = normal[1];
+        C.coeffRef(2, 1) = normal[2];
+        C.coeffRef(3, 1) = 0;
+
+        C.coeffRef(0, 2) = b[0];
+        C.coeffRef(1, 2) = b[1];
+        C.coeffRef(2, 2) = b[2];
+        C.coeffRef(3, 2) = 0;
+
+        C.coeffRef(0, 3) = smoothed[0].x;
+        C.coeffRef(1, 3) = smoothed[0].y;
+        C.coeffRef(2, 3) = smoothed[0].z;
+        C.coeffRef(3, 3) = 1;
+
+        auto d = C* v[ve.idx()];
+
+        mesh.point(ve) = MyMesh::Point(d[0],d[1],d[2]);
+
+
+    }
+
+}
+
 
 void MyViewer::createL(Eigen::SparseMatrix<double>& L)
 {

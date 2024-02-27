@@ -63,7 +63,7 @@ MyWindow::MyWindow(QApplication *parent) :
 
   auto hSplitter = new QSplitter(Qt::Horizontal, this);
   auto controlWidget = new QWidget(this);
-  auto sa = new QScrollArea;
+  auto sa = new QScrollArea(this);
 
 
   controlWidget->setAutoFillBackground(true);

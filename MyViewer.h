@@ -10,6 +10,8 @@
 #include <QTextStream>
 #include <QGLViewer/quaternion.h>
 #include"Bone.h"
+#include "bezier.h"
+#include "Bspline.h"
 #include "Openfiler.hpp"
 #include <fstream>
 #include <iostream>
@@ -19,7 +21,8 @@
 #include <QtGui/QKeyEvent>
 #include <QtWidgets>
 #include <QGLViewer/quaternion.h>
-
+#include <map>
+#include <algorithm>
 
 using qglviewer::Vec;
 
@@ -95,6 +98,7 @@ public:
       }
   }
 
+  void put_original(Tree& oldTree, Tree& newTree);
 
   void Epsil() {
       auto dlg = std::make_unique<QDialog>(this);
@@ -166,7 +170,6 @@ protected:
   virtual void keyPressEvent(QKeyEvent *e) override;
   virtual void mouseMoveEvent(QMouseEvent *e) override;
   virtual QString helpString() const override;
-
 private:
   struct MyTraits : public OpenMesh::DefaultTraits {
     using Point  = OpenMesh::Vec3d; // the default would be Vec3f
@@ -177,7 +180,10 @@ private:
       std::vector<double> weigh;
       std::vector<double> distance;
       int idx_of_closest_bone;
+
     };
+    VertexAttributes(OpenMesh::Attributes::Normal |
+        OpenMesh::Attributes::Color| OpenMesh::Attributes::Status);
   };
   using MyMesh = OpenMesh::TriMesh_ArrayKernelT<MyTraits>;
   using Vector = OpenMesh::VectorT<double,3>;
@@ -213,12 +219,13 @@ private:
   // Member variables //
   //////////////////////
 
-  enum class ModelType { NONE, MESH, BEZIER_SURFACE,SKELTON } model_type;
+  enum class ModelType { NONE, MESH, BEZIER_SURFACE,SKELTON,INVERZ } model_type;
   enum class SkelltonType { MAN,WRIST,ARM,FACE } skellton_type;
   // Mesh
   MyMesh mesh;
 
-
+  BSpline bs;
+  std::vector<int> used;
   std::vector<Vec> colors_bone{
       Vec(0.0, 1.0, 1.0),
       Vec(1.0, 1.0, 0.0),
@@ -248,7 +255,7 @@ private:
 
 
 
-  double tav(Vec p, Vec p1)
+  double distance(Vec p, Vec p1)
   {
       double len = sqrt(pow(p.x - p1.x, 2) + pow(p.y - p1.y, 2) + pow(p.z - p1.z, 2));
 
@@ -257,16 +264,67 @@ private:
 
   
 
+  struct ControlPoint{
+     Vec position;
+     Vec color;
+     ControlPoint(){}
+     ControlPoint(Vec _position)
+     {
+         position = _position;
+         color = Vec(1, 0, 0);
+        
+     }
+
+     void drawarrow()
+     {
+         Vec const& p = position;
+         glPushName(0);
+         glRasterPos3fv(p);
+         glPopName();
+         
+     }
+     void draw()
+     {
+         glDisable(GL_LIGHTING);
+         glColor3d(color.x, color.y, color.z);
+         glPointSize(50.0);
+         glBegin(GL_POINTS);
+         glVertex3dv(position);
+         glEnd();
+         glEnable(GL_LIGHTING);
+     }
+
+
+  };
+
+  ControlPoint target;
+
   void ininitSkelton();
   void createL(Eigen::SparseMatrix<double>& L);
 
-  
+
+
+
   float FrameSecond = 0.0;
   QHBoxLayout* hb1 = new QHBoxLayout;
   QLabel* text_ = new QLabel;
   QVBoxLayout* vBox = new QVBoxLayout;
 
+  //std::map<int, double> faceAreaMap;
+  std::vector<std::pair<int, double>> sortedVector;
+  std::vector<std::pair<int, double>> finalarea;
+  std::map< MyMesh::FaceHandle,int> sortedMap;
 
+  // Custom comparator function to sort by values (double) in ascending order
+  static bool sortByValue(const std::pair<int, double>& a, const std::pair<int, double>& b) {
+      return a.second < b.second;
+  }
+
+
+  void smoothvectors(std::vector<Vec>& smoothed);
+  void smoothoriginal(std::vector<Vec>& smoothed);
+  void Delta_Mush(std::vector<Eigen::Vector4d>& v);
+  void Delta_Mush_two(std::vector<Eigen::Vector4d>& v);
 
   void getallpoints(Tree t);
 
@@ -361,11 +419,15 @@ private:
   }
 
 
+
+  void inverse_kinematics(ControlPoint t, Tree& tree);
+
   // this collect the bones
   std::vector<Bones> b;
   // this is the skeleton
   Tree sk;
   
+  std::vector<Mat4> mteszt;
 
   void set_bone_matrix()
   {
@@ -381,34 +443,21 @@ private:
   Tree end;
 
 
-  void animate_mesh()
-  {
-      if(isweight)
-      { 
-          for (auto v : mesh.vertices())
-          {
-              Mat4 M_result = Mat4(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
-              for (int i = 0; i < b.size(); i++)
-              {
-                  double w = mesh.data(v).weigh[i];
-                  Mat4 M = b[i].M.skalar(w);
-                  M_result += M;
-              }
-              Vec4 point4 = Vec4(mesh.point(v)[0], mesh.point(v)[1], mesh.point(v)[2], 1);
-              Vec4 result = point4 * M_result;
-              OpenMesh::Vec3d diffrents = OpenMesh::Vec3d(result.x, result.y, result.z);
-              mesh.point(v) = diffrents;
-          }
-      }
-  }
+  void animate_mesh();
 
+ Tree FABRIK;
+
+ std::vector<Vec>FABRIK_p;
+
+
+ void createL_smooot();
 
   void move(std::vector<Vec> newp, std::vector<Vec> old);
 
   int elapsedTime;
   std::vector<int>indexes;
   std::vector<Vec> points;
-  std::vector<Vec> ve;
+  std::vector<Vec> selected_points_storage;
   float startAnimationTime_ = 0.0;
   float animationDuration_ = 1.0;
   std::vector<Keyframe> keyframes_;
@@ -425,11 +474,19 @@ private:
       return std::chrono::duration_cast<std::chrono::duration<float>>(duration).count();
   }
 
-
+  void tree_to_array(Tree& t);
+  std::vector<Vec> ik;
+  void IK_matrices();
+  double sum_len();
+  /// <summary>
+  /// 
+  /// </summary>
+  /// <param name="edgeHandle"></param>
 
   void setupCameraBone();
   bool mehet = false;
   bool isweight = false;
+  std::vector<int> _used;
   // Visualization
   double mean_min, mean_max, cutoff_ratio;
   bool show_control_points, show_solid, show_wireframe,show_skelton;

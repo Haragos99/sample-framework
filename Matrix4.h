@@ -5,111 +5,6 @@
 #include <QGLViewer/qglviewer.h>
 using qglviewer::Vec;
 
-struct Matrix4 {
-private:
-    double data[4][4];
-
-public:
-    // Constructor
-    Matrix4() {
-        // Initialize the matrix as an identity matrix
-        for (int i = 0; i < 4; ++i) {
-            for (int j = 0; j < 4; ++j) {
-                data[i][j] = (i == j) ? 1.0 : 0.0;
-            }
-        }
-    }
-
-    // Getter and Setter for individual elements
-    double get(int row, int col) const {
-        if (row >= 0 && row < 4 && col >= 0 && col < 4) {
-            return data[row][col];
-        }
-        else {
-            std::cerr << "Invalid row or column index!" << std::endl;
-            return 0.0; // Return 0 if indices are out of bounds
-        }
-    }
-
-    void set(int row, int col, double value) {
-        if (row >= 0 && row < 4 && col >= 0 && col < 4) {
-            data[row][col] = value;
-        }
-        else {
-            std::cerr << "Invalid row or column index!" << std::endl;
-        }
-    }
-    // Setter using a 4x4 double array
-    void set(const double matrix[4][4]) {
-        for (int i = 0; i < 4; ++i) {
-            for (int j = 0; j < 4; ++j) {
-                data[i][j] = matrix[i][j];
-            }
-        }
-    }
-
-
-    void set_transfrom(const Vec v)
-    {
-        data[3][0] = v.x;
-        data[3][1] = v.y;
-        data[3][2] = v.z;
-    }
-    // Multiplication operator overload
-    Matrix4 operator*(const Matrix4& other) const {
-        Matrix4 result;
-
-        for (int i = 0; i < 4; ++i) {
-            for (int j = 0; j < 4; ++j) {
-                result.data[i][j] = 0;
-                for (int k = 0; k < 4; ++k) {
-                    result.data[i][j] += data[i][k] * other.data[k][j];
-                }
-            }
-        }
-
-        return result;
-    }
-
-    
-
-    // Multiplication operator overload for matrix-vector multiplication
-    Vec operator*(const Vec& v) const {
-        double result_x = data[0][0] * v.x + data[0][1] * v.y + data[0][2] * v.z + data[0][3] * 1;
-        double result_y = data[1][0] * v.x + data[1][1] * v.y + data[1][2] * v.z + data[1][3] * 1;
-        double result_z = data[2][0] * v.x + data[2][1] * v.y + data[2][2] * v.z + data[2][3] * 1;
-        double result_w = data[3][0] * v.x + data[3][1] * v.y + data[3][2] * v.z + data[3][3] * 1;
-
-        return Vec(result_x/ result_w, result_y/ result_w, result_z/ result_w);
-    }
-
-   
-
-};
-/*
-inline Matrix4 RotationMatrix(double angle, Vec w)
-{
-    Matrix4 result;
-    double c = cosf(angle), s = sinf(angle);
-    double mat4[4][4] = {
-        {c * (1 - w.x * w.x) + w.x * w.x, w.x * w.y * (1 - c) + w.z * s, w.x * w.z * (1 - c) - w.y * s, 0},
-        {w.x * w.y * (1 - c) - w.z * s, c * (1 - w.y * w.y) + w.y * w.y, w.y * w.z * (1 - c) + w.x * s, 0},
-        {w.x * w.z * (1 - c) + w.y * s, w.y * w.z * (1 - c) - w.x * s, c * (1 - w.z * w.z) + w.z * w.z, 0},
-        {0, 0, 0, 1}
-    };
-    result.set(mat4);
-    return result;
-}
-
-*/
-
-
-
-
-
-
-
-
 
 inline float dot(const Vec& v1, const Vec& v2) { return (v1.x * v2.x + v1.y * v2.y + v1.z * v2.z); }
 
@@ -122,6 +17,7 @@ struct Vec4 {
     float x, y, z, w;
 
     Vec4(float x0 = 0, float y0 = 0, float z0 = 0, float w0 = 0) { x = x0; y = y0; z = z0; w = w0; }
+    Vec4(Vec v){ x = v.x; y = v.y; z = v.z; w = 1; }
     float& operator[](int j) { return *(&x + j); }
     float operator[](int j) const { return *(&x + j); }
 
