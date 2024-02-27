@@ -269,7 +269,7 @@ void MyViewer::Delta_Mush(std::vector<Eigen::Vector4d>& v)
 
         auto R_inv = solver.solve(I);
 
-        v_vector = R * p_vector;
+        v_vector = R_inv * p_vector;
 
         v.push_back(v_vector);
         

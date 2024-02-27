@@ -576,6 +576,8 @@ void MyViewer::Rotate()
         sk.set_deafult_matrix(sk);
         newp.clear();
         old.clear();
+        if (delatamush)
+            Delta_Mush_two(vec);
         update();
     }
 
@@ -637,6 +639,7 @@ void MyViewer::keyPressEvent(QKeyEvent* e) {
     auto* vb = new QVBoxLayout;
     QLabel* text;
     int sizek;
+    
     Tree* to = sk.searchbyid(sk, selected_vertex);
     if (e->modifiers() == Qt::NoModifier)
 
@@ -657,7 +660,10 @@ void MyViewer::keyPressEvent(QKeyEvent* e) {
             break;
         case Qt::Key_P:
             //visualization = Visualization::PLAIN;
-            createL_smooot();
+            //createL_smooot();
+            weigh();
+            Delta_Mush(vec);
+            delatamush = true;
             update();
             break;
         case Qt::Key_M:
