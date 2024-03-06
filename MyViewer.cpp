@@ -659,11 +659,7 @@ void MyViewer::keyPressEvent(QKeyEvent* e) {
             update();
             break;
         case Qt::Key_P:
-            //visualization = Visualization::PLAIN;
-            //createL_smooot();
-            weigh();
-            Delta_Mush(vec);
-            delatamush = true;
+            visualization = Visualization::PLAIN;
             update();
             break;
         case Qt::Key_M:

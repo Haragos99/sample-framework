@@ -55,10 +55,21 @@ public:
         show_wireframe = !show_wireframe;
         update();
     }
-
-
+    float bright = 0.5;
+    void draw_smooth(); 
     void skining() { visualization = Visualization::WEIGH; }
-
+    void Laplace() {
+        smooth = mesh;
+        bright = 0.1;
+        transparent = true;
+        createL_smooot(smooth); update(); 
+    }
+    void delta(){
+        weigh();
+        Delta_Mush(vec);
+        delatamush = true;
+        update();
+    }
     void Boneheat()
     {
         auto dlg = std::make_unique<QDialog>(this);
@@ -221,6 +232,10 @@ private:
     enum class SkelltonType { MAN, WRIST, ARM, FACE } skellton_type;
     // Mesh
     MyMesh mesh;
+
+    MyMesh smooth;
+    
+
 
     std::vector<int> used;
     std::vector<Vec> colors_bone{
@@ -447,7 +462,7 @@ private:
     std::vector<Vec>FABRIK_p;
 
 
-    void createL_smooot();
+    void createL_smooot(MyMesh& m);
 
     void move(std::vector<Vec> newp, std::vector<Vec> old);
 
