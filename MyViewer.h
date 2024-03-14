@@ -454,6 +454,7 @@ private:
     Tree start;
     Tree end;
 
+    Skelton skel;
 
     void animate_mesh();
 

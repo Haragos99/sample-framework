@@ -663,8 +663,9 @@ void MyViewer::keyPressEvent(QKeyEvent* e) {
             update();
             break;
         case Qt::Key_M:
-            visualization = Visualization::MEAN;
-
+            //visualization = Visualization::MEAN;
+            model_type = ModelType::SKELTON;
+            skel.build();
             update();
             break;
         case Qt::Key_L:
@@ -922,6 +923,11 @@ void MyViewer::mouseMoveEvent(QMouseEvent* e) {
         * megkersük a kiválasztot ágakat
         */
 
+        Vec dif = axes.position - old_pos;
+        Join* j = skel.root->searchbyid(skel.root, selected_vertex);
+        skel.root->change_all_position(j, dif);
+
+        /*
 
         Tree* to = sk.searchbyid(sk, selected_vertex);
         int des = -1;
@@ -966,8 +972,9 @@ void MyViewer::mouseMoveEvent(QMouseEvent* e) {
         }
         newp.clear();
         old.clear();
-
+        */
     }
+    
     //updateMesh();
     update();
 }

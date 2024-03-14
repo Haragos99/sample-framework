@@ -127,7 +127,10 @@ void MyViewer::draw() {
         }
     }
 
-
+    if (model_type == ModelType::SKELTON || model_type == ModelType::INVERZ)
+    {
+        skel.draw();
+    }
 
     if (show_solid && show_wireframe) {
         glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);

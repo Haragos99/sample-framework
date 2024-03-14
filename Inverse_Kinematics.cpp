@@ -105,7 +105,8 @@ void MyViewer::inverse_kinematics(ControlPoint t, Tree& tree)
     }
 
     animate_mesh();
-    
+    if (delatamush)
+        Delta_Mush_two(vec);
     
 
     //ininitSkelton();
