@@ -2,6 +2,42 @@
 
 
 
+void Bone::draw()
+{
+    glLineWidth(200.0);
+    glBegin(GL_LINES);
+    glColor3d(color.x, color.y, color.z);
+    glVertex3dv(start->point);
+    glVertex3dv(end->point);
+    glEnd();
+}
+
+
+
+void Join::change_all_position(Join* j, Vec dif)
+{
+    j->point += dif;
+    for (int i = 0; i < j->children.size(); i++)
+    {
+        change_all_position(j->children[i], dif);
+    }
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 void Tree::reset_all(Tree& t)
 {
     t.point = t.original;

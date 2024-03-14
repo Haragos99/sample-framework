@@ -150,6 +150,16 @@ MyWindow::MyWindow(QApplication *parent) :
   connect(buttonskin, SIGNAL(clicked()), this, SLOT(skin()));
   controlLayout->addWidget(flayer, 8, 1, 1, 1);
 
+  auto buttonsmoth = new QPushButton("Smouth");
+  controlLayout->addWidget(buttonsmoth, 9, 1, 1, 1);
+  connect(buttonsmoth, SIGNAL(clicked()), this, SLOT(LaplanceSmooth()));
+
+
+  auto buttonedelta = new QPushButton("DeltaMush");
+  controlLayout->addWidget(buttonedelta, 9, 0, 1, 1);
+  connect(buttonedelta, SIGNAL(clicked()), this, SLOT(Delta()));
+
+
   controlWidget->setLayout(controlLayout);
 
 

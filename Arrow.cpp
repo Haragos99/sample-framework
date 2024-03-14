@@ -43,7 +43,8 @@ void MyViewer::drawWithNames() {
         
         break;
     case  ModelType::SKELTON:
-        sk.drawarrow(sk);
+        //sk.drawarrow(sk);
+        skel.root->drawarrow(skel.root);
         break;
     }
 }
@@ -85,11 +86,15 @@ void MyViewer::postSelection(const QPoint& p) {
         axes.position = control_points[sel];
     if (model_type == ModelType::SKELTON)
     {
+        /*
         sk.makefalse(sk);
         Tree* t = sk.searchbyid(sk, sel);
         sk.maketrue(*t);
         axes.position = t->point;
         drawSkleton();
+        */
+        Join* j = skel.root->searchbyid(skel.root, sel);
+        axes.position = j->point;
        
     }
     if (model_type == ModelType::INVERZ)

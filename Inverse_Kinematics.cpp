@@ -72,7 +72,9 @@ void MyViewer::inverse_kinematics(ControlPoint t, Tree& tree)
     
     int bone_index = -1;
     FABRIK_p = ik;
-    //IK_matrices();
+    //
+    
+    IK_matrices();
     for (int i = 0; i < b.size(); i++)
     {
         for (int j = 0; j < points.size(); j++)
@@ -103,7 +105,8 @@ void MyViewer::inverse_kinematics(ControlPoint t, Tree& tree)
     }
 
     animate_mesh();
-    
+    if (delatamush)
+        Delta_Mush_two(vec);
     
 
     //ininitSkelton();
@@ -128,10 +131,14 @@ void MyViewer::IK_matrices()
 
 
     getallpoints(sk);
-    std::vector<Vec> old_p = points;
+    std::vector<Vec> old_p = selected_points_storage;
     selected_points_storage.clear();
 
     sk.set_deafult_matrix(sk);
+    for (int i = 0; i < b.size(); i++)
+    {
+        b[i].M = Mat4();
+    }
     qglviewer::Quaternion parentRotation = qglviewer::Quaternion();
     for (int i = 1; i < n; ++i)
     {
@@ -146,13 +153,14 @@ void MyViewer::IK_matrices()
         float dot = old_point.x * new_point.x + old_point.y * new_point.y + old_point.z * new_point.z;
         float rotAngle = std::atan2((old_point ^ new_point).norm(), dot); //std::acos(dot / (mag1 * mag2));
 
-        Vec pivot = old_p[i - 1];
+        Vec pivot = old_p[i-1];
         Mat4 T1 = TranslateMatrix(-pivot);
         Mat4 T2 = TranslateMatrix(pivot);
 
         Mat4 R;
         if (axis.norm() > 1E-12) {
             axis = axis.unit();
+            //axis = Vec(0, 0, 1);
             R = RotationMatrix(rotAngle, axis);
             t->quaternion.setAxisAngle(axis, rotAngle);
         }
@@ -163,13 +171,14 @@ void MyViewer::IK_matrices()
 
     }
 
-    
+    /*
+
     for (int i = 0; i < n; i++)
     {
         Tree* t = sk.searchbyid(sk, i);
         t->quaternion = qglviewer::Quaternion();
     }
-
+    */
 
 }
 

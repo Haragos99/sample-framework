@@ -68,7 +68,7 @@ void MyViewer::draw() {
             glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_DECAL);
             glEnable(GL_TEXTURE_1D);
         }
-
+        draw_smooth();
         for (auto f : mesh.faces()) {
             glBegin(GL_POLYGON);
             for (auto v : mesh.fv_range(f)) {
@@ -78,18 +78,13 @@ void MyViewer::draw() {
                     glTexCoord1d(mesh.point(v) | slicing_dir * slicing_scaling);
                 else if (visualization == Visualization::WEIGH) //Itt adjuk meg a súlyokat
                 {
-
                     Vec color = Vec(0, 0, 0);
                     for (int i = 0; i < b.size(); i++)
                     {
                         if (mesh.data(v).weigh[i] != 0)
                         {
                             color += (mesh.data(v).weigh[i] * b[i].getColor());
-
                         }
-
-
-
                     }
                     if (transparent) {
                         glColor4d(color.x, color.y, color.z, 0.5);
@@ -107,7 +102,7 @@ void MyViewer::draw() {
                     Vec color = mesh.data(v).weigh[wi] * (b[wi].getColor());
 
                     if (transparent) {
-                        glColor4d(color.x, color.y, color.z, 0.5);
+                        glColor4d(color.x, color.y, color.z, bright);
                     }
                     else {
                         glColor3d(color.x, color.y, color.z);
@@ -132,6 +127,11 @@ void MyViewer::draw() {
         }
     }
 
+    if (model_type == ModelType::SKELTON || model_type == ModelType::INVERZ)
+    {
+        skel.draw();
+    }
+
     if (show_solid && show_wireframe) {
         glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
         glColor3d(0.0, 0.0, 0.0);
@@ -145,6 +145,7 @@ void MyViewer::draw() {
         glEnable(GL_LIGHTING);
     }
 
+    
 
     if (axes.shown)
         drawAxes();
@@ -157,6 +158,34 @@ void MyViewer::draw() {
     glEnable(GL_LIGHTING);
     glEnable(GL_DEPTH_TEST);
 }
+
+
+void MyViewer::draw_smooth()
+{
+    for (auto f : smooth.faces()) {
+        glBegin(GL_POLYGON);
+        for (auto v : smooth.fv_range(f)) {
+           
+            if (visualization == Visualization::WEIGH) //Itt adjuk meg a súlyokat
+            {
+                Vec color = Vec(0, 0, 0);
+                for (int i = 0; i < b.size(); i++)
+                {
+                    if (smooth.data(v).weigh[i] != 0)
+                    {
+                        color += (smooth.data(v).weigh[i] * b[i].getColor());
+                    }
+                }
+                glColor4d(color.x, color.y, color.z, 1);                
+            }
+            glNormal3dv(smooth.normal(v).data());
+            glVertex3dv(smooth.point(v).data());
+        }
+        glEnd();
+    }
+}
+
+
 
 /// <summary>
 /// ezt rajzoljuk ku

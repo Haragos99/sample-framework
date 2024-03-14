@@ -26,6 +26,139 @@ private:
     
 };
 
+
+
+
+
+
+
+struct Join {
+    int id;// id of the join and the index of the position
+    std::vector<int> bones_id;
+    Vec point;
+    Vec Tpose;
+    Join* parent;
+    std::vector<Join*> children;
+    Join(){}
+    Join(Vec p, int _id) { point = p; id = _id; }
+    Mat4 M;
+    Join* searchbyid(Join* j, int key)
+    {
+        if (key == j->id) { return j; }
+
+        for (int i = 0; i < j->children.size(); i++)
+        {
+            Join* result = searchbyid(j->children[i], key);
+            if (result != nullptr)
+                return result;
+        }
+        return nullptr;
+    }
+    void drawarrow(Join* j)
+    {
+        Vec const& p = j->point;
+        glPushName(j->id);
+        glRasterPos3fv(p);
+        glPopName();
+        for (int i = 0; i < j->children.size(); i++)
+        {
+            drawarrow(j->children[i]);
+        }
+    }
+    void draw(Join* j)
+    {
+        Vec const& p = j->point;
+        glDisable(GL_LIGHTING);
+        
+        glColor3d(1.0, 0.0, 1.0);
+        glPointSize(50.0);
+        glBegin(GL_POINTS);
+        glVertex3dv(p);
+        glEnd();
+        glPointSize(10.0);
+        glEnable(GL_LIGHTING);
+        for (int i = 0; i < j->children.size(); i++)
+        {
+            draw(j->children[i]);
+        }
+    }
+    void change_all_position(Join* j, Vec dif);
+
+
+};
+
+struct Bone {
+    std::vector<int> joins_id;
+    Join* start;
+    Join* end;
+    Mat4 M;
+    int id;
+    Vec color;
+    Bone(Join* s, Join* e,int _id,Vec _color)
+    {
+        start = s;
+        end = e;
+        id = _id;
+        joins_id.push_back(s->id);
+        joins_id.push_back(e->id);
+        color = _color;
+
+    }
+    void draw();
+
+};
+
+struct Skelton {
+private:
+    std::vector<Vec> points;
+    std::vector<Vec> Tpose;
+
+public:
+    Join* root;
+    std::vector<Bone> bones;
+    
+    Skelton(std::vector<Vec> point) {
+        points = point;
+        Tpose = point;
+
+    }
+    Skelton() {  }
+
+    void build(){
+        root = new Join(Vec(0,0,0),0);
+        Join* j = new Join(Vec(0, 0.5, 0),1);
+        Join* j2 = new Join(Vec(0, 1, 0),2);
+        root->children.push_back(j);
+        root->children[0]->children.push_back(j2);
+        bones.push_back(Bone(root, j,0,Vec(1,0,0)));
+        bones.push_back(Bone(j, j2, 1, Vec(0, 1, 0)));
+    }
+
+    void drawarrow()
+    {
+        for (int i = 0; i < points.size(); i++)
+        {
+            Join* j = root->searchbyid(root,i);
+            Vec const& p = points[j->id];
+            glPushName(j->id);
+            glRasterPos3fv(p);
+            glPopName();
+
+        }
+    }
+
+    void draw()
+    {
+        for (auto b : bones)
+        {
+            b.draw();
+        }
+        root->draw(root);
+    }
+
+};
+
+
 struct Bones
 {
     Vec start;
@@ -67,6 +200,12 @@ struct Bones
     }
 };
 
+
+/*
+* TODO
+* bone id -> joint id
+* join id -> bone id
+*/
 struct Tree {
 
     
@@ -123,8 +262,5 @@ struct Tree {
     
 };
  
-struct Ecol {
-
-};
 
 

@@ -42,6 +42,8 @@ private slots:
   void startComputation(QString message);
   void midComputation(int percent);
   void endComputation();
+  void LaplanceSmooth() { viewer->Laplace(); }
+  void Delta() { viewer->delta(); }
   void displayMessage(const QString& message);
 
 private:
