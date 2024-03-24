@@ -431,8 +431,9 @@ private:
     }
 
 
+    void selectedjoin();
 
-    void inverse_kinematics(ControlPoint t, Tree& tree);
+    void inverse_kinematics(ControlPoint t, Join* j);
 
     // this collect the bones
     std::vector<Bones> b;
@@ -455,6 +456,7 @@ private:
     Tree end;
 
     Skelton skel;
+    Skelton fab;
 
     void animate_mesh();
 
@@ -487,7 +489,7 @@ private:
         return std::chrono::duration_cast<std::chrono::duration<float>>(duration).count();
     }
 
-    void tree_to_array(Tree& t);
+    void tree_to_array(Join* j);
     std::vector<Vec> ik;
     void IK_matrices();
     double sum_len();

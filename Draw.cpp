@@ -37,7 +37,10 @@ void MyViewer::draw() {
 
     
 
-    
+    if (model_type == ModelType::SKELTON || model_type == ModelType::INVERZ)
+    {
+        skel.draw();
+    }
 
     
     if (model_type == ModelType::SKELTON|| model_type == ModelType::INVERZ)
@@ -79,11 +82,11 @@ void MyViewer::draw() {
                 else if (visualization == Visualization::WEIGH) //Itt adjuk meg a súlyokat
                 {
                     Vec color = Vec(0, 0, 0);
-                    for (int i = 0; i < b.size(); i++)
+                    for (int i = 0; i < skel.getSize(); i++)
                     {
                         if (mesh.data(v).weigh[i] != 0)
                         {
-                            color += (mesh.data(v).weigh[i] * b[i].getColor());
+                            color += (mesh.data(v).weigh[i] * skel.bones[i].color);
                         }
                     }
                     if (transparent) {
@@ -127,10 +130,7 @@ void MyViewer::draw() {
         }
     }
 
-    if (model_type == ModelType::SKELTON || model_type == ModelType::INVERZ)
-    {
-        skel.draw();
-    }
+
 
     if (show_solid && show_wireframe) {
         glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);

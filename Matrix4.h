@@ -77,6 +77,15 @@ public:
         }
         return *this;
     }
+    std::string to_string()
+    {
+        std::string r1 = std::to_string(rows[0][0]) + " " + std::to_string(rows[0][1]) + " " + std::to_string(rows[0][2]) + " " + std::to_string(rows[0][3]) + "\n";
+        std::string r2 = std::to_string(rows[1][0]) + " " + std::to_string(rows[1][1]) + " " + std::to_string(rows[1][2]) + " " + std::to_string(rows[1][3]) + "\n";
+        std::string r3 = std::to_string(rows[2][0]) + " " + std::to_string(rows[2][1]) + " " + std::to_string(rows[2][2]) + " " + std::to_string(rows[2][3]) + "\n";
+        std::string r4 = std::to_string(rows[3][0]) + " " + std::to_string(rows[3][1]) + " " + std::to_string(rows[3][2]) + " " + std::to_string(rows[3][3]) + "\n";
+
+        return r1 + r2 + r3 + r4;
+    }
 };
 
 inline Vec4 operator*(const Vec4& v, const Mat4& mat) {

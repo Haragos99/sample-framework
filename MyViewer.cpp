@@ -483,7 +483,7 @@ void MyViewer::init() {
 void MyViewer::Rotate()
 {
 
-
+    skel.set_deafult_matrix();
     auto dlg = std::make_unique<QDialog>(this);
     auto* hb1 = new QHBoxLayout,
         * hb2 = new QHBoxLayout,
@@ -529,59 +529,62 @@ void MyViewer::Rotate()
         Vec angles = Vec(hr, pr, br);
         angels = angles;
         rotation = angles;
-        Tree* to = sk.searchbyid(sk, selected_vertex);
+        Join* jo = skel.root->searchbyid(skel.root, selected_vertex);
         // to->angel += angles;
 
         int des = -1;
-        getallpoints(*to);
-        std::vector<Vec> old = selected_points_storage;
-        selected_points_storage.clear();
 
         // itt vátoztatjuk meg a kordinátát
-
-        sk.change_all_rotason(*to, to->point, angles);
-        sk.used_points(*to);
-        getallpoints(*to);
-        std::vector<Vec> newp = selected_points_storage;
-        selected_points_storage.clear();
-        for (int i = 0; i < b.size(); i++)
-        {
-            Vec rotason_point;
-            for (int j = 0; j < old.size(); j++)
-            {
-                if (b[i].start == old[j])
-                {
-                    b[i].start = newp[j];
-                    des = i;
-                }
-                if (b[i].End == old[j])
-                {
-                    b[i].End = newp[j];
-                    rotason_point = newp[j];
-
-                }
-            }
-
-            if (des != -1)
-            {
-                Tree* s = sk.searchbyid(sk, des + 1);
-                b[des].M = s->mymatrix;
-                des = -1;
-            }
-
-
-        }
+        skel.root->change_all_rotason(jo, jo->point, angles);
+        //sk.used_points(*to);
+        
         animate_mesh();
-        set_bone_matrix();
-        sk.set_deafult_matrix(sk);
-        newp.clear();
-        old.clear();
+        
         if (delatamush)
             Delta_Mush_two(vec);
         update();
     }
 
 }
+
+
+void MyViewer::selectedjoin()
+{
+    if (axes.shown)
+    {
+        auto dlg = std::make_unique<QDialog>(this);
+        auto* hb1 = new QHBoxLayout,
+            * hb2 = new QHBoxLayout,
+            * hb3 = new QHBoxLayout;
+        auto* vb = new QVBoxLayout;
+        Join* jo = skel.root->searchbyid(skel.root, selected_vertex);
+
+        auto* text_H = new QLabel(tr("Matrix: "));
+        auto* text_b = new QLabel(tr("Point: "));
+        std::string s = jo->M.to_string();
+        text_H->setText(s.c_str());
+        std::string se = std::to_string(jo->point.x)+" " +std::to_string(jo->point.y) + " "+std::to_string(jo->point.z);
+        text_b->setText(se.c_str());
+        hb1->addWidget(text_H);
+        hb2->addWidget(text_b);
+        vb->addLayout(hb1);
+        vb->addLayout(hb2);
+        vb->addLayout(hb3);
+
+        dlg->setWindowTitle(tr("Data of Join"));
+        dlg->setLayout(vb);
+
+        if (dlg->exec() == QDialog::Accepted) {
+
+
+        }
+
+
+
+
+    }
+}
+
 
 void MyViewer::selectedvert()
 {
@@ -666,6 +669,8 @@ void MyViewer::keyPressEvent(QKeyEvent* e) {
             //visualization = Visualization::MEAN;
             model_type = ModelType::SKELTON;
             skel.build();
+            fab.build();
+            target = ControlPoint(Vec(0, 1.2, 0));
             update();
             break;
         case Qt::Key_L:
@@ -708,7 +713,7 @@ void MyViewer::keyPressEvent(QKeyEvent* e) {
 
         case Qt::Key_4:
             if (axes.shown) {
-                Rotate();
+                selectedjoin();
             }
 
             update();
@@ -912,7 +917,7 @@ void MyViewer::mouseMoveEvent(QMouseEvent* e) {
     if (model_type == ModelType::INVERZ)
     {
         target.position = axes.position;
-        inverse_kinematics(target, FABRIK);
+        inverse_kinematics(target, fab.root);
         
     }
 

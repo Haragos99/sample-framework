@@ -11,20 +11,20 @@ void MyViewer::weigh()
     {
         double min_val = std::numeric_limits<double>::infinity();
         mesh.data(v).weigh.clear();
-        mesh.data(v).weigh.resize(b.size(), 0.0);
+        mesh.data(v).weigh.resize(skel.getSize(), 0.0);
         mesh.data(v).distance.clear();
-        mesh.data(v).distance.resize(b.size(), min_val);
+        mesh.data(v).distance.resize(skel.getSize(), min_val);
 
         // az aktuális pont
         Vec d = Vec(mesh.point(v)[0], mesh.point(v)[1], mesh.point(v)[2]);
         int indexof = 0;
-        for (int i = 0; i < b.size(); i++)
+        for (int i = 0; i < skel.getSize(); i++)
         {
             double f = std::numeric_limits<double>::infinity(); ;
-            for (int j = 0; j < b[i].points.size(); j++)
+            for (int j = 0; j < skel.bones[i].points.size(); j++)
             {
                 // printf("%d %d", i, j);
-                double t = distance(b[i].points[j], d);
+                double t = distance(skel.bones[i].points[j], d);
 
                 // legközelebbi súly
                 if (t < min_val)

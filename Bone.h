@@ -40,7 +40,7 @@ struct Join {
     Join* parent;
     std::vector<Join*> children;
     Join(){}
-    Join(Vec p, int _id) { point = p; id = _id; }
+    Join(Vec p, int _id) { point = p; id = _id; Tpose = p; }
     Mat4 M;
     Join* searchbyid(Join* j, int key)
     {
@@ -84,6 +84,16 @@ struct Join {
     }
     void change_all_position(Join* j, Vec dif);
 
+    void change_all_rotason(Join* j, Vec pivot, Vec angles);
+
+    void set_deafult_matrix(Join* j)
+    {
+        j->M= Mat4();
+        for (int i = 0; i < j->children.size(); i++)
+        {
+            set_deafult_matrix(j->children[i]);
+        }
+    }
 
 };
 
@@ -94,6 +104,7 @@ struct Bone {
     Mat4 M;
     int id;
     Vec color;
+    std::vector<Vec> points;
     Bone(Join* s, Join* e,int _id,Vec _color)
     {
         start = s;
@@ -102,9 +113,26 @@ struct Bone {
         joins_id.push_back(s->id);
         joins_id.push_back(e->id);
         color = _color;
+        manypoints();
 
     }
     void draw();
+
+    void manypoints()
+    {
+
+        Vec ir = end->point - start->point ;
+        double len = sqrt(pow(end->point.x - start->point.x, 2) + 
+            pow(end->point.y - start->point.y, 2) + pow(end->point.z - start->point.z, 2));
+        int res = 100;
+        for (int i = 0; i < res; i++)
+        {
+            Vec t;
+            t = start->point + ir * 1.0 / (res - 1) * i;
+            points.push_back(t);
+        }
+    }
+
 
 };
 
@@ -116,6 +144,7 @@ private:
 public:
     Join* root;
     std::vector<Bone> bones;
+    std::vector<Vec> po;
     
     Skelton(std::vector<Vec> point) {
         points = point;
@@ -124,14 +153,36 @@ public:
     }
     Skelton() {  }
 
+    int getSize() { return bones.size(); }
+    void Rotate(int id)
+    {
+         
+    }
+    void set_deafult_matrix() { root->set_deafult_matrix(root); }
+
+    void get_join_point(Join *j)
+    {
+            po.push_back(j->Tpose);
+            for (int i = 0; i < j->children.size(); i++)
+            {
+                get_join_point(j->children[i]);
+            }
+        
+    }
+    std::vector<Vec> getPoints() { get_join_point(root); return po; }
+
     void build(){
         root = new Join(Vec(0,0,0),0);
-        Join* j = new Join(Vec(0, 0.5, 0),1);
-        Join* j2 = new Join(Vec(0, 1, 0),2);
+        Join* j = new Join(Vec(0, 0.35, 0),1);
+        Join* j2 = new Join(Vec(0, 0.65, 0), 2);
+        Join* j3 = new Join(Vec(0, 1, 0),3);
         root->children.push_back(j);
         root->children[0]->children.push_back(j2);
+        root->children[0]->children[0]->children.push_back(j3);
+
         bones.push_back(Bone(root, j,0,Vec(1,0,0)));
         bones.push_back(Bone(j, j2, 1, Vec(0, 1, 0)));
+        bones.push_back(Bone(j2, j3,2, Vec(0, 0, 1)));
     }
 
     void drawarrow()

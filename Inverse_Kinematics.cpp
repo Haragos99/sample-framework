@@ -1,12 +1,12 @@
 #include "MyViewer.h"
 #include <math.h>
 
-void MyViewer::inverse_kinematics(ControlPoint t, Tree& tree)
+void MyViewer::inverse_kinematics(ControlPoint t, Join* j)
 {
     ik.clear();
-    tree_to_array(tree);
+    tree_to_array(j);
     double dis = abs(distance(ik[0], t.position));
-    int start_index = tree.id;
+    
     std::vector<double> distances;
     double total_distance = 0.0;
     //ik where we store the old points for the calculation of the ik
@@ -57,60 +57,12 @@ void MyViewer::inverse_kinematics(ControlPoint t, Tree& tree)
             diff = abs(distance(ik.back(), t.position));
         }
     }
-    // update and rebuild the full tree 
-    Tree old_sk = sk;
-    int j = 0;
-    for (int i = start_index; i < points.size(); i++)
-    {
-        //points[i] = ik[j];
-        Tree* s = tree.searchbyid(tree, i);
-       
-        s->point = ik[j];
-        j++;
-
-    }
-    
-    int bone_index = -1;
     FABRIK_p = ik;
-    //
-    
-    IK_matrices();
-    for (int i = 0; i < b.size(); i++)
-    {
-        for (int j = 0; j < points.size(); j++)
-        {
-            Tree* s = sk.searchbyid(sk, j);
-            Tree* o = old_sk.searchbyid(old_sk, j);
-
-            if (b[i].start == o->point)
-            {
-                b[i].start = s->point;
-                bone_index = i;
-            }
-            if (b[i].End == o->point)
-            {
-                b[i].End = s->point;
-                //  des = i;
-            }
-            if (bone_index != -1)
-            {
-                if (isweight)
-                {
-                    Tree* st = sk.searchbyid(sk, bone_index + 1);
-                    b[bone_index].M = st->mymatrix;
-                    bone_index = -1;
-                }
-            }
-        }
-    }
-
+    IK_matrices(); 
     animate_mesh();
     if (delatamush)
         Delta_Mush_two(vec);
-    
 
-    //ininitSkelton();
-    //put_original(old_sk,sk);
 }
 
 
@@ -127,22 +79,16 @@ void MyViewer::IK_matrices()
 {
     // TODOO: The piwot is wrong
     int n = ik.size();
-    sk.reset_quaternion(sk);
 
+    skel.po.clear();
+    
+    std::vector<Vec> old_p = skel.getPoints();
+    
 
-    getallpoints(sk);
-    std::vector<Vec> old_p = selected_points_storage;
-    selected_points_storage.clear();
-
-    sk.set_deafult_matrix(sk);
-    for (int i = 0; i < b.size(); i++)
-    {
-        b[i].M = Mat4();
-    }
     qglviewer::Quaternion parentRotation = qglviewer::Quaternion();
     for (int i = 1; i < n; ++i)
     {
-        Tree* t = sk.searchbyid(sk, i);
+        Join* t = skel.root->searchbyid(skel.root, i);
 
 
         Vec old_point = old_p[i] - old_p[i - 1];
@@ -162,34 +108,27 @@ void MyViewer::IK_matrices()
             axis = axis.unit();
             //axis = Vec(0, 0, 1);
             R = RotationMatrix(rotAngle, axis);
-            t->quaternion.setAxisAngle(axis, rotAngle);
+            
         }
         Mat4 M = T1 * R * T2;
         Vec4 p = Vec4(old_p[i]) * M;
-        t->mymatrix = M;
+        t->M = M;
         t->point = Vec(p.x,p.y,p.z);
 
     }
 
-    /*
 
-    for (int i = 0; i < n; i++)
-    {
-        Tree* t = sk.searchbyid(sk, i);
-        t->quaternion = qglviewer::Quaternion();
-    }
-    */
 
 }
 
 
-void MyViewer::tree_to_array(Tree& t)
+void MyViewer::tree_to_array(Join* j)
 {
     
-    Vec& r = t.point;
+    Vec& r = j->point;
     ik.push_back(r);
-    for (int i = 0; i < t.child.size(); i++)
+    for (int i = 0; i < j->children.size(); i++)
     {
-        tree_to_array(t.child[i]);
+        tree_to_array(j->children[i]);
     }
 }

@@ -26,7 +26,32 @@ void Join::change_all_position(Join* j, Vec dif)
 
 
 
+void Join::change_all_rotason(Join* j, Vec pivot, Vec angles)
+{
+    qglviewer::Quaternion qx = qglviewer::Quaternion(Vec(1, 0, 0), angles.x / 180.0 * M_PI);
+    qglviewer::Quaternion qy = qglviewer::Quaternion(Vec(0, 1, 0), angles.y / 180.0 * M_PI);
+    qglviewer::Quaternion qz = qglviewer::Quaternion(Vec(0, 0, 1), angles.z / 180.0 * M_PI);
+    qglviewer::Quaternion q = qz * qy * qx;
+    double qmatrix[4][4];
+    q.getMatrix(qmatrix);
+    Mat4 R = transform_to_mat4(qmatrix);
+    Mat4 T1 = TranslateMatrix(-pivot);
+    Mat4 T2 = TranslateMatrix(pivot);
+    Vec4 point4 = Vec4(j->point.x, j->point.y, j->point.z, 1);
 
+    if (j->point != pivot)
+    {
+        Mat4 M = T1 * R * T2;
+        j->M = j->M * M;
+        Vec4 result = point4 * j->M;
+        j->point = Vec(result.x, result.y, result.z);
+
+    }
+    for (int i = 0; i < j->children.size(); i++)
+    {
+        change_all_rotason(j->children[i], pivot, angles);
+    }
+}
 
 
 
