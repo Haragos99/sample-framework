@@ -58,8 +58,14 @@ void MyViewer::inverse_kinematics(ControlPoint t, Join* j)
         }
     }
     FABRIK_p = ik;
+    for (int i = 0; i < ik.size(); i++)
+    {
+        Join* s = j->searchbyid(j, i);
+        s->point = ik[i];
+    }
     IK_matrices(); 
     animate_mesh();
+    skel.set_deafult_matrix();
     if (delatamush)
         Delta_Mush_two(vec);
 
@@ -83,23 +89,20 @@ void MyViewer::IK_matrices()
     skel.po.clear();
     
     std::vector<Vec> old_p = skel.getPoints();
-    
-
-    qglviewer::Quaternion parentRotation = qglviewer::Quaternion();
     for (int i = 1; i < n; ++i)
     {
         Join* t = skel.root->searchbyid(skel.root, i);
 
 
-        Vec old_point = old_p[i] - old_p[i - 1];
-        Vec new_point = ik[i] - ik[i - 1];
-        old_point = old_point.unit();
-        new_point = new_point.unit();
-        Vec axis = old_point ^ new_point;
-        float dot = old_point.x * new_point.x + old_point.y * new_point.y + old_point.z * new_point.z;
-        float rotAngle = std::atan2((old_point ^ new_point).norm(), dot); //std::acos(dot / (mag1 * mag2));
+        Vec old_diff = old_p[i] - old_p[i - 1];
+        Vec new_diff = ik[i] - ik[i - 1];
+        old_diff = old_diff.unit();
+        new_diff = new_diff.unit();
+        Vec axis = old_diff ^ new_diff;
+        float dot = old_diff.x * new_diff.x + old_diff.y * new_diff.y + old_diff.z * new_diff.z;
+        float rotAngle = std::atan2(axis.norm(), dot); 
 
-        Vec pivot = old_p[i-1];
+        Vec pivot = old_p[0];
         Mat4 T1 = TranslateMatrix(-pivot);
         Mat4 T2 = TranslateMatrix(pivot);
 
@@ -111,12 +114,13 @@ void MyViewer::IK_matrices()
             
         }
         Mat4 M = T1 * R * T2;
-        Vec4 p = Vec4(old_p[i]) * M;
+        Vec4 p = Vec4(t->Tpose) * M;
         t->M = M;
         t->point = Vec(p.x,p.y,p.z);
+        
 
     }
-
+    
 
 
 }

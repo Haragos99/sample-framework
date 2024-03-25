@@ -73,6 +73,7 @@ void MyViewer::animate_mesh()
     {
         for (auto v : mesh.vertices())
         {
+            // tezstként lehet leutánozni a fabrikot
             Mat4 M_result = Mat4(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
             for (int i = 0; i < skel.bones.size(); i++)
             {
@@ -80,8 +81,9 @@ void MyViewer::animate_mesh()
                 Mat4 M = skel.bones[i].end->M.skalar(w);
                 M_result += M;
             }
+
             //origanal részt újra gondolni
-            Vec4 point4 = Vec4(mesh.point(v)[0], mesh.point(v)[1], mesh.point(v)[2], 1);
+            Vec4 point4 = Vec4(mesh.data(v).original[0], mesh.data(v).original[1], mesh.data(v).original[2], 1);
             Vec4 result = point4 * M_result;
             OpenMesh::Vec3d diffrents = OpenMesh::Vec3d(result.x, result.y, result.z);
             mesh.point(v) = diffrents;

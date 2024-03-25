@@ -457,7 +457,7 @@ private:
 
     Skelton skel;
     Skelton fab;
-
+    int wx = 0;
     void animate_mesh();
 
     Tree FABRIK;

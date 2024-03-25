@@ -40,7 +40,7 @@ struct Join {
     Join* parent;
     std::vector<Join*> children;
     Join(){}
-    Join(Vec p, int _id) { point = p; id = _id; Tpose = p; }
+    Join(Vec p, int _id) { point = p; id = _id; Tpose = p; parent = nullptr; }
     Mat4 M;
     Join* searchbyid(Join* j, int key)
     {
@@ -113,6 +113,7 @@ struct Bone {
         joins_id.push_back(s->id);
         joins_id.push_back(e->id);
         color = _color;
+        end->parent = s;
         manypoints();
 
     }
