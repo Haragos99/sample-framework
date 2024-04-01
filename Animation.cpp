@@ -14,52 +14,15 @@ void MyViewer::animate()
         update();
         if (current_time < animationDuration_)
         {
-            // we store the changed bone points in selected_points_stotage
-            get_change_points(sk);
-            // store the old points
-            std::vector<Vec> old_points = selected_points_storage;
-            selected_points_storage.clear();
-            sk.animaterotaion(sk, current_time);
-            get_change_points(sk);
-            std::vector<Vec> new_points = selected_points_storage;
-            selected_points_storage.clear();
-            int bone_index = -1;
-            for (int i = 0; i < b.size(); i++)
-            {
-
-                for (int j = 0; j < old_points.size(); j++)
-                {
-                    if (b[i].start == old_points[j])
-                    {
-                        b[i].start = new_points[j];
-                        bone_index = i;
-                    }
-                    if (b[i].End == old_points[j])
-                    {
-                        b[i].End = new_points[j];
-                        //  des = i;
-                    }
-                }
-                if (bone_index != -1)
-                {
-                    Tree* st = sk.searchbyid(sk, bone_index + 1);
-                    b[bone_index].M = st->mymatrix;
-                    mteszt.push_back(st->mymatrix);
-                    bone_index = -1;
-                }
-                
-            }   
-            animate_mesh(); // animate the mesh
-            // reset the matrecies
-            set_bone_matrix();
-            sk.set_deafult_matrix(sk);
-            new_points.clear();
-            old_points.clear();
+            skel.animate(current_time,mesh);
+            //animate_mesh(); // animate the mesh
+            skel.set_deafult_matrix();
             update();
 
         }
         else {
             isAnimating_ = false;
+            stopAnimation();
         }
     }
     
@@ -67,29 +30,7 @@ void MyViewer::animate()
 }
 
 
-void MyViewer::animate_mesh()
-{
-    if (isweight)
-    {
-        for (auto v : mesh.vertices())
-        {
-            // tezstként lehet leutánozni a fabrikot
-            Mat4 M_result = Mat4(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
-            for (int i = 0; i < skel.bones.size(); i++)
-            {
-                double w = mesh.data(v).weigh[i];
-                Mat4 M = skel.bones[i].end->M.skalar(w);
-                M_result += M;
-            }
 
-            //origanal részt újra gondolni
-            Vec4 point4 = Vec4(mesh.data(v).original[0], mesh.data(v).original[1], mesh.data(v).original[2], 1);
-            Vec4 result = point4 * M_result;
-            OpenMesh::Vec3d diffrents = OpenMesh::Vec3d(result.x, result.y, result.z);
-            mesh.point(v) = diffrents;
-        }
-    }
-}
 
 
 void MyViewer::keyframe_add()
@@ -121,14 +62,12 @@ void MyViewer::keyframe_add()
         qglviewer::Quaternion qx = qglviewer::Quaternion(Vec(1, 0, 0), angels.x / 180.0 * M_PI);
         qglviewer::Quaternion qy = qglviewer::Quaternion(Vec(0, 1, 0), angels.y / 180.0 * M_PI);
         qglviewer::Quaternion qz = qglviewer::Quaternion(Vec(0, 0, 1), angels.z / 180.0 * M_PI);
-
         qglviewer::Quaternion q = qz * qy * qx;
 
-        Tree* to = sk.searchbyid(sk, selected_vertex);
-        Keyframe k = Keyframe(sb->value(), to->point, angels);
-        //k.rotation_ = q;
-        sk.Addframe(*to,k);
-        b[to->id].keyframes.push_back(k);
+        Join* j = skel.root->searchbyid(skel.root, selected_vertex);
+        Keyframe k = Keyframe(sb->value(), j->id, angels);
+
+        skel.root->addframe(j, k);
         keyframes_.push_back(k);
     }
 }
@@ -221,14 +160,9 @@ void MyViewer::Invers()
 
 void MyViewer::Reset()
 {
-    sk.reset_all(sk);
-    sk.set_deafult_matrix(sk);
-    for (int i = 0; i < b.size(); i++)
-    {
-        b[i].start = b[i].originalS;
-        b[i].End = b[i].originalE;
-        b[i].M = Mat4();
-    }
+    skel.reset();
+
+
 
     for (auto v : mesh.vertices())
     {

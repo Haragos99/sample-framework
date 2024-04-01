@@ -75,7 +75,7 @@ nnz(v.idx()) = 1;
     solver.compute(O); // M inverz mátrixának (valójában: "LU felbontásának") kiszámítása
 
 
-    for (int k = 0; k < b.size(); k++)
+    for (int k = 0; k < skel.getSize(); k++)
     {
         Eigen::VectorXd w1(n);
         w1 = Eigen::VectorXd::Zero(n); // Feltöltjük 0-kkal
@@ -114,7 +114,7 @@ nnz(v.idx()) = 1;
 
     for (auto v : mesh.vertices()) {
         double sum = 0.0;
-        for (int i = 0; i < b.size(); i++) {
+        for (int i = 0; i < skel.getSize(); i++) {
             sum += mesh.data(v).weigh[i];
         }
         if (abs(sum - 1.0) > 1E-10) {

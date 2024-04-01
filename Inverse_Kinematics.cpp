@@ -64,7 +64,8 @@ void MyViewer::inverse_kinematics(ControlPoint t, Join* j)
         s->point = ik[i];
     }
     IK_matrices(); 
-    animate_mesh();
+    
+    //animate_mesh();
     skel.set_deafult_matrix();
     if (delatamush)
         Delta_Mush_two(vec);
@@ -89,6 +90,11 @@ void MyViewer::IK_matrices()
     skel.po.clear();
     
     std::vector<Vec> old_p = skel.getPoints();
+
+
+
+
+
     for (int i = 1; i < n; ++i)
     {
         Join* t = skel.root->searchbyid(skel.root, i);
@@ -102,7 +108,7 @@ void MyViewer::IK_matrices()
         float dot = old_diff.x * new_diff.x + old_diff.y * new_diff.y + old_diff.z * new_diff.z;
         float rotAngle = std::atan2(axis.norm(), dot); 
 
-        Vec pivot = old_p[0];
+        Vec pivot = t->parent->Tpose;
         Mat4 T1 = TranslateMatrix(-pivot);
         Mat4 T2 = TranslateMatrix(pivot);
 

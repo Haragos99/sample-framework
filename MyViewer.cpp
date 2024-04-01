@@ -538,7 +538,7 @@ void MyViewer::Rotate()
         skel.root->change_all_rotason(jo, jo->point, angles);
         //sk.used_points(*to);
         
-        animate_mesh();
+        skel.animate_mesh(mesh,isweight);
         
         if (delatamush)
             Delta_Mush_two(vec);

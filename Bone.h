@@ -3,16 +3,19 @@
 #include <QGLViewer/qglviewer.h>
 #include "Matrix4.h"
 #include <Eigen/Eigen>
-using qglviewer::Vec;
+#include "Mesh.h"
 
+using qglviewer::Vec;
+using MyMesh = OpenMesh::TriMesh_ArrayKernelT<MyTraits>;
+using Vector = OpenMesh::VectorT<double, 3>;
 
 
 
 // Probáljuk majd meg hogy csak a kiválasztot csont részen csináljuk a key framet.
 
 struct Keyframe {
-    Keyframe(float time, Vec& position,const Vec& angles)
-        : time_(time), position_(position),angles_(angles) {}
+    Keyframe(float time, int index,const Vec& angles)
+        : time_(time), index_of_join(index),angles_(angles) {}
 
     float time() const { return time_; }
     const Vec& position() const { return position_; }
@@ -20,6 +23,7 @@ struct Keyframe {
     Vec angles_;
     Vec position_;
     Vec selected_point;
+    int index_of_join;
 private:
     float time_;
     
@@ -38,62 +42,32 @@ struct Join {
     Vec point;
     Vec Tpose;
     Join* parent;
+    Vec angel;
+    Vec pivot;
     std::vector<Join*> children;
+    std::vector<Keyframe> keyframes;
     Join(){}
     Join(Vec p, int _id) { point = p; id = _id; Tpose = p; parent = nullptr; }
     Mat4 M;
-    Join* searchbyid(Join* j, int key)
-    {
-        if (key == j->id) { return j; }
+    Join* searchbyid(Join* j, int key);
+    void drawarrow(Join* j);
 
-        for (int i = 0; i < j->children.size(); i++)
-        {
-            Join* result = searchbyid(j->children[i], key);
-            if (result != nullptr)
-                return result;
-        }
-        return nullptr;
-    }
-    void drawarrow(Join* j)
-    {
-        Vec const& p = j->point;
-        glPushName(j->id);
-        glRasterPos3fv(p);
-        glPopName();
-        for (int i = 0; i < j->children.size(); i++)
-        {
-            drawarrow(j->children[i]);
-        }
-    }
-    void draw(Join* j)
-    {
-        Vec const& p = j->point;
-        glDisable(GL_LIGHTING);
-        
-        glColor3d(1.0, 0.0, 1.0);
-        glPointSize(50.0);
-        glBegin(GL_POINTS);
-        glVertex3dv(p);
-        glEnd();
-        glPointSize(10.0);
-        glEnable(GL_LIGHTING);
-        for (int i = 0; i < j->children.size(); i++)
-        {
-            draw(j->children[i]);
-        }
-    }
+    void draw(Join* j);
+    
     void change_all_position(Join* j, Vec dif);
 
     void change_all_rotason(Join* j, Vec pivot, Vec angles);
 
-    void set_deafult_matrix(Join* j)
-    {
-        j->M= Mat4();
-        for (int i = 0; i < j->children.size(); i++)
-        {
-            set_deafult_matrix(j->children[i]);
-        }
-    }
+    void set_deafult_matrix(Join* j);
+
+    void addframe(Join* j, Keyframe& frame);
+
+    void animaterotaion(Join* j, float current_time, Mat4 M);
+
+    void reset_all(Join* j);
+
+    Mat4 getMatrix();
+
 
 };
 
@@ -114,25 +88,14 @@ struct Bone {
         joins_id.push_back(e->id);
         color = _color;
         end->parent = s;
+        start->bones_id.push_back(id);
+        end->bones_id.push_back(id);
         manypoints();
 
     }
     void draw();
 
-    void manypoints()
-    {
-
-        Vec ir = end->point - start->point ;
-        double len = sqrt(pow(end->point.x - start->point.x, 2) + 
-            pow(end->point.y - start->point.y, 2) + pow(end->point.z - start->point.z, 2));
-        int res = 100;
-        for (int i = 0; i < res; i++)
-        {
-            Vec t;
-            t = start->point + ir * 1.0 / (res - 1) * i;
-            points.push_back(t);
-        }
-    }
+    void manypoints();
 
 
 };
@@ -155,10 +118,7 @@ public:
     Skelton() {  }
 
     int getSize() { return bones.size(); }
-    void Rotate(int id)
-    {
-         
-    }
+
     void set_deafult_matrix() { root->set_deafult_matrix(root); }
 
     void get_join_point(Join *j)
@@ -172,10 +132,15 @@ public:
     }
     std::vector<Vec> getPoints() { get_join_point(root); return po; }
 
+    void animate(float current_time, MyMesh& mesh);
+
+    void animate_mesh( MyMesh& mesh,bool isweight, bool inv = false);
+
+
     void build(){
         root = new Join(Vec(0,0,0),0);
         Join* j = new Join(Vec(0, 0.35, 0),1);
-        Join* j2 = new Join(Vec(0, 0.65, 0), 2);
+        Join* j2 = new Join(Vec(0, 0.7, 0), 2);
         Join* j3 = new Join(Vec(0, 1, 0),3);
         root->children.push_back(j);
         root->children[0]->children.push_back(j2);
@@ -207,6 +172,8 @@ public:
         }
         root->draw(root);
     }
+
+    void reset() { root->reset_all(root); }
 
 };
 

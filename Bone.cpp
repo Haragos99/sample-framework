@@ -13,6 +13,22 @@ void Bone::draw()
 }
 
 
+void Bone::manypoints()
+{
+
+    Vec ir = end->point - start->point;
+    double len = sqrt(pow(end->point.x - start->point.x, 2) +
+        pow(end->point.y - start->point.y, 2) + pow(end->point.z - start->point.z, 2));
+    int res = 100;
+    for (int i = 0; i < res; i++)
+    {
+        Vec t;
+        t = start->point + ir * 1.0 / (res - 1) * i;
+        points.push_back(t);
+    }
+}
+
+
 
 void Join::change_all_position(Join* j, Vec dif)
 {
@@ -57,10 +73,204 @@ void Join::change_all_rotason(Join* j, Vec pivot, Vec angles)
 
 
 
+void Join::draw(Join* j)
+{
+    Vec const& p = j->point;
+    glDisable(GL_LIGHTING);
+
+    glColor3d(1.0, 0.0, 1.0);
+    glPointSize(50.0);
+    glBegin(GL_POINTS);
+    glVertex3dv(p);
+    glEnd();
+    glPointSize(10.0);
+    glEnable(GL_LIGHTING);
+    for (int i = 0; i < j->children.size(); i++)
+    {
+        draw(j->children[i]);
+    }
+}
+
+
+Join* Join::searchbyid(Join* j, int key)
+{
+    if (key == j->id) { return j; }
+
+    for (int i = 0; i < j->children.size(); i++)
+    {
+        Join* result = searchbyid(j->children[i], key);
+        if (result != nullptr)
+            return result;
+    }
+    return nullptr;
+}
+
+
+void Join::drawarrow(Join* j)
+{
+    Vec const& p = j->point;
+    glPushName(j->id);
+    glRasterPos3fv(p);
+    glPopName();
+    for (int i = 0; i < j->children.size(); i++)
+    {
+         drawarrow(j->children[i]);
+    }
+}
+
+void Join::set_deafult_matrix(Join* j)
+{
+    j->M = Mat4();
+    for (int i = 0; i < j->children.size(); i++)
+    {
+        set_deafult_matrix(j->children[i]);
+    }
+}
+
+
+void Join::addframe(Join* j, Keyframe& frame)
+{
+    j->keyframes.push_back(frame);
+}
+
+
+void Join::animaterotaion(Join* j, float current_time, Mat4 M)
+{
+    Vec4 point4 = Vec4(j->point.x, j->point.y, j->point.z, 1);
+    j->M = M;
+    Vec4 result = point4 * j->M;
+    j->point = Vec(result.x, result.y, result.z);
+    if (j->keyframes.size() != 0 && j->keyframes.back().time() >= current_time)
+    {
+        size_t s = 0;
+
+        // think again -2 
+        while (s < j->keyframes.size() - 2 && current_time >= j->keyframes[s + 1].time()) {
+            s++;
+        }
+        const Keyframe& startKeyframe = j->keyframes[s];
+        const Keyframe& endKeyframe = j->keyframes[s + 1];
+        float timediff_key = (endKeyframe.time() - startKeyframe.time());
+        float dt = current_time - startKeyframe.time();
+        Vec rotated = (endKeyframe.angeles() - startKeyframe.angeles());
+        float r = (dt / timediff_key);
+        Vec angels = rotated * r / 10;
+        if (dt >= endKeyframe.time())angels = Vec(0, 0, 0);
+        Vec pivot = j->point;
+        /*
+        Mat4 T1 = TranslateMatrix(-pivot);
+        Mat4 T2 = TranslateMatrix(pivot);
+        qglviewer::Quaternion qx = qglviewer::Quaternion(Vec(1, 0, 0), angels.x / 180.0 * M_PI);
+        qglviewer::Quaternion qy = qglviewer::Quaternion(Vec(0, 1, 0), angels.y / 180.0 * M_PI);
+        qglviewer::Quaternion qz = qglviewer::Quaternion(Vec(0, 0, 1), angels.z / 180.0 * M_PI);
+        qglviewer::Quaternion q = qz * qy * qx;
+        double qmatrix[4][4];
+        q.getMatrix(qmatrix);
+        Mat4 R = transform_to_mat4(qmatrix);
+
+
+        Mat4 _M = T1 * R * T2;
+        M = M * _M;
+        */
+        change_all_rotason(j, pivot, angels);
+        
+
+    }
+    for (int i = 0; i < j->children.size(); i++)
+    {
+        animaterotaion(j->children[i], current_time,M);
+    }
+
+}
+
+
+void Join::reset_all(Join* j)
+{
+    j->point = j->Tpose;
+    j->M = Mat4();
+    for (int i = 0; i < j->children.size(); i++)
+    {
+        reset_all(j->children[i]);
+    }
+}
 
 
 
+Mat4 Join::getMatrix()
+{
+    Mat4 R = RotationMatrix(angel.z, pivot) * RotationMatrix(angel.y, pivot) * RotationMatrix(angel.x, pivot);
+    Mat4 T1 = TranslateMatrix(-pivot);
+    Mat4 T2 = TranslateMatrix(pivot);
 
+    return T1 * R * T2;
+}
+
+
+
+void Skelton::animate(float current_time, MyMesh& mesh)
+{
+    //root->animaterotaion(root, current_time, Mat4());
+    for (int i = 0; i < 4; i++)
+    {
+        Join* j = root->searchbyid(root, i);
+        if (j->keyframes.size() != 0 && j->keyframes.back().time() >= current_time)
+        {
+            size_t s = 0;
+
+            // think again -2 
+            while (s < j->keyframes.size() - 2 && current_time >= j->keyframes[s + 1].time()) {
+                s++;
+            }
+            const Keyframe& startKeyframe = j->keyframes[s];
+            const Keyframe& endKeyframe = j->keyframes[s + 1];
+            float timediff_key = (endKeyframe.time() - startKeyframe.time());
+            float dt = current_time - startKeyframe.time();
+            Vec rotated = (endKeyframe.angeles() - startKeyframe.angeles());
+            float r = (dt / timediff_key);
+            Vec angels = rotated * r / 10;
+            if (dt >= endKeyframe.time())angels = Vec(0, 0, 0);
+            Vec pivot = j->point;
+            j->animaterotaion(j, current_time, Mat4());
+            animate_mesh(mesh, true);
+        }
+        
+        
+        
+    }
+}
+
+
+
+void Skelton::animate_mesh(MyMesh& mesh, bool isweight, bool inv)
+{
+    if (isweight)
+    {
+        for (auto v : mesh.vertices())
+        {
+            // tezstként lehet leutánozni a fabrikot
+            Mat4 M_result = Mat4(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
+            for (int i = 0; i < bones.size(); i++)
+            {
+                double w = mesh.data(v).weigh[i];
+                Mat4 M = bones[i].end->M.skalar(w);
+                M_result += M;
+            }
+            Vec4 point4;
+            //origanal részt újra gondolni
+            if (!inv)
+            {
+                point4 = Vec4(mesh.point(v)[0], mesh.point(v)[1], mesh.point(v)[2], 1);
+            }
+            else {
+                point4 = Vec4(mesh.data(v).original[0], mesh.data(v).original[1], mesh.data(v).original[2], 1);
+            }
+
+            Vec4 result = point4 * M_result;
+            OpenMesh::Vec3d diffrents = OpenMesh::Vec3d(result.x, result.y, result.z);
+            mesh.point(v) = diffrents;
+        }
+    }
+}
 
 
 void Tree::reset_all(Tree& t)

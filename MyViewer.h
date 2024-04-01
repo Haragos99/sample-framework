@@ -77,7 +77,7 @@ public:
         auto* vb = new QVBoxLayout;
 
         QLabel* text;
-        if (points.size() != 0 && mesh.n_vertices() != 0)
+        if (mesh.n_vertices() != 0)
         {
 
             Epsil();
@@ -180,20 +180,6 @@ protected:
     virtual void mouseMoveEvent(QMouseEvent* e) override;
     virtual QString helpString() const override;
 private:
-    struct MyTraits : public OpenMesh::DefaultTraits {
-        using Point = OpenMesh::Vec3d; // the default would be Vec3f
-        using Normal = OpenMesh::Vec3d;
-        VertexTraits{
-          OpenMesh::Vec3d original;
-          double mean;              // approximated mean curvature
-          std::vector<double> weigh;
-          std::vector<double> distance;
-          int idx_of_closest_bone;
-
-        };
-        VertexAttributes(OpenMesh::Attributes::Normal |
-            OpenMesh::Attributes::Color | OpenMesh::Attributes::Status);
-    };
     using MyMesh = OpenMesh::TriMesh_ArrayKernelT<MyTraits>;
     using Vector = OpenMesh::VectorT<double, 3>;
 
@@ -458,7 +444,6 @@ private:
     Skelton skel;
     Skelton fab;
     int wx = 0;
-    void animate_mesh();
 
     Tree FABRIK;
 
