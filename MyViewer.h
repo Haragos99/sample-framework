@@ -204,6 +204,7 @@ private:
     void drawControlNet() const;
     void drawSkleton();
     void drawAxes() const;
+    void drawJointAxes(std::vector<Axes>& a) const;
     void drawAxesWithNames() const;
     static Vec intersectLines(const Vec& ap, const Vec& ad, const Vec& bp, const Vec& bd);
 
@@ -419,7 +420,7 @@ private:
 
     void selectedjoin();
 
-    void inverse_kinematics(ControlPoint t, Join* j);
+    void inverse_kinematics(ControlPoint t, Joint* j);
 
     // this collect the bones
     std::vector<Bones> b;
@@ -474,7 +475,7 @@ private:
         return std::chrono::duration_cast<std::chrono::duration<float>>(duration).count();
     }
 
-    void tree_to_array(Join* j);
+    void tree_to_array(Joint* j);
     std::vector<Vec> ik;
     void IK_matrices();
     double sum_len();
@@ -486,6 +487,7 @@ private:
     void setupCameraBone();
     bool mehet = false;
     bool isweight = false;
+    bool showJA = false;
     std::vector<int> _used;
     // Visualization
     double mean_min, mean_max, cutoff_ratio;

@@ -529,7 +529,7 @@ void MyViewer::Rotate()
         Vec angles = Vec(hr, pr, br);
         angels = angles;
         rotation = angles;
-        Join* jo = skel.root->searchbyid(skel.root, selected_vertex);
+        Joint* jo = skel.root->searchbyid(skel.root, selected_vertex);
         // to->angel += angles;
 
         int des = -1;
@@ -557,7 +557,7 @@ void MyViewer::selectedjoin()
             * hb2 = new QHBoxLayout,
             * hb3 = new QHBoxLayout;
         auto* vb = new QVBoxLayout;
-        Join* jo = skel.root->searchbyid(skel.root, selected_vertex);
+        Joint* jo = skel.root->searchbyid(skel.root, selected_vertex);
 
         auto* text_H = new QLabel(tr("Matrix: "));
         auto* text_b = new QLabel(tr("Point: "));
@@ -929,7 +929,7 @@ void MyViewer::mouseMoveEvent(QMouseEvent* e) {
         */
 
         Vec dif = axes.position - old_pos;
-        Join* j = skel.root->searchbyid(skel.root, selected_vertex);
+        Joint* j = skel.root->searchbyid(skel.root, selected_vertex);
         skel.root->change_all_position(j, dif);
 
         /*

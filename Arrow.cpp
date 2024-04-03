@@ -12,6 +12,30 @@ void MyViewer::drawAxes() const {
     glEnd();
 }
 
+
+
+void MyViewer::drawJointAxes(std::vector<Axes>& a) const {
+    for (auto& ax : a)
+    {
+        const Vec& p = ax.position;
+
+
+        Vec4 x = Vec4(p + Vec(ax.size, 0.0, 0.0)) * ax.M;
+        Vec4 y = Vec4(p + Vec(0.0, ax.size, 0.0)) * ax.M;
+        Vec4 z = Vec4(p + Vec(0.0, 0.0, ax.size)) * ax.M;
+
+        glColor3d(1.0, 0.0, 0.0);
+        drawArrow(p, x.to_Vec(), ax.size / 50.0);
+        glColor3d(0.0, 1.0, 0.0);
+        drawArrow(p, y.to_Vec(), ax.size / 50.0);
+        glColor3d(0.0, 0.0, 1.0);
+        drawArrow(p, z.to_Vec(), ax.size / 50.0);
+        glEnd();
+    } 
+}
+
+
+
 void MyViewer::drawWithNames() {
     if (axes.shown)
         return drawAxesWithNames();
@@ -93,7 +117,7 @@ void MyViewer::postSelection(const QPoint& p) {
         axes.position = t->point;
         drawSkleton();
         */
-        Join* j = skel.root->searchbyid(skel.root, sel);
+        Joint* j = skel.root->searchbyid(skel.root, sel);
         axes.position = j->point;
        
     }

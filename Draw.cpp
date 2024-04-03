@@ -40,6 +40,12 @@ void MyViewer::draw() {
     if (model_type == ModelType::SKELTON || model_type == ModelType::INVERZ)
     {
         skel.draw();
+        if (showJA)
+        {
+            auto jointaxes = skel.arrows();
+            drawJointAxes(jointaxes);
+        }
+
     }
 
     

@@ -1,7 +1,7 @@
 #include "MyViewer.h"
 #include <math.h>
 
-void MyViewer::inverse_kinematics(ControlPoint t, Join* j)
+void MyViewer::inverse_kinematics(ControlPoint t, Joint* j)
 {
     ik.clear();
     tree_to_array(j);
@@ -60,7 +60,7 @@ void MyViewer::inverse_kinematics(ControlPoint t, Join* j)
     FABRIK_p = ik;
     for (int i = 0; i < ik.size(); i++)
     {
-        Join* s = j->searchbyid(j, i);
+        Joint* s = j->searchbyid(j, i);
         s->point = ik[i];
     }
     IK_matrices(); 
@@ -97,7 +97,7 @@ void MyViewer::IK_matrices()
 
     for (int i = 1; i < n; ++i)
     {
-        Join* t = skel.root->searchbyid(skel.root, i);
+        Joint* t = skel.root->searchbyid(skel.root, i);
 
 
         Vec old_diff = old_p[i] - old_p[i - 1];
@@ -132,7 +132,7 @@ void MyViewer::IK_matrices()
 }
 
 
-void MyViewer::tree_to_array(Join* j)
+void MyViewer::tree_to_array(Joint* j)
 {
     
     Vec& r = j->point;

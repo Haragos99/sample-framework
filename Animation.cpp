@@ -64,7 +64,7 @@ void MyViewer::keyframe_add()
         qglviewer::Quaternion qz = qglviewer::Quaternion(Vec(0, 0, 1), angels.z / 180.0 * M_PI);
         qglviewer::Quaternion q = qz * qy * qx;
 
-        Join* j = skel.root->searchbyid(skel.root, selected_vertex);
+        Joint* j = skel.root->searchbyid(skel.root, selected_vertex);
         Keyframe k = Keyframe(sb->value(), j->id, angels);
 
         skel.root->addframe(j, k);

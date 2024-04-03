@@ -30,7 +30,7 @@ void Bone::manypoints()
 
 
 
-void Join::change_all_position(Join* j, Vec dif)
+void Joint::change_all_position(Joint* j, Vec dif)
 {
     j->point += dif;
     for (int i = 0; i < j->children.size(); i++)
@@ -42,7 +42,7 @@ void Join::change_all_position(Join* j, Vec dif)
 
 
 
-void Join::change_all_rotason(Join* j, Vec pivot, Vec angles)
+void Joint::change_all_rotason(Joint* j, Vec pivot, Vec angles)
 {
     qglviewer::Quaternion qx = qglviewer::Quaternion(Vec(1, 0, 0), angles.x / 180.0 * M_PI);
     qglviewer::Quaternion qy = qglviewer::Quaternion(Vec(0, 1, 0), angles.y / 180.0 * M_PI);
@@ -73,7 +73,7 @@ void Join::change_all_rotason(Join* j, Vec pivot, Vec angles)
 
 
 
-void Join::draw(Join* j)
+void Joint::draw(Joint* j)
 {
     Vec const& p = j->point;
     glDisable(GL_LIGHTING);
@@ -92,13 +92,13 @@ void Join::draw(Join* j)
 }
 
 
-Join* Join::searchbyid(Join* j, int key)
+Joint* Joint::searchbyid(Joint* j, int key)
 {
     if (key == j->id) { return j; }
 
     for (int i = 0; i < j->children.size(); i++)
     {
-        Join* result = searchbyid(j->children[i], key);
+        Joint* result = searchbyid(j->children[i], key);
         if (result != nullptr)
             return result;
     }
@@ -106,7 +106,7 @@ Join* Join::searchbyid(Join* j, int key)
 }
 
 
-void Join::drawarrow(Join* j)
+void Joint::drawarrow(Joint* j)
 {
     Vec const& p = j->point;
     glPushName(j->id);
@@ -118,7 +118,7 @@ void Join::drawarrow(Join* j)
     }
 }
 
-void Join::set_deafult_matrix(Join* j)
+void Joint::set_deafult_matrix(Joint* j)
 {
     j->M = Mat4();
     for (int i = 0; i < j->children.size(); i++)
@@ -128,16 +128,16 @@ void Join::set_deafult_matrix(Join* j)
 }
 
 
-void Join::addframe(Join* j, Keyframe& frame)
+void Joint::addframe(Joint* j, Keyframe& frame)
 {
     j->keyframes.push_back(frame);
 }
 
 
-void Join::animaterotaion(Join* j, float current_time, Mat4 M)
+void Joint::animaterotaion(Joint* j, float current_time, Mat4 M)
 {
     Vec4 point4 = Vec4(j->point.x, j->point.y, j->point.z, 1);
-    j->M = M;
+    j->M = j->M * M;
     Vec4 result = point4 * j->M;
     j->point = Vec(result.x, result.y, result.z);
     if (j->keyframes.size() != 0 && j->keyframes.back().time() >= current_time)
@@ -184,7 +184,7 @@ void Join::animaterotaion(Join* j, float current_time, Mat4 M)
 }
 
 
-void Join::reset_all(Join* j)
+void Joint::reset_all(Joint* j)
 {
     j->point = j->Tpose;
     j->M = Mat4();
@@ -196,7 +196,7 @@ void Join::reset_all(Join* j)
 
 
 
-Mat4 Join::getMatrix()
+Mat4 Joint::getMatrix()
 {
     Mat4 R = RotationMatrix(angel.z, pivot) * RotationMatrix(angel.y, pivot) * RotationMatrix(angel.x, pivot);
     Mat4 T1 = TranslateMatrix(-pivot);
@@ -207,12 +207,45 @@ Mat4 Join::getMatrix()
 
 
 
+void Joint::calculateMatrecies(Joint* j, Vec _pivot, Vec angles)
+{
+    qglviewer::Quaternion qx = qglviewer::Quaternion(Vec(1, 0, 0), angles.x / 180.0 * M_PI);
+    qglviewer::Quaternion qy = qglviewer::Quaternion(Vec(0, 1, 0), angles.y / 180.0 * M_PI);
+    qglviewer::Quaternion qz = qglviewer::Quaternion(Vec(0, 0, 1), angles.z / 180.0 * M_PI);
+    qglviewer::Quaternion q = qz * qy * qx;
+    double qmatrix[4][4];
+    q.getMatrix(qmatrix);
+    Mat4 R = transform_to_mat4(qmatrix);
+    Mat4 T1 = TranslateMatrix(-_pivot);
+    Mat4 T2 = TranslateMatrix(_pivot);
+    if (j->point != _pivot)
+    {
+        Mat4 M = T1 * R * T2;
+        j->M = j->M *M;
+    }
+    for (int i = 0; i < j->children.size(); i++)
+    {
+        calculateMatrecies(j->children[i],_pivot,angles);
+    }
+}
+
+void Joint::transform_point(Joint* j) 
+{
+    Vec4 point4 = Vec4(j->point.x, j->point.y, j->point.z, 1);
+    Vec4 result = point4 * j->M;
+    j->point = Vec(result.x, result.y, result.z);
+    for (int i = 0; i < j->children.size(); i++)
+    {
+        transform_point(j->children[i]);
+    }
+}
+
 void Skelton::animate(float current_time, MyMesh& mesh)
 {
     //root->animaterotaion(root, current_time, Mat4());
     for (int i = 0; i < 4; i++)
     {
-        Join* j = root->searchbyid(root, i);
+        Joint* j = root->searchbyid(root, i);
         if (j->keyframes.size() != 0 && j->keyframes.back().time() >= current_time)
         {
             size_t s = 0;
@@ -230,13 +263,14 @@ void Skelton::animate(float current_time, MyMesh& mesh)
             Vec angels = rotated * r / 10;
             if (dt >= endKeyframe.time())angels = Vec(0, 0, 0);
             Vec pivot = j->point;
-            j->animaterotaion(j, current_time, Mat4());
-            animate_mesh(mesh, true);
+            j->calculateMatrecies(j, pivot, angels);
+
+
         }
         
-        
-        
     }
+    root->transform_point(root);
+    animate_mesh(mesh, true);
 }
 
 
@@ -270,6 +304,19 @@ void Skelton::animate_mesh(MyMesh& mesh, bool isweight, bool inv)
             mesh.point(v) = diffrents;
         }
     }
+}
+
+
+
+std::vector<Axes>Skelton::arrows()
+{
+    std::vector<Axes> result;
+    for (int i = 0; i < n_joint; i++)
+    {
+        Joint* j = root->searchbyid(root, i);
+        result.push_back(Axes(j->point, 0.1,j->M));
+    }
+    return result;
 }
 
 

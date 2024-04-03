@@ -30,56 +30,67 @@ private:
     
 };
 
+struct Axes {
+    bool shown;
+    float size;
+    int selected_axis;
+    Vec position, grabbed_pos, original_pos;
+    Mat4 M;
+    Axes(Vec _position, float _size, Mat4 _M) { position = _position; size = _size; M = _M; }
+};
 
 
 
 
 
-
-struct Join {
+struct Joint {
     int id;// id of the join and the index of the position
     std::vector<int> bones_id;
     Vec point;
     Vec Tpose;
-    Join* parent;
+    Joint* parent;
     Vec angel;
     Vec pivot;
-    std::vector<Join*> children;
+    std::vector<Joint*> children;
     std::vector<Keyframe> keyframes;
-    Join(){}
-    Join(Vec p, int _id) { point = p; id = _id; Tpose = p; parent = nullptr; }
+    Joint(){}
+    Joint(Vec p, int _id) { point = p; id = _id; Tpose = p; parent = nullptr; }
     Mat4 M;
-    Join* searchbyid(Join* j, int key);
-    void drawarrow(Join* j);
+    Joint* searchbyid(Joint* j, int key);
+    void drawarrow(Joint* j);
 
-    void draw(Join* j);
+    void draw(Joint* j);
     
-    void change_all_position(Join* j, Vec dif);
+    void change_all_position(Joint* j, Vec dif);
 
-    void change_all_rotason(Join* j, Vec pivot, Vec angles);
+    void change_all_rotason(Joint* j, Vec pivot, Vec angles);
 
-    void set_deafult_matrix(Join* j);
+    void set_deafult_matrix(Joint* j);
 
-    void addframe(Join* j, Keyframe& frame);
+    void addframe(Joint* j, Keyframe& frame);
 
-    void animaterotaion(Join* j, float current_time, Mat4 M);
+    void animaterotaion(Joint* j, float current_time, Mat4 M);
 
-    void reset_all(Join* j);
+    void reset_all(Joint* j);
+
+    void transform_point(Joint* j);
 
     Mat4 getMatrix();
+
+    void calculateMatrecies(Joint* j, Vec pivot, Vec angles);
 
 
 };
 
 struct Bone {
     std::vector<int> joins_id;
-    Join* start;
-    Join* end;
+    Joint* start;
+    Joint* end;
     Mat4 M;
     int id;
     Vec color;
     std::vector<Vec> points;
-    Bone(Join* s, Join* e,int _id,Vec _color)
+    Bone(Joint* s, Joint* e,int _id,Vec _color)
     {
         start = s;
         end = e;
@@ -104,9 +115,10 @@ struct Skelton {
 private:
     std::vector<Vec> points;
     std::vector<Vec> Tpose;
+    int n_joint;
 
 public:
-    Join* root;
+    Joint* root;
     std::vector<Bone> bones;
     std::vector<Vec> po;
     
@@ -121,7 +133,7 @@ public:
 
     void set_deafult_matrix() { root->set_deafult_matrix(root); }
 
-    void get_join_point(Join *j)
+    void get_join_point(Joint *j)
     {
             po.push_back(j->Tpose);
             for (int i = 0; i < j->children.size(); i++)
@@ -136,12 +148,14 @@ public:
 
     void animate_mesh( MyMesh& mesh,bool isweight, bool inv = false);
 
+    std::vector<Axes>arrows();
 
     void build(){
-        root = new Join(Vec(0,0,0),0);
-        Join* j = new Join(Vec(0, 0.35, 0),1);
-        Join* j2 = new Join(Vec(0, 0.7, 0), 2);
-        Join* j3 = new Join(Vec(0, 1, 0),3);
+        root = new Joint(Vec(0,0,0),0);
+        Joint* j = new Joint(Vec(0, 0.35, 0),1);
+        Joint* j2 = new Joint(Vec(0, 0.7, 0), 2);
+        Joint* j3 = new Joint(Vec(0, 1, 0),3);
+        n_joint = 4;
         root->children.push_back(j);
         root->children[0]->children.push_back(j2);
         root->children[0]->children[0]->children.push_back(j3);
@@ -155,7 +169,7 @@ public:
     {
         for (int i = 0; i < points.size(); i++)
         {
-            Join* j = root->searchbyid(root,i);
+            Joint* j = root->searchbyid(root,i);
             Vec const& p = points[j->id];
             glPushName(j->id);
             glRasterPos3fv(p);
