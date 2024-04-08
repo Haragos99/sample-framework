@@ -51,6 +51,7 @@ void Joint::change_all_rotason(Joint* j, Vec pivot, Vec angles)
     double qmatrix[4][4];
     q.getMatrix(qmatrix);
     Mat4 R = transform_to_mat4(qmatrix);
+    j->R = R;
     Mat4 T1 = TranslateMatrix(-pivot);
     Mat4 T2 = TranslateMatrix(pivot);
     Vec4 point4 = Vec4(j->point.x, j->point.y, j->point.z, 1);
@@ -188,6 +189,7 @@ void Joint::reset_all(Joint* j)
 {
     j->point = j->Tpose;
     j->M = Mat4();
+    j->R = Mat4();
     for (int i = 0; i < j->children.size(); i++)
     {
         reset_all(j->children[i]);
@@ -216,6 +218,7 @@ void Joint::calculateMatrecies(Joint* j, Vec _pivot, Vec angles)
     double qmatrix[4][4];
     q.getMatrix(qmatrix);
     Mat4 R = transform_to_mat4(qmatrix);
+    j->R = R;
     Mat4 T1 = TranslateMatrix(-_pivot);
     Mat4 T2 = TranslateMatrix(_pivot);
     if (j->point != _pivot)
@@ -314,7 +317,7 @@ std::vector<Axes>Skelton::arrows()
     for (int i = 0; i < n_joint; i++)
     {
         Joint* j = root->searchbyid(root, i);
-        result.push_back(Axes(j->point, 0.1,j->M));
+        result.push_back(Axes(j->point, 0.1,j->R));
     }
     return result;
 }

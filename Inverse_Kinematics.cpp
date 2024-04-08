@@ -65,7 +65,7 @@ void MyViewer::inverse_kinematics(ControlPoint t, Joint* j)
     }
     IK_matrices(); 
     
-    //animate_mesh();
+    skel.animate_mesh(mesh,isweight,true);
     skel.set_deafult_matrix();
     if (delatamush)
         Delta_Mush_two(vec);
@@ -119,8 +119,11 @@ void MyViewer::IK_matrices()
             R = RotationMatrix(rotAngle, axis);
             
         }
-        Mat4 M = T1 * R * T2;
+        t->R = R;
+        Mat4 M = T1 * R * TranslateMatrix(t->parent->point);// * T2;
         Vec4 p = Vec4(t->Tpose) * M;
+        //p = p * T1;
+        //p = p * TranslateMatrix(t->parent->point);
         t->M = M;
         t->point = Vec(p.x,p.y,p.z);
         

@@ -20,16 +20,16 @@ void MyViewer::drawJointAxes(std::vector<Axes>& a) const {
         const Vec& p = ax.position;
 
 
-        Vec4 x = Vec4(p + Vec(ax.size, 0.0, 0.0)) * ax.M;
-        Vec4 y = Vec4(p + Vec(0.0, ax.size, 0.0)) * ax.M;
-        Vec4 z = Vec4(p + Vec(0.0, 0.0, ax.size)) * ax.M;
+        Vec4 x = Vec4(Vec(ax.size, 0.0, 0.0)) * ax.M;
+        Vec4 y = Vec4(Vec(0.0, ax.size, 0.0)) * ax.M;
+        Vec4 z = Vec4(Vec(0.0, 0.0, ax.size)) * ax.M;
 
         glColor3d(1.0, 0.0, 0.0);
-        drawArrow(p, x.to_Vec(), ax.size / 50.0);
+        drawArrow(p, p + x.to_Vec(), ax.size / 50.0);
         glColor3d(0.0, 1.0, 0.0);
-        drawArrow(p, y.to_Vec(), ax.size / 50.0);
+        drawArrow(p, p + y.to_Vec(), ax.size / 50.0);
         glColor3d(0.0, 0.0, 1.0);
-        drawArrow(p, z.to_Vec(), ax.size / 50.0);
+        drawArrow(p, p + z.to_Vec(), ax.size / 50.0);
         glEnd();
     } 
 }

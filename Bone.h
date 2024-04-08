@@ -56,6 +56,7 @@ struct Joint {
     Joint(){}
     Joint(Vec p, int _id) { point = p; id = _id; Tpose = p; parent = nullptr; }
     Mat4 M;
+    Mat4 R;
     Joint* searchbyid(Joint* j, int key);
     void drawarrow(Joint* j);
 
