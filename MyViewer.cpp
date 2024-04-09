@@ -530,10 +530,6 @@ void MyViewer::Rotate()
         angels = angles;
         rotation = angles;
         Joint* jo = skel.root->searchbyid(skel.root, selected_vertex);
-        // to->angel += angles;
-
-        int des = -1;
-
         // itt vátoztatjuk meg a kordinátát
         skel.root->change_all_rotason(jo, jo->point, angles);
         //sk.used_points(*to);
@@ -917,7 +913,7 @@ void MyViewer::mouseMoveEvent(QMouseEvent* e) {
     if (model_type == ModelType::INVERZ)
     {
         target.position = axes.position;
-        inverse_kinematics(target, fab.root);
+        inverse_kinematics(target, skel.root);
         
     }
 
@@ -931,53 +927,6 @@ void MyViewer::mouseMoveEvent(QMouseEvent* e) {
         Vec dif = axes.position - old_pos;
         Joint* j = skel.root->searchbyid(skel.root, selected_vertex);
         skel.root->change_all_position(j, dif);
-
-        /*
-
-        Tree* to = sk.searchbyid(sk, selected_vertex);
-        int des = -1;
-        getallpoints(*to);
-        std::vector<Vec> old = selected_points_storage;
-        selected_points_storage.clear();
-        sk.change_all_position(*to, axes.position - old_pos);
-        Vec dif = axes.position - old_pos;
-        getallpoints(*to);
-
-        std::vector<Vec> newp = selected_points_storage;
-        selected_points_storage.clear();
-        for (int i = 0; i < b.size(); i++)
-        {
-            for (int j = 0; j < old.size(); j++)
-            {
-                if (b[i].start == old[j])
-                {
-                    b[i].start = newp[j];
-                    des = i;
-                }
-                if (b[i].End == old[j])
-                {
-                    b[i].End = newp[j];
-                }
-            }
-            if (des != -1)
-            {
-
-                OpenMesh::Vec3d diffrents = OpenMesh::Vec3d(dif.x, dif.y, dif.z);
-                if (isweight)
-                {
-                    for (auto v : mesh.vertices())
-                    {
-                        mesh.point(v) += diffrents * mesh.data(v).weigh[des];
-
-                    }
-                    des = -1;
-                }
-            }
-
-        }
-        newp.clear();
-        old.clear();
-        */
     }
     
     //updateMesh();

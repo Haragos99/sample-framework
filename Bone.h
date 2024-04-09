@@ -63,16 +63,46 @@ private:
     std::vector<Vec> points;
     std::vector<Vec> Tpose;
     int n_joint;
+    std::vector< std::pair<int, int>> indexes;
+    std::vector<std::vector<int>> childrenMatrix;
+    std::vector<Vec> colors_bone{
+    Vec(0.0, 1.0, 1.0),
+    Vec(1.0, 1.0, 0.0),
+    Vec(1.0, 0.0, 1.0),
+    Vec(0.5, 1.0, 0.5),
+    Vec(1.0, 0.5, 0.5),
+    Vec(0.5, 0.5, 1.0),
+    Vec(0.1, 0.2, 0.2),
+    Vec(0.7, 0.3, 0.0),
+    Vec(0.0, 0.3, 0.7),
+    Vec(0.0, 0.7, 0.3),
+    Vec(0.7, 0.0, 0.3),
+    Vec(0.3, 0.0, 0.7),
+    Vec(0.3, 0.7, 0.0),
+    Vec(0.7, 0.0, 0.0),
+    Vec(0.0, 0.7 ,0.0),
+    Vec(0.0, 0.0, 0.7),
+    Vec(0.7, 0.7, 0.7),
+    Vec(0.5, 1.0, 0.2),
+    Vec(1.0, 0.6, 0.2),
+    Vec(0.4, 0.5, 1.0),
+    Vec(0.1, 0.2, 0.2),
+    Vec(0.5, 0.3, 0.0),
+    Vec(0.1, 0.3, 0.7),
+    Vec(0.1, 0.7, 0.3),
+    };
+
 
 public:
     Joint* root;
     std::vector<Bone> bones;
     std::vector<Vec> po;
     
-    Skelton(std::vector<Vec> point) {
+    Skelton(std::vector<Vec> point, std::vector<std::vector<int>> _childrenMatrix, std::vector< std::pair<int, int>> _indexes) {
         points = point;
         Tpose = point;
-
+        childrenMatrix = _childrenMatrix;
+        indexes = _indexes;
     }
     Skelton() {  }
 
@@ -96,6 +126,12 @@ public:
     void animate_mesh( MyMesh& mesh,bool isweight, bool inv = false);
 
     std::vector<Axes>arrows();
+
+    void buildjoint();
+
+    void buildTree(std::vector<Joint*>& joints);
+
+    void addJoint(Joint* parent, Joint* child);
 
     void build(){
         root = new Joint(Vec(0,0,0),0);

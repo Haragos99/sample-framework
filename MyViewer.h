@@ -477,6 +477,9 @@ private:
 
     void tree_to_array(Joint* j);
     std::vector<Vec> ik;
+
+    std::vector<ControlPoint> cps;
+
     void IK_matrices();
     double sum_len();
     /// <summary>

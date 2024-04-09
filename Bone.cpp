@@ -99,6 +99,72 @@ void Skelton::animate_mesh(MyMesh& mesh, bool isweight, bool inv)
 
 
 
+void Skelton::addJoint(Joint* parent, Joint* child) {
+    if (parent == nullptr) 
+    {
+        root = child; // If no parent, child becomes root
+    }
+    else {
+        parent->children.push_back(child);
+    }
+}
+
+
+
+
+void Skelton::buildTree(std::vector<Joint*>& joints) 
+{
+    
+    for (int i = 0; i < childrenMatrix.size(); ++i) 
+    {
+        for (int j = 0; j < childrenMatrix[i].size(); ++j) 
+        {
+            int childId = childrenMatrix[i][j];
+            if (childId != -1) // -1 indicates no child
+            { 
+                Joint* parent = joints[i];
+                Joint* child = joints[childId];
+                addJoint(parent, child);
+            }
+        }
+    }
+}
+
+
+
+
+void Skelton::buildjoint()
+{
+    
+    std::vector<Joint*> joints;
+    for (int i = 0; i < points.size(); i++)
+    {
+        joints.push_back(new Joint(points[i], i));
+    }
+    n_joint = joints.size();
+
+    //Build tree by BFS
+
+
+
+    
+    root = joints[0];
+
+
+    buildTree(joints);
+
+
+    // build the bones
+    int size = indexes.size();
+    int id = 0;
+    for (int i = 0; i < size; i++)
+    {
+        bones.push_back(Bone(joints[indexes[i].first], joints[indexes[i].second], id,colors_bone[i]));
+        id++;
+    }
+
+}
+
 std::vector<Axes>Skelton::arrows()
 {
     std::vector<Axes> result;

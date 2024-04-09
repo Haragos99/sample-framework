@@ -32,50 +32,54 @@ bool MyViewer::openSkelton(const std::string& filename, bool update_view)
         return false;
     }
     show_skelton = true;
-    std::string myText;
-    std::vector<double> linepoint;
-    // Read from the text file
-    std::ifstream MyReadFile(filename);
-    bool isindex = false;
-    // Use a while loop together with the getline() function to read the file line by line
-    while (std::getline(MyReadFile, myText)) {
-        size_t pos = 0;
-        std::string delimiter = ";";
-        std::string token;
 
-        if (myText != "#")
-        {
-            while ((pos = myText.find(delimiter)) != std::string::npos) {
-                token = myText.substr(0, pos);
-                std::cout << token << " ";
-                if (isindex)
-                {
-                    indexes.push_back(std::stoi(token));
-                }
-                if (pos != 1 && !isindex)
-                {
-                    linepoint.push_back(std::stod(token));
-                }
-                myText.erase(0, pos + delimiter.length());
+    std::ifstream file(filename); // Replace "data.txt" with your file name
+
+    std::vector< std::pair<int, int>> indices;
+    std::vector<int> children;
+    std::vector< std::vector<int>> childrenIndices;
+
+    std::string line;
+    while (getline(file, line)) {
+        std::stringstream ss(line);
+        char type;
+        ss >> type;
+
+        if (type == 'b') {
+            char dummy;
+            double x, y, z;
+            ss >> dummy >> x >> dummy >> y >> dummy >> z >> dummy;
+            points.push_back({ x, y, z });
+        }
+        else if (type == 'a') {
+            char dummy;
+            int idx1, idx2;
+            ss >> dummy >> idx1 >> dummy >> idx2 >> dummy;
+            indices.push_back({ idx1, idx2 });
+        }
+        else if (type == 'i') {
+            char dummy;
+            int idx;
+            int size;
+            ss >> dummy >> size;
+            for (int i = 0; i < size; i++)
+            {
+                ss >> dummy >> idx;
+                children.push_back(idx);
             }
-            std::cout << '\n';
-        }
-        else {
-            std::cout << myText << '\n';
-            isindex = true;
-        }
-        if (!isindex)
-        {
-            points.push_back(Vec(linepoint[0], linepoint[1], linepoint[2]));
-            linepoint.clear();
+            childrenIndices.push_back(children);
+            children.clear();
         }
     }
 
-    // Close the file
-    MyReadFile.close();
+    file.close();
+
+
+    skel = Skelton(points, childrenIndices, indices);
+    skel.buildjoint();
     model_type = ModelType::SKELTON;
     last_filename = filename;
-    ininitSkelton();
+    //ininitSkelton();
     target = ControlPoint(points.back());
     target.position *= 1.1;
 
