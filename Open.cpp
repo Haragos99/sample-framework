@@ -10,27 +10,6 @@ bool MyViewer::openSkelton(const std::string& filename, bool update_view)
     indexes.clear();
     b.clear();
     points.clear();
-    if (filename.find("fac") != std::string::npos) {
-        skellton_type = SkelltonType::FACE;
-
-    }
-
-    else if (filename.find("csuk") != std::string::npos) {
-        skellton_type = SkelltonType::WRIST;
-
-    }
-    else if (filename.find("arm") != std::string::npos)
-    {
-        skellton_type = SkelltonType::ARM;
-    }
-    else if (filename.find("man") != std::string::npos)
-    {
-        skellton_type = SkelltonType::MAN;
-    }
-    else
-    {
-        return false;
-    }
     show_skelton = true;
 
     std::ifstream file(filename); // Replace "data.txt" with your file name
@@ -79,7 +58,6 @@ bool MyViewer::openSkelton(const std::string& filename, bool update_view)
     skel.buildjoint();
     model_type = ModelType::SKELTON;
     last_filename = filename;
-    //ininitSkelton();
     target = ControlPoint(points.back());
     target.position *= 1.1;
 
@@ -133,46 +111,5 @@ bool MyViewer::openMesh(const std::string& filename, bool update_view) {
     mesh.request_face_status();
 
     return true;
-}
-
-void MyViewer::ininitSkelton()
-{
-    b.clear();
-    int size = indexes.size();
-    for (int i = 0; i < size; i += 2)
-    {
-        // ide kelle majd
-        Bones bo;
-        bo.start = points[indexes[i] - 1];
-        bo.End = points[indexes[i + 1] - 1];
-        bo.originalS = bo.start;
-        bo.originalE = bo.End;
-        bo.lenght = distance(bo.start, bo.End);
-        b.push_back(bo);
-
-        
-    }
-
-    for (int i = 0; i < b.size(); i++)
-    {
-        b[i].setColor(colors_bone[i].x, colors_bone[i].y, colors_bone[i].z);
-        b[i].manypoints();
-    }
-
-    if (skellton_type == SkelltonType::MAN) {
-        manSkellton();
-    }
-    if (skellton_type == SkelltonType::WRIST) {
-        csukloSkellton();
-    }
-    if (skellton_type == SkelltonType::ARM)
-    {
-        armSkellton();
-    }
-    if (skellton_type == SkelltonType::FACE)
-    {
-        faceSkellton();
-    }
-    FABRIK = sk;
 }
 

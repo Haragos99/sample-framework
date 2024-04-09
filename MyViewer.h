@@ -298,7 +298,7 @@ private:
 
     ControlPoint target;
 
-    void ininitSkelton();
+
     void createL(Eigen::SparseMatrix<double>& L);
 
 
@@ -328,66 +328,6 @@ private:
     void getallpoints(Tree t);
 
     void get_change_points(Tree t);
-
-    void armSkellton()
-    {
-        sk = Tree(points[0], 0);
-        sk.child.push_back(Tree(points[1], 1));
-        sk.child[0].child.push_back(Tree(points[2], 2));
-        sk.child[0].child[0].child.push_back(Tree(points[3], 3));
-    }
-
-    void manSkellton()
-    {
-        sk = Tree(points[0], 0);
-        sk.child.push_back(Tree(points[1], 1));// 
-        sk.child.push_back(Tree(points[9], 9));// 
-        sk.child.push_back(Tree(points[10], 10));// 
-
-        sk.child[0].child.push_back(Tree(points[2], 2));
-        sk.child[0].child.push_back(Tree(points[5], 5));
-        sk.child[0].child[0].child.push_back(Tree(points[3], 3));
-        sk.child[0].child[1].child.push_back(Tree(points[6], 6));
-        sk.child[0].child[0].child[0].child.push_back(Tree(points[4], 4));
-        sk.child[0].child[1].child[0].child.push_back(Tree(points[7], 7));
-        sk.child[1].child.push_back(Tree(points[12], 12));
-        sk.child[1].child[0].child.push_back(Tree(points[14], 14));
-        sk.child[2].child.push_back(Tree(points[11], 11));
-        sk.child[2].child[0].child.push_back(Tree(points[13], 13));
-        sk.child.push_back(Tree(points[8], 8));
-    }
-
-    void csukloSkellton()
-    {
-        sk = Tree(points[0], 0);
-        sk.child.push_back(Tree(points[1], 1));// 
-        sk.child[0].child.push_back(Tree(points[2], 2));
-        sk.child[0].child[0].child.push_back(Tree(points[3], 3));
-        sk.child[0].child[0].child[0].child.push_back(Tree(points[4], 4));
-
-        sk.child[0].child.push_back(Tree(points[5], 5));
-        sk.child[0].child[1].child.push_back(Tree(points[6], 6));
-        sk.child[0].child[1].child[0].child.push_back(Tree(points[7], 7));
-        sk.child[0].child[1].child[0].child[0].child.push_back(Tree(points[8], 8));
-
-        sk.child[0].child.push_back(Tree(points[9], 9));
-        sk.child[0].child[2].child.push_back(Tree(points[10], 10));
-        sk.child[0].child[2].child[0].child.push_back(Tree(points[11], 11));
-        sk.child[0].child[2].child[0].child[0].child.push_back(Tree(points[12], 12));
-
-        sk.child[0].child.push_back(Tree(points[13], 13));
-        sk.child[0].child[3].child.push_back(Tree(points[14], 14));
-        sk.child[0].child[3].child[0].child.push_back(Tree(points[15], 15));
-        sk.child[0].child[3].child[0].child[0].child.push_back(Tree(points[16], 16));
-
-
-        sk.child[0].child.push_back(Tree(points[17], 17));
-        sk.child[0].child[4].child.push_back(Tree(points[18], 18));
-        sk.child[0].child[4].child[0].child.push_back(Tree(points[19], 19));
-        sk.child[0].child[4].child[0].child[0].child.push_back(Tree(points[20], 20));
-
-    }
-
 
     void faceSkellton()
     {
