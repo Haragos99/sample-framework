@@ -133,7 +133,7 @@ void Skelton::buildTree(std::vector<Joint*>& joints)
 
 
 
-void Skelton::buildjoint()
+void Skelton::build()
 {
     
     std::vector<Joint*> joints;

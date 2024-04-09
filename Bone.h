@@ -127,26 +127,11 @@ public:
 
     std::vector<Axes>arrows();
 
-    void buildjoint();
+    void build();
 
     void buildTree(std::vector<Joint*>& joints);
 
     void addJoint(Joint* parent, Joint* child);
-
-    void build(){
-        root = new Joint(Vec(0,0,0),0);
-        Joint* j = new Joint(Vec(0, 0.35, 0),1);
-        Joint* j2 = new Joint(Vec(0, 0.7, 0), 2);
-        Joint* j3 = new Joint(Vec(0, 1, 0),3);
-        n_joint = 4;
-        root->children.push_back(j);
-        root->children[0]->children.push_back(j2);
-        root->children[0]->children[0]->children.push_back(j3);
-
-        bones.push_back(Bone(root, j,0,Vec(1,0,0)));
-        bones.push_back(Bone(j, j2, 1, Vec(0, 1, 0)));
-        bones.push_back(Bone(j2, j3,2, Vec(0, 0, 1)));
-    }
 
     void drawarrow()
     {

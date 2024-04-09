@@ -55,7 +55,7 @@ bool MyViewer::openSkelton(const std::string& filename, bool update_view)
 
 
     skel = Skelton(points, childrenIndices, indices);
-    skel.buildjoint();
+    skel.build();
     model_type = ModelType::SKELTON;
     last_filename = filename;
     target = ControlPoint(points.back());
