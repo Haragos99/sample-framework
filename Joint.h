@@ -24,6 +24,7 @@ private:
 
 
 struct Joint {
+
     int id;// id of the join and the index of the position
     std::vector<int> bones_id;
     Vec point;
@@ -57,6 +58,8 @@ struct Joint {
     void transform_point(Joint* j);
 
     Mat4 getMatrix();
+    
+    Joint* getDeapest(Joint* j);
 
     void calculateMatrecies(Joint* j, Vec pivot, Vec angles);
 

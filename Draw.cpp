@@ -52,7 +52,11 @@ void MyViewer::draw() {
     if (model_type == ModelType::SKELTON|| model_type == ModelType::INVERZ)
     {
         drawSkleton();
-        target.draw();
+        //target.draw();
+        for (auto cp : cps)
+        {
+            cp.draw();
+        }
     }
 
     glPolygonMode(GL_FRONT_AND_BACK, !show_solid && show_wireframe ? GL_LINE : GL_FILL);

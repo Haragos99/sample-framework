@@ -8,8 +8,8 @@ MyWindow::MyWindow(QApplication *parent) :
   QMainWindow(), parent(parent), last_directory(".")
 {
   setWindowTitle(tr("Sample 3D Framework"));
-  setStatusBar(new QStatusBar);
-  progress = new QProgressBar;
+  setStatusBar(new QStatusBar(this));
+  progress = new QProgressBar(this);
   progress->setMinimum(0); progress->setMaximum(100);
   progress->hide();
   statusBar()->addPermanentWidget(progress);

@@ -58,12 +58,8 @@ void MyViewer::inverse_kinematics(ControlPoint t, Joint* j)
         }
     }
     FABRIK_p = ik;
-    for (int i = 0; i < ik.size(); i++)
-    {
-        Joint* s = j->searchbyid(j, i);
-        s->point = ik[i];
-    }
-    IK_matrices(); 
+
+    IK_matrices(j); 
     
     skel.animate_mesh(mesh,isweight,true);
     skel.set_deafult_matrix();
@@ -82,22 +78,23 @@ void MyViewer::put_original(Tree& oldTree, Tree& newTree)
     }
 }
 
-void MyViewer::IK_matrices()
+void MyViewer::IK_matrices(Joint*j)
 {
-    // TODOO: The piwot is wrong
+    // FIX it for the j
     int n = ik.size();
 
     skel.po.clear();
     
-    std::vector<Vec> old_p = skel.getPoints();
+    skel.joint.clear();
 
+    // get joint
+    std::vector<Vec> old_p = skel.getPoints(j);
 
-
-
+    auto joints = skel.getJointtoList(j);
 
     for (int i = 1; i < n; ++i)
     {
-        Joint* t = skel.root->searchbyid(skel.root, i);
+        Joint* t = joints[i];
 
 
         Vec old_diff = old_p[i] - old_p[i - 1];

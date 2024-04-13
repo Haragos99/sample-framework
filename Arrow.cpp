@@ -63,8 +63,10 @@ void MyViewer::drawWithNames() {
         break;
 
     case  ModelType::INVERZ:
-        target.drawarrow();
-        
+        for (auto cp : cps)
+        {
+            cp.drawarrow();
+        }       
         break;
     case  ModelType::SKELTON:
         //sk.drawarrow(sk);
@@ -110,13 +112,6 @@ void MyViewer::postSelection(const QPoint& p) {
         axes.position = control_points[sel];
     if (model_type == ModelType::SKELTON)
     {
-        /*
-        sk.makefalse(sk);
-        Tree* t = sk.searchbyid(sk, sel);
-        sk.maketrue(*t);
-        axes.position = t->point;
-        drawSkleton();
-        */
         Joint* j = skel.root->searchbyid(skel.root, sel);
         axes.position = j->point;
        
@@ -124,7 +119,7 @@ void MyViewer::postSelection(const QPoint& p) {
     if (model_type == ModelType::INVERZ)
     {
         
-        axes.position = target.position;
+        axes.position = cps[sel].position;
     }
     double depth = camera()->projectedCoordinatesOf(axes.position)[2];
     Vec q1 = camera()->unprojectedCoordinatesOf(Vec(0.0, 0.0, depth));

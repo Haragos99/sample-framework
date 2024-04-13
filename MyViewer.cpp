@@ -631,6 +631,17 @@ void MyViewer::selectedvert()
 }
 
 
+
+void MyViewer::createControlPoins(Joint* j)
+{
+    Joint* deep = j->getDeapest(j);
+    ControlPoint cp = ControlPoint(deep->point*1.1, cps.size());
+    cp.jointid = j->id;
+    cps.push_back(cp);
+}
+
+
+
 void MyViewer::keyPressEvent(QKeyEvent* e) {
 
     auto dlg = std::make_unique<QDialog>(this);
@@ -638,7 +649,7 @@ void MyViewer::keyPressEvent(QKeyEvent* e) {
     auto* vb = new QVBoxLayout;
     QLabel* text;
     int sizek;
-    
+    Joint* j = skel.root->searchbyid(skel.root, selected_vertex);
     Tree* to = sk.searchbyid(sk, selected_vertex);
     if (e->modifiers() == Qt::NoModifier)
 
@@ -662,11 +673,9 @@ void MyViewer::keyPressEvent(QKeyEvent* e) {
             update();
             break;
         case Qt::Key_M:
-            //visualization = Visualization::MEAN;
-            model_type = ModelType::SKELTON;
-            skel.build();
-            fab.build();
-            target = ControlPoint(Vec(0, 1.2, 0));
+           // visualization = Visualization::MEAN;
+           
+            createControlPoins(j);
             update();
             break;
         case Qt::Key_L:
@@ -764,14 +773,7 @@ void MyViewer::keyPressEvent(QKeyEvent* e) {
 
         case Qt::Key_3:
             keyframe_add();
-            //if (mesh.n_vertices() != 0)
-            //{
-            //    for (auto v : mesh.vertices()) {
-            //        mesh.data(v).weigh.clear();
-            //    }
-            //    model_type = ModelType::MESH;
-            //    visualization = Visualization::PLAIN;
-            //}
+
             update();
             break;
         case Qt::Key_C:
@@ -912,8 +914,11 @@ void MyViewer::mouseMoveEvent(QMouseEvent* e) {
 
     if (model_type == ModelType::INVERZ)
     {
-        target.position = axes.position;
-        inverse_kinematics(target, skel.root);
+        //target.position = axes.position;
+        cps[selected_vertex].position = axes.position;
+        Joint* j = skel.root->searchbyid(skel.root, cps[selected_vertex].jointid);
+
+        inverse_kinematics(cps[selected_vertex], j);
         
     }
 

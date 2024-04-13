@@ -266,6 +266,8 @@ private:
     struct ControlPoint {
         Vec position;
         Vec color;
+        int jointid;
+        int id;
         ControlPoint() {}
         ControlPoint(Vec _position)
         {
@@ -274,10 +276,17 @@ private:
 
         }
 
+        ControlPoint(Vec _position,int _id)
+        {
+            position = _position;
+            color = Vec(1, 0, 0);
+            id = _id;
+        }
+
         void drawarrow()
         {
             Vec const& p = position;
-            glPushName(0);
+            glPushName(id);
             glRasterPos3fv(p);
             glPopName();
 
@@ -297,6 +306,10 @@ private:
     };
 
     ControlPoint target;
+
+
+
+    
 
 
     void createL(Eigen::SparseMatrix<double>& L);
@@ -420,7 +433,10 @@ private:
 
     std::vector<ControlPoint> cps;
 
-    void IK_matrices();
+
+    void createControlPoins(Joint* j);
+
+    void IK_matrices(Joint *j);
     double sum_len();
     /// <summary>
     /// 

@@ -97,6 +97,7 @@ public:
     Joint* root;
     std::vector<Bone> bones;
     std::vector<Vec> po;
+    std::vector<Joint*> joint;
     
     Skelton(std::vector<Vec> point, std::vector<std::vector<int>> _childrenMatrix, std::vector< std::pair<int, int>> _indexes) {
         points = point;
@@ -119,7 +120,19 @@ public:
             }
         
     }
-    std::vector<Vec> getPoints() { get_join_point(root); return po; }
+
+    void getList(Joint* j)
+    {
+        joint.push_back(j);
+        for (int i = 0; i < j->children.size(); i++)
+        {
+            getList(j->children[i]);
+        }
+    }
+
+    std::vector<Vec> getPoints(Joint* j) { get_join_point(j); return po; }
+
+    std::vector<Joint*> getJointtoList(Joint* j) { getList(j); return joint; }
 
     void animate(float current_time, MyMesh& mesh);
 
