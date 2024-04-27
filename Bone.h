@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Matrix4.h"
+#include <fstream>
 #include <Eigen/Eigen>
 #include "Mesh.h"
 #include "Joint.h"
@@ -121,6 +122,19 @@ public:
         
     }
 
+    bool hasMultipleChildren(Joint* j) {
+        getList(j);
+        for (auto j : joint)
+        {
+            if (j->children.size() > 1)
+            {
+                return false;
+            }
+        }
+        return true;
+    }
+
+
     void getList(Joint* j)
     {
         joint.push_back(j);
@@ -167,6 +181,8 @@ public:
         }
         root->draw(root);
     }
+
+    bool save(const std::string& filename);
 
     void reset() { root->reset_all(root); }
 

@@ -140,7 +140,7 @@ void MyViewer::draw() {
         }
     }
 
-
+    
 
     if (show_solid && show_wireframe) {
         glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
@@ -155,7 +155,18 @@ void MyViewer::draw() {
         glEnable(GL_LIGHTING);
     }
 
+    drawMesh();
     
+
+    glColor3d(0.0, 1.0, 0.0);
+    glBegin(GL_POINTS);
+    for (const auto& p : sampels)
+        glVertex3dv(p.data());
+    glEnd();
+    glPointSize(1.0);
+    glEnable(GL_LIGHTING);
+
+
 
     if (axes.shown)
         drawAxes();
@@ -195,6 +206,30 @@ void MyViewer::draw_smooth()
     }
 }
 
+
+
+
+
+void MyViewer::drawMesh() {
+
+    int i = 0;
+    for(auto m : im ){
+        for (auto f : m.faces()) {
+            glBegin(GL_POLYGON);
+            for (auto v : m.fv_range(f)) {
+
+                Vec color = skel.bones[i].color;
+                    glColor3d(color.x, color.y, color.z);
+            
+                glNormal3dv(m.normal(v).data());
+                glVertex3dv(m.point(v).data());
+            }
+            glEnd();
+        }
+        i++;
+    }
+
+}
 
 
 /// <summary>

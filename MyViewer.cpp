@@ -651,6 +651,7 @@ void MyViewer::keyPressEvent(QKeyEvent* e) {
     int sizek;
     Joint* j = skel.root->searchbyid(skel.root, selected_vertex);
     Tree* to = sk.searchbyid(sk, selected_vertex);
+    bool IKok;
     if (e->modifiers() == Qt::NoModifier)
 
         switch (e->key()) {
@@ -675,7 +676,24 @@ void MyViewer::keyPressEvent(QKeyEvent* e) {
         case Qt::Key_M:
            // visualization = Visualization::MEAN;
            
-            createControlPoins(j);
+            IKok = skel.hasMultipleChildren(j);
+            skel.joint.clear();
+
+            if(IKok)
+            {
+                createControlPoins(j);
+            }
+            else
+            {
+                text = new QLabel(tr("Error: No mesh or skellton"));
+                hb1->addWidget(text);
+                vb->addLayout(hb1);
+                dlg->setWindowTitle(tr("Message"));
+                dlg->setLayout(vb);
+                if (dlg->exec() == QDialog::Accepted) {
+                }
+            }
+
             update();
             break;
         case Qt::Key_L:
@@ -785,7 +803,7 @@ void MyViewer::keyPressEvent(QKeyEvent* e) {
             update();
             break;
         case Qt::Key_7:
-            Reset();
+            seperateMesh();
             break;
         case Qt::Key_6:
             stopAnimation();            

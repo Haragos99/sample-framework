@@ -2,7 +2,6 @@
 #pragma once
 
 #include <string>
-#include <Eigen/Eigen>
 #include <QGLViewer/qglviewer.h>
 #include <OpenMesh/Core/Mesh/TriMesh_ArrayKernelT.hh>
 #include <QFile>
@@ -21,6 +20,7 @@
 #include <QGLViewer/quaternion.h>
 #include <map>
 #include <algorithm>
+#include"HRBF.h"
 
 using qglviewer::Vec;
 
@@ -261,7 +261,7 @@ private:
         return len;
     }
 
-
+    void drawMesh();
 
     struct ControlPoint {
         Vec position;
@@ -306,15 +306,133 @@ private:
     };
 
     ControlPoint target;
+    struct SamplePoint {
+        MyMesh::FaceHandle tri;
+        int cell_id;
+        MyMesh::Point pos;
+        MyMesh::Normal normal;
 
-
-
+        SamplePoint(MyMesh::Point _pos, MyMesh::Normal _normal) { pos = _pos; normal = _normal; }
+    };
     
+    float random_float(float maximum) { return float((double)rand() / (double)(RAND_MAX / maximum)); }
+
+    void seperateMesh();
+
+
+
+    std::vector<MyMesh::Point> sampels;
+
+    float generateSamples(int num_samples, MyMesh mesh_, std::vector<SamplePoint>& samples);
+
+    std::vector<MyMesh> im;
+
+
+    float f(const float x) { return x * x * x; }
+
+
+    float li(Vec x, Vec pi) { return distance(x, pi); }
+
+    MyMesh::Point e(Vec x, Vec pi){
+        Vec d = x - pi;
+        float l = li(x, pi);
+        Vec result = d / l;
+        result *= 3*l*l;// 3x^2
+
+        return MyMesh::Point(result.x, result.y, result.z);
+
+    }
+
+    float c(Vec x, Vec pi) {
+        float pow2 = li(x, pi)* li(x, pi);
+        float first_part = 1 / pow2;
+        float second_derivative = 6 * li(x, pi); // 6x
+        float first_derivative = 3 * pow2;// 3x^2
+        float second_part = second_derivative - (first_derivative / li(x, pi));
+
+        return first_part * second_part;
+
+    }
+
+
+
+    void CalculateImplicitSkinning(std::vector<MyMesh::Point> s, MyMesh& mesh_);
+
+
+    struct BBox {
+        MyMesh::Point min, max;
+        BBox()
+        {
+            min = MyMesh::Point(FLT_MAX, FLT_MAX, FLT_MAX);
+            max = MyMesh::Point(-FLT_MAX, -FLT_MAX, -FLT_MAX);
+        }
+
+        void add_point(MyMesh::Point& p)
+        {
+            min[0] = fminf(p[0], min[0]);
+            min[1] = fminf(p[1], min[1]);
+            min[2] = fminf(p[2], min[2]);
+            max[0] = fmaxf(p[0], max[0]);
+            max[1] = fmaxf(p[1], max[1]);
+            max[2] = fmaxf(p[2], max[2]);
+        }
+        MyMesh::Point lenghts() { return max - min; }
+        MyMesh::Point index_grid_cell(MyMesh::Point res, MyMesh::Point p)
+        {
+            MyMesh::Point cell_l = lenghts() / res;
+
+            MyMesh::Point lcl = p - min;
+            MyMesh::Point idx = lcl / cell_l;
+            MyMesh::Point int_idx = MyMesh::Point((int)floorf(idx[0]), (int)floorf(idx[1]), (int)floorf(idx[2]));
+            return int_idx;
+        }
+
+    };
+
+    struct poisson_sample {
+        MyMesh::Point pos;
+        MyMesh::Normal normal;
+    };
+
+    struct hash_data {
+        // Resulting output sample points for this cell:
+        std::vector<poisson_sample> poisson_samples;
+
+        // Index into raw_samples:
+        int first_sample_idx;
+        int sample_cnt;
+    };
+
+
+
+    float approximate_geodesic_distance(MyMesh::Point p1, MyMesh::Point p2, MyMesh::Normal n1, MyMesh::Normal  n2);
+
+
+    struct Idx3 {
+
+        MyMesh::Point _size;
+        int id;
+
+        Idx3(const MyMesh::Point& size, int idx) : _size(size), id(idx) { }
+
+        Idx3(const MyMesh::Point& size, const MyMesh::Point& pos) : _size(size) {
+            set_3d(pos);
+        }
+
+        void set_3d(const MyMesh::Point& pos) { id = to_linear(_size, pos[0], pos[1], pos[2]); }
+
+
+        int to_linear(const MyMesh::Point& size_, int x, int y, int z) {
+            return x + size_[0] * (y + size_[1] * z);
+        }
+
+        int to_linear() const { return id; }
+    };
 
 
     void createL(Eigen::SparseMatrix<double>& L);
 
-
+    std::vector<MyMesh::Point> poissonDisk(float radius, std::vector<SamplePoint> raw, std::vector<MyMesh::Normal>& samples_nor);
 
 
     float FrameSecond = 0.0;
@@ -433,7 +551,7 @@ private:
 
     std::vector<ControlPoint> cps;
 
-
+    HRBF hrbf;
     void createControlPoins(Joint* j);
 
     void IK_matrices(Joint *j);

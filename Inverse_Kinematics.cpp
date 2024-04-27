@@ -62,7 +62,7 @@ void MyViewer::inverse_kinematics(ControlPoint t, Joint* j)
     IK_matrices(j); 
     
     skel.animate_mesh(mesh,isweight,true);
-    skel.set_deafult_matrix();
+    //j->set_deafult_matrix(j);
     if (delatamush)
         Delta_Mush_two(vec);
 
@@ -91,6 +91,9 @@ void MyViewer::IK_matrices(Joint*j)
     std::vector<Vec> old_p = skel.getPoints(j);
 
     auto joints = skel.getJointtoList(j);
+
+
+
 
     for (int i = 1; i < n; ++i)
     {

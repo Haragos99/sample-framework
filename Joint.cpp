@@ -55,7 +55,6 @@ void Joint::draw(Joint* j)
     glBegin(GL_POINTS);
     glVertex3dv(p);
     glEnd();
-    glPointSize(10.0);
     glEnable(GL_LIGHTING);
     for (int i = 0; i < j->children.size(); i++)
     {

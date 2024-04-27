@@ -177,6 +177,45 @@ std::vector<Axes>Skelton::arrows()
 }
 
 
+bool Skelton::save(const std::string& filename)
+{
+    try {
+
+        std::ofstream f(filename.c_str());
+        f.exceptions(std::ios::failbit | std::ios::badbit);
+        for (int i = 0; i < n_joint;i++)
+        {
+            Joint* j = root->searchbyid(root, i);
+            Vec p = j->point;
+            f << 'b' << ';' << p[0] << ';' << p[1] << ';' << p[2] << ';' << std::endl;
+        }
+        for (const auto& i : indexes)
+        {
+            f<< 'a' << ';'<< i.first << ';' << i.second<<';' << std::endl;
+        }
+
+        for (const auto& m : childrenMatrix)
+        {
+            std::string line ="i;";
+            line = line + std::to_string(m.size())+";";
+            for (int i : m)
+            {
+                line = line + std::to_string(i) + ";";
+            }
+            f<<line<< std::endl;
+        }
+
+
+    }
+    catch (std::ifstream::failure&) {
+        return false;
+    }
+
+
+    return true;
+}
+
+
 void Tree::reset_all(Tree& t)
 {
     t.point = t.original;
