@@ -112,6 +112,73 @@ public:
 	}
 
 
+	float eval(const MyMesh::Point& x) const
+	{
+		float ret = 0;
+		int nb_nodes = _node_centers.cols();
+
+		Eigen::Vector<float, 3> xi;
+		xi(0) = x[0];
+		xi(1) = x[1];
+		xi(2) = x[2];
+
+		for (int i = 0; i < nb_nodes; ++i)
+		{
+			Eigen::Vector<float, 3> diff = xi - _node_centers.col(i);
+			float l = diff.norm();
+
+			if (l > 0)
+			{
+				ret += _alphas(i) * (l * l * l);
+				ret += _betas.col(i).dot(diff) * 3*(l * l) / l;
+			}
+		}
+		return ret;
+	}
+
+	MyMesh::Point grad(const MyMesh::Point& x) const
+	{
+		Eigen::Vector<float, 3> xi;
+		xi(0) = x[0];
+		xi(1) = x[1];
+		xi(2) = x[2];
+		Eigen::Vector<float, 3> grad = Eigen::Vector<float, 3>::Zero();
+		int nb_nodes = _node_centers.cols();
+		for (int i = 0; i < nb_nodes; i++)
+		{
+			Eigen::Vector<float, 3>  node = _node_centers.col(i);
+			Eigen::Vector<float, 3>  beta = _betas.col(i);
+			float  alpha = _alphas(i);
+			Eigen::Vector<float, 3>  diff = xi - node;
+
+			Eigen::Vector<float, 3> diffNormalized = diff;
+			float l = diff.norm();
+
+			if (l > 0.00001f)
+			{
+				diffNormalized.normalize();
+				float dphi = 3*(l*l);
+				float ddphi = 6*(l);
+
+				float alpha_dphi = alpha * dphi;
+
+				float bDotd_l = beta.dot(diff) / l;
+				float squared_l = diff.squaredNorm();
+
+				grad += alpha_dphi * diffNormalized;
+				grad += bDotd_l * (ddphi * diffNormalized - diff * dphi / squared_l) + beta * dphi / l;
+			}
+		}
+		MyMesh::Point p;
+		p[0] = grad(0);
+		p[1] = grad(1);
+		p[2] = grad(2);
+		return p;
+	}
+
+
+
+
 	Eigen::Matrix<float, 3, Eigen::Dynamic> _node_centers;
 	Eigen::Matrix<float, 3, Eigen::Dynamic>_betas;
 	Eigen::Matrix<float, Eigen::Dynamic, 1> _alphas;

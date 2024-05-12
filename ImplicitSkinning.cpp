@@ -3,12 +3,14 @@
 
 void MyViewer::seperateMesh()
 {
-	hrbf = HRBF();
+	
 	int n = skel.bones.size();
 	for (int i = 0; i < n; i++)
 	{
 		MyMesh m;
+		HRBF hr;
 		im.push_back(m);
+		hrbf.push_back(hr);
 	}
 
 	for (int i = 0; i < n; i++)
@@ -23,6 +25,8 @@ void MyViewer::seperateMesh()
 						
 						MyMesh::VertexHandle vHandle = im[i].add_vertex(mesh.point(v));
 						handles.push_back(vHandle);
+						auto n = mesh.normal(v);
+						im[i].set_normal(vHandle,n);
 
 					}
 			}
@@ -39,10 +43,10 @@ void MyViewer::seperateMesh()
 		std::vector<MyMesh::Normal> no;
 		float radious = generateSamples(10000, im[i], s);
 		auto sam = poissonDisk(radious, s,no);
-		hrbf.Calculate(sam, no);
+		hrbf[i].Calculate(sam, no);
 		sampels.insert(sampels.end(),sam.begin(),sam.end());
 	}
-
+	Error(im[0], hrbf[0]);
 
 }
 
@@ -51,6 +55,7 @@ float MyViewer::generateSamples(int num_samples, MyMesh mesh_, std::vector<Sampl
 	
 	std::vector<double> tri_area;
 	std::map<double,MyMesh::FaceHandle> area_sum_to_index;
+	
 
 	for (auto f : mesh_.faces())
 	{
@@ -299,7 +304,7 @@ float MyViewer::approximate_geodesic_distance(MyMesh::Point p1, MyMesh::Point p2
 
 void MyViewer::CalculateImplicitSkinning(std::vector<MyMesh::Point> s, MyMesh& mesh_)
 {
-	hrbf = HRBF();
+
 }
 
 

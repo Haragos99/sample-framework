@@ -631,6 +631,23 @@ void MyViewer::selectedvert()
 }
 
 
+void MyViewer::Error(MyMesh& m, HRBF& h) {
+
+    float p_error = 0;
+    float n_error = 0;
+    for (auto v : m.vertices())
+    {
+        auto p = m.point(v);
+
+        //h.eval(p);
+        auto n = h.grad(p);
+        n_error += (n | m.normal(v)) - 1;
+    }
+
+    n_error;
+}
+
+
 
 void MyViewer::createControlPoins(Joint* j)
 {
@@ -642,6 +659,35 @@ void MyViewer::createControlPoins(Joint* j)
 
 
 
+void MyViewer::createCP() {
+    auto dlg = std::make_unique<QDialog>(this);
+    auto* hb1 = new QHBoxLayout;
+    auto* vb = new QVBoxLayout;
+    QLabel* text;
+    bool IKok;
+    Joint* j = skel.root->searchbyid(skel.root, selected_vertex);
+    IKok = skel.hasMultipleChildren(j);
+    skel.joint.clear();
+
+    if (IKok)
+    {
+        createControlPoins(j);
+    }
+    else
+    {
+        text = new QLabel(tr("Error: No mesh or skellton"));
+        hb1->addWidget(text);
+        vb->addLayout(hb1);
+        dlg->setWindowTitle(tr("Message"));
+        dlg->setLayout(vb);
+        if (dlg->exec() == QDialog::Accepted) {
+        }
+    }
+    
+
+}
+
+
 void MyViewer::keyPressEvent(QKeyEvent* e) {
 
     auto dlg = std::make_unique<QDialog>(this);
@@ -649,9 +695,44 @@ void MyViewer::keyPressEvent(QKeyEvent* e) {
     auto* vb = new QVBoxLayout;
     QLabel* text;
     int sizek;
-    Joint* j = skel.root->searchbyid(skel.root, selected_vertex);
+    //
     Tree* to = sk.searchbyid(sk, selected_vertex);
-    bool IKok;
+    
+    int GRID_MAX = 30;
+
+    std::vector<std::vector<std::vector<double>>> scalarField(GRID_MAX, std::vector<std::vector<double>>(GRID_MAX, std::vector<double>(GRID_MAX)));
+    
+
+    float radius = 8.1;
+    float centerX = 15, centerY = 15, centerZ = 15;
+
+    for (int i = 0; i < GRID_MAX; i++)
+    {
+        for (int j = 0; j < GRID_MAX; j++)
+        {
+            for (int k = 0; k < GRID_MAX; k++)
+            {
+                float val = (centerX - i) * (centerX - i) + (centerY - j) * (centerY - j) + (centerZ - k) * (centerZ - k);
+
+                scalarField[i][j][k] = val - radius - radius;
+
+                //if (val <= radius*radius)
+                //{
+                //    scalarField[i][j][k] = 1;
+                //}
+                //else 
+                //{
+                //    scalarField[i][j][k] = 100;
+                //}
+               
+            }
+                
+        }
+            
+    }
+        
+    
+
     if (e->modifiers() == Qt::NoModifier)
 
         switch (e->key()) {
@@ -675,24 +756,7 @@ void MyViewer::keyPressEvent(QKeyEvent* e) {
             break;
         case Qt::Key_M:
            // visualization = Visualization::MEAN;
-           
-            IKok = skel.hasMultipleChildren(j);
-            skel.joint.clear();
-
-            if(IKok)
-            {
-                createControlPoins(j);
-            }
-            else
-            {
-                text = new QLabel(tr("Error: No mesh or skellton"));
-                hb1->addWidget(text);
-                vb->addLayout(hb1);
-                dlg->setWindowTitle(tr("Message"));
-                dlg->setLayout(vb);
-                if (dlg->exec() == QDialog::Accepted) {
-                }
-            }
+            createCP();
 
             update();
             break;
@@ -806,7 +870,18 @@ void MyViewer::keyPressEvent(QKeyEvent* e) {
             seperateMesh();
             break;
         case Qt::Key_6:
-            stopAnimation();            
+            //stopAnimation();
+
+            mc.compute(scalarField);
+
+            text = new QLabel("#V = " + QString::number(mc.mesh_.n_vertices()));
+            hb1->addWidget(text);
+            vb->addLayout(hb1);
+            dlg->setWindowTitle(tr("Message"));
+            dlg->setLayout(vb);
+            if (dlg->exec() == QDialog::Accepted) {
+                update();
+            }
             break;
         case Qt::Key_W:
             show_wireframe = !show_wireframe;

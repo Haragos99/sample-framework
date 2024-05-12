@@ -156,7 +156,7 @@ void MyViewer::draw() {
     }
 
     drawMesh();
-    
+    mc.draw();
 
     glColor3d(0.0, 1.0, 0.0);
     glBegin(GL_POINTS);

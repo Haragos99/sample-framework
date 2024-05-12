@@ -21,6 +21,7 @@
 #include <map>
 #include <algorithm>
 #include"HRBF.h"
+#include "MarchingCubes.h"
 
 using qglviewer::Vec;
 
@@ -551,8 +552,19 @@ private:
 
     std::vector<ControlPoint> cps;
 
-    HRBF hrbf;
+    std::vector<HRBF> hrbf;
     void createControlPoins(Joint* j);
+    
+    MarchingCubes mc;
+
+
+    void Error(MyMesh& m, HRBF& h);
+
+
+
+
+
+    void createCP();
 
     void IK_matrices(Joint *j);
     double sum_len();
