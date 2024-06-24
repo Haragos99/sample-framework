@@ -5,8 +5,7 @@
 
 bool MyViewer::openSkelton(const std::string& filename, bool update_view)
 {
-    Tree t;
-    sk = t;
+    
     indexes.clear();
     b.clear();
     points.clear();

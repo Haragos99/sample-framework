@@ -69,14 +69,7 @@ void MyViewer::inverse_kinematics(ControlPoint t, Joint* j)
 }
 
 
-void MyViewer::put_original(Tree& oldTree, Tree& newTree)
-{
-    newTree.original = oldTree.original;
-    for (int i = 0; i < oldTree.child.size(); i++)
-    {
-        put_original(oldTree.child[i], newTree.child[i]);
-    }
-}
+
 
 void MyViewer::IK_matrices(Joint*j)
 {

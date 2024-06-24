@@ -46,7 +46,37 @@ void MyViewer::seperateMesh()
 		hrbf[i].Calculate(sam, no);
 		sampels.insert(sampels.end(),sam.begin(),sam.end());
 	}
-	Error(im[0], hrbf[0]);
+	//Error(im[0], hrbf[0]);
+	int GRID_MAX = 30;
+
+	std::vector<std::vector<std::vector<double>>> scalarField(GRID_MAX, std::vector<std::vector<double>>(GRID_MAX, std::vector<double>(GRID_MAX)));
+
+
+	float radius = 0.01;
+	float centerX = 0.0, centerY = 0.0, centerZ = 0.0;
+	mc.POSITION = 2;
+	float size = 8;
+	mc.SIZE = size;
+
+
+	for (int i = 0; i < GRID_MAX; i++)
+	{
+		for (int j = 0; j < GRID_MAX; j++)
+		{
+			for (int k = 0; k < GRID_MAX; k++)
+			{
+				float x = i / size, y = j / size, z = k / size;
+				
+
+				scalarField[i][j][k] = hrbf[0].eval(MyMesh::Point(x,y,z));
+
+
+			}
+
+		}
+
+	}
+	mc.compute(scalarField);
 
 }
 

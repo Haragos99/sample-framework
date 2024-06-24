@@ -108,7 +108,7 @@ public:
         }
     }
 
-    void put_original(Tree& oldTree, Tree& newTree);
+    
 
     void Epsil() {
         auto dlg = std::make_unique<QDialog>(this);
@@ -200,6 +200,7 @@ private:
     void generateMesh(size_t resolution);
 
     // Visualization
+    void setupCameraMC(MyMesh& _mesh);
     void setupCamera();
     Vec meanMapColor(double d) const;
     void drawControlNet() const;
@@ -457,37 +458,7 @@ private:
     void Delta_Mush(std::vector<Eigen::Vector4d>& v);
     void Delta_Mush_two(std::vector<Eigen::Vector4d>& v);
 
-    void getallpoints(Tree t);
 
-    void get_change_points(Tree t);
-
-    void faceSkellton()
-    {
-        sk = Tree(points[0], 0);
-
-        sk.child.push_back(Tree(points[1], 1));
-        sk.child[0].child.push_back(Tree(points[2], 2));
-        sk.child[0].child[0].child.push_back(Tree(points[3], 3));
-        sk.child[0].child[0].child.push_back(Tree(points[4], 4));
-        sk.child[0].child[0].child.push_back(Tree(points[5], 5));
-        sk.child[0].child[0].child[1].child.push_back(Tree(points[6], 6));
-        sk.child[0].child[0].child[1].child[0].child.push_back(Tree(points[7], 7));
-        sk.child[0].child[0].child[1].child[0].child[0].child.push_back(Tree(points[8], 8));
-        sk.child[0].child[0].child[1].child[0].child[0].child.push_back(Tree(points[9], 9));
-        sk.child[0].child[0].child[1].child[0].child.push_back(Tree(points[10], 10));
-
-        sk.child[0].child.push_back(Tree(points[11], 11));
-        sk.child[0].child[1].child.push_back(Tree(points[12], 12));
-        sk.child[0].child[1].child.push_back(Tree(points[13], 13));
-        sk.child[0].child[1].child.push_back(Tree(points[14], 14));
-        sk.child[0].child[1].child[1].child.push_back(Tree(points[15], 15));
-        sk.child[0].child[1].child[1].child[0].child.push_back(Tree(points[16], 16));
-        sk.child[0].child[1].child[1].child[0].child[0].child.push_back(Tree(points[17], 17));
-        sk.child[0].child[1].child[1].child[0].child[0].child.push_back(Tree(points[18], 18));
-        sk.child[0].child[1].child[1].child[0].child.push_back(Tree(points[19], 19));
-
-
-    }
 
 
     void selectedjoin();
@@ -496,8 +467,7 @@ private:
 
     // this collect the bones
     std::vector<Bones> b;
-    // this is the skeleton
-    Tree sk;
+
 
     std::vector<Mat4> mteszt;
 
@@ -511,14 +481,11 @@ private:
 
 
     // for the animation api (it is simpal)
-    Tree start;
-    Tree end;
 
     Skelton skel;
     Skelton fab;
     int wx = 0;
 
-    Tree FABRIK;
 
     std::vector<Vec>FABRIK_p;
 

@@ -231,66 +231,7 @@ struct Bones
 };
 
 
-/*
-* TODO
-* bone id -> joint id
-* join id -> bone id
-*/
-struct Tree {
 
-    
-    std::vector<Tree> child;
-    Vec point;
-    int id;
-    bool choose = false;
-    Vec original;
-    Vec endframe;
-    Vec position;
-    Vec angel_;
-    bool used = false;
-    Mat4 mymatrix;
-    std::vector<Keyframe> keyframes;
-    qglviewer::Quaternion quaternion;
-  
-    Tree() {}
-    Tree(Vec p, int i)
-    {
-        point = p;
-        id = i;
-        original = point;
-
-    }
-    void Quaternion_to_Matrix();
-
-    void reset_quaternion(Tree& t);
-
-    void reset_all(Tree& t);
-
-    void Addframe(Tree& t, Keyframe& frame);
-
-    void animatepoziton(Tree& t);
-     
-    void animaterotaion(Tree& t, float current_time);
-   
-    void change_all_position(Tree& t, Vec dif);
-
-    void change_all_rotason(Tree& t, Vec pivot, Vec angles);
-   
-    void set_deafult_matrix(Tree& t);
-
-    void used_points(Tree& t);
-
-    Tree* searchbyid(Tree& t, int key);
-   
-    void drawarrow(Tree& t); 
-    
-    void makefalse(Tree& t);
-
-    void maketrue(Tree& t);
-  
-    void drawchild(Tree& t);
-    
-};
  
 
 

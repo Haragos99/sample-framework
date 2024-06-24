@@ -14,7 +14,7 @@ struct GridCell{
 class MarchingCubes {
 public:
     MarchingCubes(double threshold){ threshold_ = threshold; }
-    MarchingCubes() { threshold_ = 10.0; }
+    MarchingCubes() { threshold_ = 0.0; SIZE = 1; }
     void compute(const std::vector<std::vector<std::vector<double>>>& scalarField);
     void draw();
 
@@ -29,10 +29,14 @@ public:
 
     int calculate_cube_index(GridCell& cell);
 
-    MyMesh::VertexHandle interpolate(MyMesh::Point& v1, float val1, MyMesh::Point& v2, float val2);
+    MyMesh::VertexHandle interpolate(MyMesh::Point& v1, double val1, MyMesh::Point& v2, double val2);
 
     std::vector<MyMesh::VertexHandle>get_intersection_coordinates(GridCell& cell);
 
+    std::vector<GridCell> grid;
+    double MAX, MIN;
+    double POSITION;
+    double SIZE;
     // Edge table: contains the indices of the vertices that form each edge.
     const int edgeVertices[12][2] = {
         {0, 1}, {1, 2}, {2, 3}, {3, 0},

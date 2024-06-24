@@ -21,11 +21,6 @@ void MyViewer::draw() {
         glDisable(GL_BLEND);
     }
 
-    if (show_skelton)
-        if (!axes.shown)
-        {
-            sk.makefalse(sk);
-        }
 
     glColor3d(0.0, 1.0, 0.0);
     glBegin(GL_POINTS);
@@ -267,7 +262,6 @@ void MyViewer::drawSkleton()
 
     }
 
-    sk.drawchild(sk);
 
 }
 

@@ -6,15 +6,19 @@ void MarchingCubes::compute(const std::vector<std::vector<std::vector<double>>>&
     for (int i = 0; i < scalarField.size() - 1; ++i) {
         for (int j = 0; j < scalarField[i].size() - 1; ++j) {
             for (int k = 0; k < scalarField[i][j].size() - 1; ++k) {
-                float x = i, y = j, z = k;
+                double x = i/SIZE, y = j/ SIZE, z = k/ SIZE;
+
+                x -= POSITION;
+                y -= POSITION;
+                z -= POSITION;
                 // cell ordered according to convention in referenced website
                 GridCell cell =
                 {
                     {
-                        {x, y, z}, {x + 1.0f, y, z},
-                        {x + 1.0f, y, z + 1.0f}, {x, y, z + 1.0f},
-                        {x, y + 1.0f, z}, {x + 1.0f, y + 1.0f, z},
-                        {x + 1.0f, y + 1.0f, z + 1.0f}, {x, y + 1.0f, z + 1.0f}
+                        {x, y, z}, {x + 1.0 / SIZE, y, z},
+                        {x +1.0/ SIZE, y, z + 1.0 / SIZE}, {x, y, z + 1.0 / SIZE},
+                        {x, y + 1.0 / SIZE, z}, {x + 1.0 / SIZE, y + 1.0 / SIZE, z},
+                        {x + 1.0 / SIZE, y + 1.0 / SIZE, z + 1.0 / SIZE}, {x, y + 1.0 / SIZE, z + 1.0 / SIZE}
                     },
                     {
                         scalarField[i][j][k], scalarField[i + 1][j][k],
@@ -25,7 +29,7 @@ void MarchingCubes::compute(const std::vector<std::vector<std::vector<double>>>&
                 };
 
                 std::vector<std::vector<MyMesh::VertexHandle>> faceVertices = getVertices(cell);
-
+                grid.push_back(cell);
 
                 for (auto f : faceVertices)
                 {
@@ -57,10 +61,10 @@ void MarchingCubes::compute(const std::vector<std::vector<std::vector<double>>>&
 
 
 
-MyMesh::VertexHandle MarchingCubes::interpolate(MyMesh::Point& v1, float val1, MyMesh::Point& v2, float val2)
+MyMesh::VertexHandle MarchingCubes::interpolate(MyMesh::Point& v1, double val1, MyMesh::Point& v2, double val2)
 {
     MyMesh::Point interpolated;
-    float mu = (threshold_ - val1) / (val2 - val1);
+    double mu = (threshold_ - val1) / (val2 - val1);
 
     interpolated[0] = mu * (v2[0] - v1[0]) + v1[0];
     interpolated[1] = mu * (v2[1] - v1[1]) + v1[1];
@@ -119,6 +123,23 @@ void MarchingCubes::draw() {
             glVertex3dv(mesh_.point(v).data());
         }
         glEnd();
+    }
+    if (true) {
+        for (auto g : grid)
+        {
+            for (const auto& p : g.vertex)
+            {
+
+                glDisable(GL_LIGHTING);
+
+                glColor3d(0.0, 0.0, 1.0);
+                glPointSize(50.0);
+                glBegin(GL_POINTS);
+                glVertex3dv(p.data());
+                glEnd();
+                glEnable(GL_LIGHTING);
+            }
+        }
     }
 }
 

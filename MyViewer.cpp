@@ -420,6 +420,29 @@ void MyViewer::setupCameraBone() {
 }
 
 
+void MyViewer::setupCameraMC(MyMesh& _mesh)
+{
+    if (_mesh.n_vertices() != 0)
+    {   
+        Vector box_min, box_max;
+        box_min = box_max = _mesh.point(*_mesh.vertices_begin());
+        for (auto v : _mesh.vertices()) {
+            box_min.minimize(_mesh.point(v));
+            box_max.maximize(_mesh.point(v));
+        }
+        camera()->setSceneBoundingBox(Vec(box_min.data()), Vec(box_max.data()));
+        camera()->showEntireScene();
+
+        slicing_scaling = 20 / (box_max - box_min).max();
+
+        setSelectedName(-1);
+        axes.shown = false;
+
+        update();
+    }
+}
+
+
 void MyViewer::setupCamera() {
     // Set camera on the model
     Vector box_min, box_max;
@@ -696,34 +719,30 @@ void MyViewer::keyPressEvent(QKeyEvent* e) {
     QLabel* text;
     int sizek;
     //
-    Tree* to = sk.searchbyid(sk, selected_vertex);
+    
     
     int GRID_MAX = 30;
 
     std::vector<std::vector<std::vector<double>>> scalarField(GRID_MAX, std::vector<std::vector<double>>(GRID_MAX, std::vector<double>(GRID_MAX)));
     
 
-    float radius = 8.1;
-    float centerX = 15, centerY = 15, centerZ = 15;
-
+    double radius = 0.1;
+    double centerX = 0, centerY = 0, centerZ = 0;
+    double scale = 3.0 * radius * 1.2;
+    mc.POSITION = scale/2.0;
+    double size = double(GRID_MAX - 1) / scale;
+    mc.SIZE = size;
     for (int i = 0; i < GRID_MAX; i++)
     {
         for (int j = 0; j < GRID_MAX; j++)
         {
             for (int k = 0; k < GRID_MAX; k++)
             {
-                float val = (centerX - i) * (centerX - i) + (centerY - j) * (centerY - j) + (centerZ - k) * (centerZ - k);
+                double x = i / size - mc.POSITION, y = j / size - mc.POSITION, z = k / size - mc.POSITION;
+                double val = (centerX - x) * (centerX - x) + (centerY - y) * (centerY - y) + (centerZ - z) * (centerZ - z);
 
-                scalarField[i][j][k] = val - radius - radius;
+                scalarField[i][j][k] = sqrt(val) - radius;
 
-                //if (val <= radius*radius)
-                //{
-                //    scalarField[i][j][k] = 1;
-                //}
-                //else 
-                //{
-                //    scalarField[i][j][k] = 100;
-                //}
                
             }
                 
@@ -772,7 +791,7 @@ void MyViewer::keyPressEvent(QKeyEvent* e) {
         case Qt::Key_5:
             //ani = true;
 
-            sk.change_all_rotason(*to, to->point, -rotation);
+
             startAnimation();
             //animate();
             update();
@@ -873,7 +892,7 @@ void MyViewer::keyPressEvent(QKeyEvent* e) {
             //stopAnimation();
 
             mc.compute(scalarField);
-
+            setupCameraMC(mc.mesh_);
             text = new QLabel("#V = " + QString::number(mc.mesh_.n_vertices()));
             hb1->addWidget(text);
             vb->addLayout(hb1);
@@ -1031,28 +1050,7 @@ void MyViewer::mouseMoveEvent(QMouseEvent* e) {
     update();
 }
 
-void MyViewer::getallpoints(Tree t)
-{
-    selected_points_storage.push_back(t.point);
-    for (int i = 0; i < t.child.size(); i++)
-    {
-        getallpoints(t.child[i]);
-    }
-}
 
-
-void MyViewer::get_change_points(Tree t)
-{
-    if (t.used)
-    {
-        selected_points_storage.push_back(t.point);
-    }
-
-    for (int i = 0; i < t.child.size(); i++)
-    {
-        get_change_points(t.child[i]);
-    }
-}
 
 
 QString MyViewer::helpString() const {
