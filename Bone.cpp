@@ -145,9 +145,6 @@ void Skelton::build()
 
     //Build tree by BFS
 
-
-
-    
     root = joints[0];
 
 

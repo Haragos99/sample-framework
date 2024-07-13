@@ -887,6 +887,14 @@ void MyViewer::keyPressEvent(QKeyEvent* e) {
             break;
         case Qt::Key_7:
             seperateMesh();
+            text = new QLabel("#V = " + QString::number(mc.mesh_.n_vertices()));
+            hb1->addWidget(text);
+            vb->addLayout(hb1);
+            dlg->setWindowTitle(tr("Message"));
+            dlg->setLayout(vb);
+            if (dlg->exec() == QDialog::Accepted) {
+                update();
+            }
             break;
         case Qt::Key_6:
             //stopAnimation();

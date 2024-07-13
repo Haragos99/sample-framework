@@ -4,9 +4,8 @@
 bool MyViewer::saveBone(const std::string& filename) {
     if (model_type != ModelType::SKELTON)
         return false;
-
-   
-    return true;
+    
+    return skel.save(filename);
 }
 
 

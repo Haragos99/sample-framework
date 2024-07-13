@@ -45,7 +45,7 @@ void MarchingCubes::compute(const std::vector<std::vector<std::vector<double>>>&
     for (auto v : mesh_.vertices())
     {
         // set size
-        mesh_.set_point(v, mesh_.point(v)/10);
+        //mesh_.set_point(v, mesh_.point(v)/10);
         MyMesh::Normal n(0, 0, 0);
         for (MyMesh::VertexFaceIter vf_it = mesh_.vf_iter(v); vf_it.is_valid(); ++vf_it)
         {

@@ -53,9 +53,9 @@ void MyViewer::seperateMesh()
 
 
 	float radius = 0.01;
-	float centerX = 0.0, centerY = 0.0, centerZ = 0.0;
+	
 	mc.POSITION = 2;
-	float size = 8;
+	float size = 10;
 	mc.SIZE = size;
 
 
