@@ -71,6 +71,10 @@ public:
         delatamush = true;
         update();
     }
+    void poission() { seperateMesh(); }
+
+    void CalculateImplicit();
+
     void Boneheat()
     {
         auto dlg = std::make_unique<QDialog>(this);
@@ -222,9 +226,12 @@ private:
     // Mesh
     MyMesh mesh;
 
+    bool showSampels;
+
     MyMesh smooth;
     
-
+    std::vector<std::vector<MyMesh::Point>> seprateSampels;
+    std::vector<std::vector<MyMesh::Normal>> normalsofsampels;
 
     std::vector<int> used;
     std::vector<Vec> colors_bone{

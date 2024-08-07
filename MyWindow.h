@@ -45,6 +45,8 @@ private slots:
   void LaplanceSmooth() { viewer->Laplace(); }
   void Delta() { viewer->delta(); }
   void displayMessage(const QString& message);
+  void Sample() { viewer->poission(); }
+  void Implicit() { viewer->CalculateImplicit(); }
 
 private:
   QApplication *parent;

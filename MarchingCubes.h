@@ -17,7 +17,7 @@ public:
     MarchingCubes() { threshold_ = 0.0; SIZE = 1; }
     void compute(const std::vector<std::vector<std::vector<double>>>& scalarField);
     void draw();
-
+    bool showSampels;
     double threshold_;
     MyMesh mesh_;
 
@@ -35,7 +35,7 @@ public:
 
     std::vector<GridCell> grid;
     double MAX, MIN;
-    double POSITION;
+    Vec POSITION;
     double SIZE;
     // Edge table: contains the indices of the vertices that form each edge.
     const int edgeVertices[12][2] = {

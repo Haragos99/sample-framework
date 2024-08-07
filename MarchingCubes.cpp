@@ -8,9 +8,9 @@ void MarchingCubes::compute(const std::vector<std::vector<std::vector<double>>>&
             for (int k = 0; k < scalarField[i][j].size() - 1; ++k) {
                 double x = i/SIZE, y = j/ SIZE, z = k/ SIZE;
 
-                x -= POSITION;
-                y -= POSITION;
-                z -= POSITION;
+                x -= POSITION.x;
+                y -= POSITION.y;
+                z -= POSITION.z;
                 // cell ordered according to convention in referenced website
                 GridCell cell =
                 {
@@ -124,7 +124,7 @@ void MarchingCubes::draw() {
         }
         glEnd();
     }
-    if (true) {
+    if (showSampels) {
         for (auto g : grid)
         {
             for (const auto& p : g.vertex)

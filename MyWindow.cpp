@@ -160,6 +160,17 @@ MyWindow::MyWindow(QApplication *parent) :
   connect(buttonedelta, SIGNAL(clicked()), this, SLOT(Delta()));
 
 
+  auto buttoneSample = new QPushButton("Sample");
+  controlLayout->addWidget(buttoneSample, 10, 0, 1, 1);
+  connect(buttoneSample, SIGNAL(clicked()), this, SLOT(Sample()));
+
+  auto buttoneImplicit = new QPushButton("Implicit");
+  controlLayout->addWidget(buttoneImplicit, 10, 1, 1, 1);
+  connect(buttoneImplicit, SIGNAL(clicked()), this, SLOT(Implicit()));
+
+
+
+
   controlWidget->setLayout(controlLayout);
 
 

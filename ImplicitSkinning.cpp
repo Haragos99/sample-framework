@@ -1,9 +1,57 @@
 #include "MyViewer.h"
+void MyViewer::CalculateImplicit()
+{
+	for (int i = 0; i < im.size(); i++)
+	{
 
+		hrbf[i].Calculate(seprateSampels[i], normalsofsampels[i]);
+		//sampels.insert(sampels.end(), sam.begin(), sam.end());
+	}
+
+	int GRID_MAX = 40;
+	std::vector<std::vector<std::vector<double>>> scalarField(GRID_MAX, std::vector<std::vector<double>>(GRID_MAX, std::vector<double>(GRID_MAX)));
+	float radius = 0.01;
+	mc.POSITION = Vec(0.2,0,0.3);
+	float size = 100;
+	mc.SIZE = size;
+
+	for (int i = 0; i < GRID_MAX; i++)
+	{
+		for (int j = 0; j < GRID_MAX; j++)
+		{
+			for (int k = 0; k < GRID_MAX; k++)
+			{
+				float x = i / size-mc.POSITION.x, y = j / size- mc.POSITION.y, z = k / size- mc.POSITION.z;
+
+
+				scalarField[i][j][k] = hrbf[0].eval(MyMesh::Point(x, y, z));
+
+
+			}
+
+		}
+
+	}
+	mc.compute(scalarField);
+	auto dlg = std::make_unique<QDialog>(this);
+	auto* hb1 = new QHBoxLayout;
+	auto* vb = new QVBoxLayout;
+	QLabel* text;
+
+
+	text = new QLabel("#V = " + QString::number(mc.mesh_.n_vertices()));
+	hb1->addWidget(text);
+	vb->addLayout(hb1);
+	dlg->setWindowTitle(tr("Message"));
+	dlg->setLayout(vb);
+	if (dlg->exec() == QDialog::Accepted) {
+		update();
+	}
+}
 
 void MyViewer::seperateMesh()
 {
-	
+	sampels.clear();
 	int n = skel.bones.size();
 	for (int i = 0; i < n; i++)
 	{
@@ -32,52 +80,20 @@ void MyViewer::seperateMesh()
 			}
 			if (handles.size() != 0)
 				im[i].add_face(handles);
-
-
-
 		}
 	}
+
 	for (int i = 0; i < im.size(); i++)
 	{
 		std::vector<SamplePoint> s;
 		std::vector<MyMesh::Normal> no;
 		float radious = generateSamples(10000, im[i], s);
-		auto sam = poissonDisk(radious, s,no);
-		hrbf[i].Calculate(sam, no);
-		sampels.insert(sampels.end(),sam.begin(),sam.end());
+		auto sam = poissonDisk(radious, s, no);
+		seprateSampels.push_back(sam);
+		normalsofsampels.push_back(no);
+		sampels.insert(sampels.end(), sam.begin(), sam.end());
 	}
-	//Error(im[0], hrbf[0]);
-	int GRID_MAX = 30;
-
-	std::vector<std::vector<std::vector<double>>> scalarField(GRID_MAX, std::vector<std::vector<double>>(GRID_MAX, std::vector<double>(GRID_MAX)));
-
-
-	float radius = 0.01;
 	
-	mc.POSITION = 2;
-	float size = 10;
-	mc.SIZE = size;
-
-
-	for (int i = 0; i < GRID_MAX; i++)
-	{
-		for (int j = 0; j < GRID_MAX; j++)
-		{
-			for (int k = 0; k < GRID_MAX; k++)
-			{
-				float x = i / size, y = j / size, z = k / size;
-				
-
-				scalarField[i][j][k] = hrbf[0].eval(MyMesh::Point(x,y,z));
-
-
-			}
-
-		}
-
-	}
-	mc.compute(scalarField);
-
 }
 
 float MyViewer::generateSamples(int num_samples, MyMesh mesh_, std::vector<SamplePoint>& samples)
@@ -150,7 +166,6 @@ float MyViewer::generateSamples(int num_samples, MyMesh mesh_, std::vector<Sampl
 std::vector<MyMesh::Point> MyViewer::poissonDisk(float radius, std::vector<SamplePoint> raw, std::vector<MyMesh::Normal>&samples_nor)
 {
 	std::vector<MyMesh::Point> samples;
-
 	BBox box;
 	float diff = 10;
 	for (auto& r : raw)
@@ -165,19 +180,13 @@ std::vector<MyMesh::Point> MyViewer::poissonDisk(float radius, std::vector<Sampl
 	}
 
 	MyMesh::Point boxsize = box.lenghts();
-
 	float radiussquer = radius * radius;
-
 	MyMesh::Point gride_size = boxsize / radius;
-
-	
-
 	MyMesh::Point gride_size_int= MyMesh::Point(lrintf(gride_size[0]), lrintf(gride_size[1]), lrintf(gride_size[2]));
 
 	gride_size_int[0] = fmaxf(gride_size_int[0], 1);
 	gride_size_int[1] = fmaxf(gride_size_int[1], 1);
 	gride_size_int[1] = fmaxf(gride_size_int[2], 1);
-
 
 	for (auto& p : raw)
 	{
@@ -189,7 +198,6 @@ std::vector<MyMesh::Point> MyViewer::poissonDisk(float radius, std::vector<Sampl
 	std::sort(raw.begin(), raw.end(), [](const SamplePoint& lhs, const SamplePoint& rhs) {
 		return lhs.cell_id < rhs.cell_id;
 		});
-
 
 	std::map<int, hash_data> cells;
 
@@ -206,7 +214,6 @@ std::vector<MyMesh::Point> MyViewer::poissonDisk(float radius, std::vector<Sampl
 			++last_id_it->second.sample_cnt;
 			continue;
 		}
-
 		// This is a new cell.
 		hash_data data;
 		data.first_sample_idx = i;
@@ -277,7 +284,6 @@ std::vector<MyMesh::Point> MyViewer::poissonDisk(float radius, std::vector<Sampl
 
 			if (conflict)
 				continue;
-
 			// Store the new sample.
 			data.poisson_samples.emplace_back();
 			poisson_sample& new_sample = data.poisson_samples.back();
@@ -291,16 +297,8 @@ std::vector<MyMesh::Point> MyViewer::poissonDisk(float radius, std::vector<Sampl
 		{
 			samples.push_back(sample.pos/ diff);
 			samples_nor.push_back(sample.normal);
-
-			// printf("-> %.1f %.1f %.1f\n", sample.pos.x, sample.pos.y, sample.pos.z);
 		}
 	}
-
-
-
-
-
-
 
 	return samples;
 }

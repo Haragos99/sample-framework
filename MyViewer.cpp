@@ -729,7 +729,7 @@ void MyViewer::keyPressEvent(QKeyEvent* e) {
     double radius = 0.1;
     double centerX = 0, centerY = 0, centerZ = 0;
     double scale = 3.0 * radius * 1.2;
-    mc.POSITION = scale/2.0;
+    mc.POSITION = Vec(scale/2.0, scale / 2.0, scale / 2.0);
     double size = double(GRID_MAX - 1) / scale;
     mc.SIZE = size;
     for (int i = 0; i < GRID_MAX; i++)
@@ -738,7 +738,7 @@ void MyViewer::keyPressEvent(QKeyEvent* e) {
         {
             for (int k = 0; k < GRID_MAX; k++)
             {
-                double x = i / size - mc.POSITION, y = j / size - mc.POSITION, z = k / size - mc.POSITION;
+                double x = i / size - mc.POSITION.x, y = j / size - mc.POSITION.y, z = k / size - mc.POSITION.z;
                 double val = (centerX - x) * (centerX - x) + (centerY - y) * (centerY - y) + (centerZ - z) * (centerZ - z);
 
                 scalarField[i][j][k] = sqrt(val) - radius;
@@ -830,11 +830,8 @@ void MyViewer::keyPressEvent(QKeyEvent* e) {
             break;
 
         case Qt::Key_T:
-            if (points.size() != 0 && mesh.n_vertices() != 0)
-            {
-
-                weigh();
-            }
+            showSampels = !showSampels;
+            mc.showSampels = !mc.showSampels;
             update();
             break;
         case Qt::Key_2:

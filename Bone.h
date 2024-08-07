@@ -27,6 +27,21 @@ struct Axes {
 
 
 
+struct BonePoly {
+    std::vector<Vec> points;
+    Vec color;
+    Joint* start;
+    Joint* end;
+    MyMesh mesh;
+    Vec top, down, aP, bP, cP, dP; // Point of the rombus
+    BonePoly(){}
+    BonePoly(Joint* _start, Joint* _end, Vec& _color) { start = _start; end = _end; color = _color; calculatepoly(); };
+    void calculatepoly();
+    Vec calcnormal(Vec& ab, Vec& ac) { return (ab ^ ac).unit(); }
+    void draw();
+    void drawface(Vec& a, Vec& b, Vec& c);
+};
+
 
 
 
@@ -37,6 +52,7 @@ struct Bone {
     Mat4 M;
     int id;
     Vec color;
+    BonePoly bp;
     std::vector<Vec> points;
     Bone(Joint* s, Joint* e,int _id,Vec _color)
     {
@@ -49,7 +65,9 @@ struct Bone {
         end->parent = s;
         start->bones_id.push_back(id);
         end->bones_id.push_back(id);
+        bp = BonePoly(start, end,color);
         manypoints();
+
 
     }
     void draw();

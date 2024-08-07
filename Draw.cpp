@@ -152,15 +152,16 @@ void MyViewer::draw() {
 
     drawMesh();
     mc.draw();
-
-    glColor3d(0.0, 1.0, 0.0);
-    glBegin(GL_POINTS);
-    for (const auto& p : sampels)
-        glVertex3dv(p.data());
-    glEnd();
-    glPointSize(1.0);
-    glEnable(GL_LIGHTING);
-
+    if(false)
+    {
+        glColor3d(0.0, 1.0, 0.0);
+        glBegin(GL_POINTS);
+        for (const auto& p : sampels)
+            glVertex3dv(p.data());
+        glEnd();
+        glPointSize(1.0);
+        glEnable(GL_LIGHTING);
+    }
 
 
     if (axes.shown)

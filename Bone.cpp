@@ -1,6 +1,82 @@
 #include "Bone.h"
 
+void BonePoly::draw()
+{
+    
+    //glDisable(GL_LIGHTING);
+    drawface(top, aP, cP);
+    drawface(top, aP, dP);
+    drawface(top, bP, cP);
+    drawface(top, bP, dP);
 
+    drawface(down, aP, cP);
+    drawface(down, aP, dP);
+    drawface(down, bP, cP);
+    drawface(down, bP, dP);
+    //glEnable(GL_LIGHTING);
+}
+void BonePoly::drawface(Vec& a, Vec& b, Vec& c)
+{
+    
+    glBegin(GL_POLYGON);
+    glColor3d(color.x, color.y, color.z);
+    glVertex3dv(a);
+    glVertex3dv(b);
+    glVertex3dv(c);
+    Vec ab = a - b;
+    Vec ac = a - c;
+    Vec normal = calcnormal(ab, ac);
+    glNormal3dv(normal);
+    glEnd();
+   
+}
+void BonePoly::calculatepoly()
+{
+    double ox = (start->point.x + end->point.x) / 2;
+    double oy = (start->point.y + end->point.y) / 2;
+    double oz = (start->point.z + end->point.z) / 2;
+    Vec origin = Vec(ox, oy, oz);
+    Vec v = end->point - start->point;
+    Vec u = Vec(1, 0, 0);
+    double factor = 4;
+
+    Vec w = v ^ u;
+    Vec wn = w * (v.norm() / (factor * w.norm()));
+
+    Vec b = origin + wn;
+
+    Vec a = origin - wn;
+
+    u = Vec(0, 0, 1);
+
+    w = v ^ u;
+    wn = w * (v.norm() / (factor * w.norm()));
+    Vec d = origin + wn;
+    Vec c = origin - wn;
+    down = end->point;
+    top = start->point;
+    aP = a;
+    bP = b;
+    cP = c;
+    dP = d;
+
+    /*
+    glColor3d(1.0, 0.0, 1.0);
+    glPointSize(50.0);
+    glBegin(GL_POINTS);
+    glVertex3dv(end->point);
+    glVertex3dv(start->point);
+    glVertex3dv(b);
+    glVertex3dv(d);
+    glVertex3dv(a);
+    glVertex3dv(c);
+    glEnd();
+    glEnable(GL_LIGHTING);
+    */
+    draw();
+    
+
+}
 
 void Bone::draw()
 {
@@ -10,6 +86,10 @@ void Bone::draw()
     glVertex3dv(start->point);
     glVertex3dv(end->point);
     glEnd();
+
+    bp.calculatepoly();
+
+
 }
 
 
@@ -41,6 +121,7 @@ void Skelton::animate(float current_time, MyMesh& mesh)
         {
             size_t s = 0;
 
+            // TODO
             // think again -2 
             while (s < j->keyframes.size() - 2 && current_time >= j->keyframes[s + 1].time()) {
                 s++;
