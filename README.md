@@ -1,3 +1,21 @@
+# My Project
+
+## 1. Basic Objects
+![Basic Objects](Base.gif)
+
+## 2. Linear Blend Skinning
+![Linear Blend Skinning](LBS.gif)
+
+## 3. Bone Heat Skinning
+![Bone Heat Skinning](BHS.gif)
+
+## 4. Inverse Kinematics
+![Inverse Kinematics](IK.gif)
+
+## 5. Delta Mush
+![Delta Mush](DM.gif)
+
+
 # Usage
 
 Pressing `h` displays a help window that contains all the necessary information.
