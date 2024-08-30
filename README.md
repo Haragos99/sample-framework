@@ -1,8 +1,5 @@
 # Effective methods for computer animation of 3D models
 
-## Basic Objects
-![Basic Objects](Rescues/Base.gif)
-
 ## Linear Blend Skinning
 ![Linear Blend Skinning](Rescues/LBS.gif)
 
