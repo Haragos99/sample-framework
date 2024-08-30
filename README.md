@@ -1,4 +1,4 @@
-# My Project
+# Effective methods for computer animation of 3D models
 
 ## Basic Objects
 ![Basic Objects](Rescues/Base.gif)
