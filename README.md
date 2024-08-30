@@ -1,19 +1,19 @@
 # My Project
 
-## 1. Basic Objects
-![Basic Objects](Base.gif)
+## Basic Objects
+![Basic Objects](Rescues/Base.gif)
 
-## 2. Linear Blend Skinning
-![Linear Blend Skinning](LBS.gif)
+## Linear Blend Skinning
+![Linear Blend Skinning](Rescues/LBS.gif)
 
-## 3. Bone Heat Skinning
-![Bone Heat Skinning](BHS.gif)
+## Bone Heat Skinning
+![Bone Heat Skinning](Rescues/BHS.gif)
 
-## 4. Inverse Kinematics
-![Inverse Kinematics](IK.gif)
+## Inverse Kinematics
+![Inverse Kinematics](Rescues/IK.gif)
 
-## 5. Delta Mush
-![Delta Mush](DM.gif)
+## Delta Mush
+![Delta Mush](Rescues/DM.gif)
 
 
 # Usage
