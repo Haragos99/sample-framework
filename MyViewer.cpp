@@ -726,7 +726,7 @@ void MyViewer::keyPressEvent(QKeyEvent* e) {
     std::vector<std::vector<std::vector<double>>> scalarField(GRID_MAX, std::vector<std::vector<double>>(GRID_MAX, std::vector<double>(GRID_MAX)));
     
 
-    double radius = 0.1;
+    double radius = 0.2;
     double centerX = 0, centerY = 0, centerZ = 0;
     double scale = 3.0 * radius * 1.2;
     mc.POSITION = Vec(scale/2.0, scale / 2.0, scale / 2.0);
@@ -961,6 +961,20 @@ void MyViewer::bernsteinAll(size_t n, double u, std::vector<double>& coeff) {
         }
         coeff.push_back(saved);
     }
+}
+
+Vec MyViewer::calcCentriod(MyMesh& _mesh) {
+    MyMesh::Point centroid(0.0, 0.0, 0.0);
+
+    // Iterate over all vertices and sum their positions
+    for (auto vh : _mesh.vertices()) {
+        centroid += _mesh.point(vh);
+    }
+
+    // Divide by the number of vertices to get the centroid
+    centroid /= _mesh.n_vertices();
+
+    return Vec(centroid);
 }
 
 void MyViewer::generateMesh(size_t resolution) {

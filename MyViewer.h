@@ -329,6 +329,7 @@ private:
     void seperateMesh();
 
 
+    Vec calcCentriod(MyMesh& _mesh);
 
     std::vector<MyMesh::Point> sampels;
 
@@ -341,7 +342,7 @@ private:
 
 
     float li(Vec x, Vec pi) { return distance(x, pi); }
-
+    
     MyMesh::Point e(Vec x, Vec pi){
         Vec d = x - pi;
         float l = li(x, pi);

@@ -159,7 +159,7 @@ void MyViewer::Delta_Mush(std::vector<Eigen::Vector4d>& v)
 
 
 
-void MyViewer::Delta_Mush_two(std::vector<Eigen::Vector4d>& v)
+void MyViewer::Delta_Mush_two(std::vector<Eigen::Vector4d>& v) // TODO Laplace eredmeny 0*v  Colison detection
 {
     std::vector<Vec> smoothed;
     smoothvectors(smoothed);

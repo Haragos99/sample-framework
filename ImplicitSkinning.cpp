@@ -11,8 +11,8 @@ void MyViewer::CalculateImplicit()
 	int GRID_MAX = 40;
 	std::vector<std::vector<std::vector<double>>> scalarField(GRID_MAX, std::vector<std::vector<double>>(GRID_MAX, std::vector<double>(GRID_MAX)));
 	float radius = 0.01;
-	mc.POSITION = Vec(0.2,0,0.3);
-	float size = 100;
+	mc.POSITION = calcCentriod(im[1]);
+	float size = 1000;
 	mc.SIZE = size;
 
 	for (int i = 0; i < GRID_MAX; i++)
@@ -21,10 +21,12 @@ void MyViewer::CalculateImplicit()
 		{
 			for (int k = 0; k < GRID_MAX; k++)
 			{
-				float x = i / size-mc.POSITION.x, y = j / size- mc.POSITION.y, z = k / size- mc.POSITION.z;
+				// Convert grid indices to world coordinates
+				float x = i / size - mc.POSITION.x, y = j / size - mc.POSITION.y, z = k / size - mc.POSITION.z;
 
 
-				scalarField[i][j][k] = hrbf[0].eval(MyMesh::Point(x, y, z));
+
+				scalarField[i][j][k] = hrbf[1].eval(MyMesh::Point(x, y, z));
 
 
 			}
@@ -92,6 +94,21 @@ void MyViewer::seperateMesh()
 		seprateSampels.push_back(sam);
 		normalsofsampels.push_back(no);
 		sampels.insert(sampels.end(), sam.begin(), sam.end());
+	}
+
+	auto dlg = std::make_unique<QDialog>(this);
+	auto* hb1 = new QHBoxLayout;
+	auto* vb = new QVBoxLayout;
+	QLabel* text;
+
+
+	text = new QLabel("Done");
+	hb1->addWidget(text);
+	vb->addLayout(hb1);
+	dlg->setWindowTitle(tr("Message"));
+	dlg->setLayout(vb);
+	if (dlg->exec() == QDialog::Accepted) {
+		update();
 	}
 	
 }

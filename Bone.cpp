@@ -2,7 +2,8 @@
 
 void BonePoly::draw()
 {
-    
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     //glDisable(GL_LIGHTING);
     drawface(top, aP, cP);
     drawface(top, aP, dP);
@@ -13,13 +14,38 @@ void BonePoly::draw()
     drawface(down, aP, dP);
     drawface(down, bP, cP);
     drawface(down, bP, dP);
+
+    drawLines(top, aP);
+    drawLines(top, bP);
+    drawLines(top, cP);
+    drawLines(top, dP);
+    drawLines(cP, aP);
+    drawLines(dP, aP);
+    drawLines(cP, bP);
+    drawLines(cP, dP);
+    drawLines(bP, dP);
+    drawLines(down, aP);
+    drawLines(down, bP);
+    drawLines(down, cP);
+    drawLines(down, dP);
+    glDisable(GL_BLEND);
     //glEnable(GL_LIGHTING);
+}
+
+void BonePoly::drawLines(Vec& a, Vec& b)
+{
+    glLineWidth(1.0);
+    glBegin(GL_LINES);
+    glColor3d(0,0,0);
+    glVertex3dv(a);
+    glVertex3dv(b);
+    glEnd();
 }
 void BonePoly::drawface(Vec& a, Vec& b, Vec& c)
 {
     
     glBegin(GL_POLYGON);
-    glColor3d(color.x, color.y, color.z);
+    glColor4d(color.x, color.y, color.z, 0.3);
     glVertex3dv(a);
     glVertex3dv(b);
     glVertex3dv(c);
@@ -36,9 +62,11 @@ void BonePoly::calculatepoly()
     double oy = (start->point.y + end->point.y) / 2;
     double oz = (start->point.z + end->point.z) / 2;
     Vec origin = Vec(ox, oy, oz);
+    Vec ir = end->point - start->point;
+    origin = start->point + ir * 1.0 / 5;
     Vec v = end->point - start->point;
     Vec u = Vec(1, 0, 0);
-    double factor = 4;
+    double factor = 6;
 
     Vec w = v ^ u;
     Vec wn = w * (v.norm() / (factor * w.norm()));

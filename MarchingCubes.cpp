@@ -6,12 +6,18 @@ void MarchingCubes::compute(const std::vector<std::vector<std::vector<double>>>&
     for (int i = 0; i < scalarField.size() - 1; ++i) {
         for (int j = 0; j < scalarField[i].size() - 1; ++j) {
             for (int k = 0; k < scalarField[i][j].size() - 1; ++k) {
-                double x = i/SIZE, y = j/ SIZE, z = k/ SIZE;
+                double centerX = ((scalarField.size() - 1)/SIZE) / 2.0;
+                double centerY = ((scalarField[i].size() - 1) / SIZE) / 2.0;
+                double centerZ = ((scalarField[i][j].size() - 1) / SIZE) / 2.0;
 
-                x -= POSITION.x;
-                y -= POSITION.y;
-                z -= POSITION.z;
-                // cell ordered according to convention in referenced website
+                double dx = POSITION.x - centerX;
+                double dy = POSITION.y - centerY;
+                double dz = POSITION.z - centerZ;
+
+
+                double x = (i/SIZE)+dx, y = (j / SIZE) + dy, z = (k / SIZE) + dz;
+
+                
                 GridCell cell =
                 {
                     {
@@ -124,6 +130,8 @@ void MarchingCubes::draw() {
         }
         glEnd();
     }
+
+
     if (showSampels) {
         for (auto g : grid)
         {

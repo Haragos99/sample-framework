@@ -40,6 +40,7 @@ struct BonePoly {
     Vec calcnormal(Vec& ab, Vec& ac) { return (ab ^ ac).unit(); }
     void draw();
     void drawface(Vec& a, Vec& b, Vec& c);
+    void drawLines(Vec& a, Vec& b);
 };
 
 
