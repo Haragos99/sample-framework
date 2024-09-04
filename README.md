@@ -1,3 +1,18 @@
+# Effective methods for computer animation of 3D models
+
+## Linear Blend Skinning
+![Linear Blend Skinning](Rescues/LBS.gif)
+
+## Bone Heat Skinning
+![Bone Heat Skinning](Rescues/BHS.gif)
+
+## Inverse Kinematics
+![Inverse Kinematics](Rescues/IK.gif)
+
+## Delta Mush
+![Delta Mush](Rescues/DM.gif)
+
+
 # Usage
 
 Pressing `h` displays a help window that contains all the necessary information.
