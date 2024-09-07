@@ -78,7 +78,7 @@ struct Bone {
 
 };
 
-struct Skelton {
+class Skelton {
 private:
     std::vector<Vec> points;
     std::vector<Vec> Tpose;
@@ -162,6 +162,8 @@ public:
             getList(j->children[i]);
         }
     }
+
+    void setJointMatrix(int id, Vec& angle);
 
     std::vector<Vec> getPoints(Joint* j) { get_join_point(j); return po; }
 

@@ -283,6 +283,12 @@ std::vector<Axes>Skelton::arrows()
 }
 
 
+void Skelton::setJointMatrix(int id,Vec& angle)
+{
+    Joint* j = root->searchbyid(root, id);
+    j->setMatrix(angle);
+}
+
 bool Skelton::save(const std::string& filename)
 {
     try {

@@ -7,10 +7,11 @@ void MyViewer::createL_smooot(MyMesh& m)
 {
     double smootingfactor = 0.5;
     auto mesh_ = m;
-    for (int i = 0; i < 10; i++)
+    for (int i = 0; i < 2; i++)
     {
         auto smooth = mesh_;
         for (auto v : m.vertices()) {
+
             Vec Avg;
             int n = 0;
             for (auto vi : m.vv_range(v)) {
@@ -33,27 +34,35 @@ void MyViewer::createL_smooot(MyMesh& m)
 }
 
 
+bool MyViewer::is_border_vertex(MyMesh::VertexHandle& vh) {
+    return mesh.is_boundary(vh);
+}
+
+
+
 void MyViewer::smoothvectors(std::vector<Vec>& smoothed)
 {
     double smootingfactor = 0.5;
     auto size = mesh.n_vertices();
     smoothed.resize(size);
-    auto mesh_ = mesh;
-    for (int i = 0; i < 10; i++)
+    auto mesh_ = MushHelper;
+    for (int i = 0; i < 20; i++)
     {
         auto smooth = mesh_;
         for (auto v : mesh.vertices()) {
-            Vec Avg;
-            int n = 0;
-            for (auto vi : mesh.vv_range(v)) {
-                Vec vertex = Vec(mesh_.point(vi));
-                Avg += vertex;
-                n++;
+            if (!is_border_vertex(v))
+            {
+                Vec Avg;
+                int n = 0;
+                for (auto vi : mesh.vv_range(v)) {
+                    Vec vertex = Vec(mesh_.point(vi));
+                    Avg += vertex;
+                    n++;
+                }
+                Avg /= n;
+                MyMesh::Point pointavg = MyMesh::Point(Avg.x, Avg.y, Avg.z);
+                smooth.point(v) += smootingfactor * (pointavg - mesh_.point(v));
             }
-            Avg /= n;
-            MyMesh::Point pointavg = MyMesh::Point(Avg.x, Avg.y, Avg.z);
-
-            smooth.point(v) += smootingfactor * (pointavg - mesh_.point(v));
 
         }
 
@@ -159,22 +168,29 @@ void MyViewer::Delta_Mush(std::vector<Eigen::Vector4d>& v)
 
 
 
-void MyViewer::Delta_Mush_two(std::vector<Eigen::Vector4d>& v) // TODO Laplace eredmeny 0*v  Colison detection
-{
+void MyViewer::Delta_Mush_two(std::vector<Eigen::Vector4d> v) // TODO Laplace eredmeny 0*v  Colison detection
+{ 
+    for (int i = 0; i < v.size(); i++)
+    {
+        v[i][0] *= deltaMushFactor;
+        v[i][2] *= deltaMushFactor;
+        v[i][1] *= deltaMushFactor;
+    }
+    auto m = MushHelper;
     std::vector<Vec> smoothed;
     smoothvectors(smoothed);
     int size = smoothed.size();
-    for (auto ve : mesh.vertices()) {
+    for (auto ve : m.vertices()) {
         Eigen::MatrixXd C(4,4);
         Eigen::Vector4d p_vector;
         Eigen::Vector4d v_vector;
-        p_vector << mesh.point(ve)[0], mesh.point(ve)[1], mesh.point(ve)[2], 1;
-        MyMesh::Normal normal = mesh.normal(ve);
+        p_vector << m.point(ve)[0], m.point(ve)[1], m.point(ve)[2], 1;
+        MyMesh::Normal normal = m.normal(ve);
         Vec t;
         Vec b;
-        for (MyMesh::VertexOHalfedgeIter voh_it = mesh.voh_iter(ve); voh_it.is_valid(); ++voh_it) {
+        for (MyMesh::VertexOHalfedgeIter voh_it = m.voh_iter(ve); voh_it.is_valid(); ++voh_it) {
             MyMesh::HalfedgeHandle heh = *voh_it;
-            auto ed = mesh.calc_edge_vector(heh);
+            auto ed = m.calc_edge_vector(heh);
             t = Vec((ed - (ed | normal) * normal).normalize());
 
             b = -(t ^ Vec(normal)).unit();
@@ -206,5 +222,7 @@ void MyViewer::Delta_Mush_two(std::vector<Eigen::Vector4d>& v) // TODO Laplace e
 
 
     }
+    
+    createL_smooot(mesh);
 
 }

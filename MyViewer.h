@@ -22,6 +22,7 @@
 #include <algorithm>
 #include"HRBF.h"
 #include "MarchingCubes.h"
+#include "DeltaMush.h"
 
 using qglviewer::Vec;
 
@@ -57,6 +58,7 @@ public:
         update();
     }
     float bright = 0.5;
+    float deltaMushFactor = 1.0;
     void draw_smooth(); 
     void skining() { visualization = Visualization::WEIGH; }
     void Laplace() {
@@ -67,8 +69,10 @@ public:
     }
     void delta(){
         weigh();
+        MushHelper = mesh;
         Delta_Mush(vec);
         delatamush = true;
+        
         update();
     }
     void poission() { seperateMesh(); }
@@ -112,6 +116,14 @@ public:
         }
     }
 
+    void setSlider(int value) {
+        deltaMushFactor = (float)value/100.0f;
+        if (delatamush)
+        {
+            Delta_Mush_two(vec);
+        }
+        update();
+    }
     
 
     void Epsil() {
@@ -229,6 +241,7 @@ private:
     bool showSampels;
 
     MyMesh smooth;
+    MyMesh MushHelper;
     
     std::vector<std::vector<MyMesh::Point>> seprateSampels;
     std::vector<std::vector<MyMesh::Normal>> normalsofsampels;
@@ -337,6 +350,7 @@ private:
 
     std::vector<MyMesh> im;
 
+    bool is_border_vertex(MyMesh::VertexHandle& vh);
 
     float f(const float x) { return x * x * x; }
 
@@ -464,7 +478,7 @@ private:
     void smoothvectors(std::vector<Vec>& smoothed);
     void smoothoriginal(std::vector<Vec>& smoothed);
     void Delta_Mush(std::vector<Eigen::Vector4d>& v);
-    void Delta_Mush_two(std::vector<Eigen::Vector4d>& v);
+    void Delta_Mush_two(std::vector<Eigen::Vector4d> v);
 
 
 

@@ -64,7 +64,11 @@ void MyViewer::inverse_kinematics(ControlPoint t, Joint* j)
     skel.animate_mesh(mesh,isweight,true);
     //j->set_deafult_matrix(j);
     if (delatamush)
+    {
+        MushHelper = mesh;
         Delta_Mush_two(vec);
+    }
+        
 
 }
 

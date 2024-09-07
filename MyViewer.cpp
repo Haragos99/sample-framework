@@ -751,7 +751,7 @@ void MyViewer::keyPressEvent(QKeyEvent* e) {
     }
         
     
-
+    Vec ang = Vec(20, 0, 0);
     if (e->modifiers() == Qt::NoModifier)
 
         switch (e->key()) {
@@ -790,9 +790,9 @@ void MyViewer::keyPressEvent(QKeyEvent* e) {
             break;
         case Qt::Key_5:
             //ani = true;
-
-
-            startAnimation();
+            
+            skel.setJointMatrix(selected_vertex,ang);
+            //startAnimation();
             //animate();
             update();
             break;

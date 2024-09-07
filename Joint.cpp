@@ -42,7 +42,11 @@ void Joint::change_all_rotason(Joint* j, Vec pivot, Vec angles)
 }
 
 
-
+void Joint::setMatrix(Vec& angel)
+{
+    R = RotationMatrix(angel.z / 180.0 * M_PI, Vec(0, 0, 1)) * RotationMatrix(angel.y / 180.0 * M_PI, Vec(0, 1, 0))* RotationMatrix(angel.x / 180.0 * M_PI, Vec(1, 0, 0));
+    M = R;  
+}
 
 
 void Joint::draw(Joint* j)

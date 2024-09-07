@@ -114,7 +114,7 @@ MyWindow::MyWindow(QApplication *parent) :
 
 
 
-
+  
 
   auto buttonwier = new QPushButton("Wierframe");
   controlLayout->addWidget(buttonwier, 4, 0, 1, 1);
@@ -168,9 +168,16 @@ MyWindow::MyWindow(QApplication *parent) :
   controlLayout->addWidget(buttoneImplicit, 10, 1, 1, 1);
   connect(buttoneImplicit, SIGNAL(clicked()), this, SLOT(Implicit()));
 
+  slider->setRange(0, 100);
+  slider->setValue(100);
+  controlLayout->addWidget(slider, 11, 0, 1, 1);
+  
 
+  connect(slider, &QSlider::valueChanged, this, &MyWindow::Slider);
 
+  controlLayout->addWidget(Slayer, 11, 1, 1, 1);
 
+  
   controlWidget->setLayout(controlLayout);
 
 

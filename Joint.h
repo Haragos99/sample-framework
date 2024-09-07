@@ -38,6 +38,9 @@ struct Joint {
     Joint(Vec p, int _id) { point = p; id = _id; Tpose = p; parent = nullptr; }
     Mat4 M;
     Mat4 R;
+
+    void setMatrix(Vec& angel);
+
     Joint* searchbyid(Joint* j, int key);
     void drawarrow(Joint* j);
 

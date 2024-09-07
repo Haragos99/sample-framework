@@ -47,6 +47,7 @@ private slots:
   void displayMessage(const QString& message);
   void Sample() { viewer->poission(); }
   void Implicit() { viewer->CalculateImplicit(); }
+  void Slider(int value) { viewer->setSlider(value); Slayer->setText("Value: " + QString::number(value)); }
 
 private:
   QApplication *parent;
@@ -56,4 +57,6 @@ private:
   QLabel* wlayer = new QLabel(tr("weight: "));
   QLabel* flayer = new QLabel(tr("Frame: "));
   QLabel* layer = new QLabel(tr("Bones: "));
+  QLabel* Slayer = new QLabel(tr("Value: "));
+  QSlider* slider = new QSlider(Qt::Horizontal, this);
 };
