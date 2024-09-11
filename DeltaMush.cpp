@@ -1,56 +1,22 @@
-#include "MyViewer.h"
+#include "DeltaMush.h"
 
 
 
 
-void MyViewer::createL_smooot(MyMesh& m)
-{
-    double smootingfactor = 0.5;
-    auto mesh_ = m;
-    for (int i = 0; i < 2; i++)
-    {
-        auto smooth = mesh_;
-        for (auto v : m.vertices()) {
-
-            Vec Avg;
-            int n = 0;
-            for (auto vi : m.vv_range(v)) {
-                Vec vertex = Vec(mesh_.point(vi));
-                Avg += vertex;
-                n++;
-            }
-            Avg /= n;
-            MyMesh::Point pointavg = MyMesh::Point(Avg.x, Avg.y, Avg.z);
-
-            smooth.point(v) += smootingfactor * (pointavg - mesh_.point(v));
-
-        }
-
-        for (auto v : m.vertices()) {
-            mesh_.point(v) = smooth.point(v);
-        }
-    }
-    m = mesh_;
-}
-
-
-bool MyViewer::is_border_vertex(MyMesh::VertexHandle& vh) {
-    return mesh.is_boundary(vh);
-}
 
 
 
-void MyViewer::smoothvectors(std::vector<Vec>& smoothed)
+MyMesh DeltaMush::smoothvectors(std::vector<Vec>& smoothed, MyMesh _mesh)
 {
     double smootingfactor = 0.5;
     auto size = mesh.n_vertices();
     smoothed.resize(size);
     auto mesh_ = MushHelper;
-    for (int i = 0; i < 20; i++)
+    for (int i = 0; i < 10; i++)
     {
         auto smooth = mesh_;
         for (auto v : mesh.vertices()) {
-            if (!is_border_vertex(v))
+            if (!_mesh.is_boundary(v))
             {
                 Vec Avg;
                 int n = 0;
@@ -69,51 +35,50 @@ void MyViewer::smoothvectors(std::vector<Vec>& smoothed)
         for (auto v : smooth.vertices()) {
             mesh_.point(v) = smooth.point(v);
             smoothed[v.idx()] = (Vec(smooth.point(v)));
+            
         }
     }
-}
-
-void MyViewer::smoothoriginal(std::vector<Vec>& smoothed)
-{
-    double smootingfactor = 0.5;
-    for (int i = 0; i < 10; i++)
-    {
-        auto smooth = mesh;
-        for (auto v : mesh.vertices()) {
-            Vec Avg;
-            int n = 0;
-            for (auto vi : mesh.vv_range(v)) {
-                Vec vertex = Vec(mesh.data(vi).original);
-                Avg += vertex;
-                n++;
-            }
-            Avg /= n;
-            MyMesh::Point pointavg = MyMesh::Point(Avg.x, Avg.y, Avg.z);
-
-            smooth.point(v) += smootingfactor * (pointavg - mesh.data(v).original);
-
-        }
-
-        for (auto v : smooth.vertices()) {
-            smoothed.push_back(Vec(smooth.point(v)));
-        }
-    }
-
-
-
+    return mesh_;
 }
 
 
-
-
-
-void MyViewer::Delta_Mush(std::vector<Eigen::Vector4d>& v)
+Eigen::MatrixXd DeltaMush::BuiledMatrix(MyMesh::Normal normal, Vec t, Vec b, Vec s)
 {
+    Eigen::MatrixXd M;
+    M.resize(4, 4);
+    M(0, 0) = t[0];
+    M(0, 1) = t[1];
+    M(0, 2) = t[2];
+    M(0, 3) = 0;
+
+    M(1, 0) = normal[0];
+    M(1, 1) = normal[1];
+    M(1, 2) = normal[2];
+    M(1, 3) = 0;
+
+    M(2, 0) = b[0];
+    M(2, 1) = b[1];
+    M(2, 2) = b[2];
+    M(2, 3) = 0;
+
+    M(3, 0) = s.x;
+    M(3, 1) = s.y;
+    M(3, 2) = s.z;
+    M(3, 3) = 1;
+
+    return M.transpose();
+}
+
+
+
+void DeltaMush::Delta_Mush()
+{
+    
     std::vector<Vec> smoothed;
-    smoothvectors(smoothed);
+    auto _mesh = smoothvectors(smoothed,mesh);
     int size = smoothed.size();
-
-    for (auto ve : mesh.vertices()) {
+    _mesh.update_normals();
+    for (auto ve : _mesh.vertices()) {
 
         Eigen::MatrixXd R;
         Eigen::FullPivLU< Eigen::MatrixXd> solver;
@@ -121,108 +86,70 @@ void MyViewer::Delta_Mush(std::vector<Eigen::Vector4d>& v)
         Eigen::Vector4d v_vector;
         p_vector << mesh.point(ve)[0], mesh.point(ve)[1], mesh.point(ve)[2], 1;
         R.resize(4, 4);
-        MyMesh::Normal normal = mesh.normal(ve);
+        MyMesh::Normal normal = _mesh.normal(ve);
         Vec t;
         Vec b;
-        for (MyMesh::VertexOHalfedgeIter voh_it = mesh.voh_iter(ve); voh_it.is_valid(); ++voh_it) {
+        for (MyMesh::VertexOHalfedgeIter voh_it = _mesh.voh_iter(ve); voh_it.is_valid(); ++voh_it) {
             MyMesh::HalfedgeHandle heh = *voh_it;
-            auto ed = mesh.calc_edge_vector(heh);
+            auto ed = _mesh.calc_edge_vector(heh);
             t = Vec((ed - (ed | normal) * normal).normalize());
-
             b = (t ^ Vec(normal)).unit();
-
         }
-        R(0, 0) = t[0];
-        R(0, 1) = t[1];
-        R(0, 2) = t[2];
-        R(0, 3) = 0;
-
-        R(1, 0) = normal[0];
-        R(1, 1) = normal[1];
-        R(1, 2) = normal[2];
-        R(1, 3) = 0;
-
-        R(2, 0) = b[0];
-        R(2, 1) = b[1];
-        R(2, 2) = b[2];
-        R(2, 3) = 0;
-
-        R(3, 0) = smoothed[ve.idx()].x;
-        R(3, 1) = smoothed[ve.idx()].y;
-        R(3, 2) = smoothed[ve.idx()].z;
-        R(3, 3) = 1;
-
+        R = BuiledMatrix(normal, t, b, smoothed[ve.idx()]);
         Eigen::MatrixXd I(4, 4);
         I.setIdentity();
-        solver.compute(R.transpose());
+        solver.compute(R);
 
         auto R_inv = solver.solve(I);
 
         v_vector = R_inv * p_vector;
 
-        v.push_back(v_vector);
-
+        delta.push_back(v_vector);
 
     }
 }
 
 
 
-void MyViewer::Delta_Mush_two(std::vector<Eigen::Vector4d> v) // TODO Laplace eredmeny 0*v  Colison detection
+MyMesh DeltaMush::Delta_Mush_two( MyMesh _mesh) // TODO Laplace eredmeny 0*v  Colison detection
 { 
-    for (int i = 0; i < v.size(); i++)
+    MushHelper = _mesh;
+    //_mesh.update_normals();
+    for (int i = 0; i < delta.size(); i++)
     {
-        v[i][0] *= deltaMushFactor;
-        v[i][2] *= deltaMushFactor;
-        v[i][1] *= deltaMushFactor;
+        delta[i][0] *= deltaMushFactor;
+        delta[i][2] *= deltaMushFactor;
+        delta[i][1] *= deltaMushFactor;
     }
-    auto m = MushHelper;
+    auto m = _mesh;
     std::vector<Vec> smoothed;
-    smoothvectors(smoothed);
+    auto me = smoothvectors(smoothed,m);
+    me.update_normals();
     int size = smoothed.size();
     for (auto ve : m.vertices()) {
         Eigen::MatrixXd C(4,4);
         Eigen::Vector4d p_vector;
         Eigen::Vector4d v_vector;
         p_vector << m.point(ve)[0], m.point(ve)[1], m.point(ve)[2], 1;
-        MyMesh::Normal normal = m.normal(ve);
+        MyMesh::Normal normal = me.normal(ve);
         Vec t;
         Vec b;
-        for (MyMesh::VertexOHalfedgeIter voh_it = m.voh_iter(ve); voh_it.is_valid(); ++voh_it) {
+        for (MyMesh::VertexOHalfedgeIter voh_it = me.voh_iter(ve); voh_it.is_valid(); ++voh_it) {
             MyMesh::HalfedgeHandle heh = *voh_it;
-            auto ed = m.calc_edge_vector(heh);
+            auto ed = me.calc_edge_vector(heh);
             t = Vec((ed - (ed | normal) * normal).normalize());
 
             b = -(t ^ Vec(normal)).unit();
 
         }
-        C(0, 0) = t[0];
-        C(0, 1) = t[1];
-        C(0, 2) = t[2];
-        C(0, 3) = 0;
+       
+        C = BuiledMatrix(normal, t, b, smoothed[ve.idx()]);
+        auto d = C * delta[ve.idx()];
 
-        C(1, 0) = normal[0];
-        C(1, 1) = normal[1];
-        C(1, 2) = normal[2];
-        C(1, 3) = 0;
-
-        C(2, 0) = b[0];
-        C(2, 1) = b[1];
-        C(2, 2) = b[2];
-        C(2, 3) = 0;
-
-        C(3, 0) = smoothed[ve.idx()].x;
-        C(3, 1) = smoothed[ve.idx()].y;
-        C(3, 2) = smoothed[ve.idx()].z;
-        C(3, 3) = 1;
-
-        auto d = C.transpose() * v[ve.idx()];
-
-        mesh.point(ve) = MyMesh::Point(d[0], d[1], d[2]);
+        m.point(ve) = MyMesh::Point(d[0], d[1], d[2]);
 
 
     }
-    
-    createL_smooot(mesh);
+    return m;
 
 }

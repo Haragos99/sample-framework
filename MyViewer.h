@@ -69,8 +69,11 @@ public:
     }
     void delta(){
         weigh();
+        dm = DeltaMush(mesh);
         MushHelper = mesh;
-        Delta_Mush(vec);
+        dm.setHelper(mesh);
+        dm.Delta_Mush();
+        //DirectMush();
         delatamush = true;
         
         update();
@@ -118,9 +121,11 @@ public:
 
     void setSlider(int value) {
         deltaMushFactor = (float)value/100.0f;
+        dm.deltaMushFactor = deltaMushFactor;
+        //dm.setHelper(mesh);
         if (delatamush)
         {
-            Delta_Mush_two(vec);
+           mesh=dm.Delta_Mush_two(mesh);
         }
         update();
     }
@@ -242,7 +247,13 @@ private:
 
     MyMesh smooth;
     MyMesh MushHelper;
-    
+     
+    DeltaMush dm;
+
+    Eigen::SparseMatrix<double> A;
+    std::vector<Vec4> delt;
+    void DirectMush();
+    void AnDirectMush();
     std::vector<std::vector<MyMesh::Point>> seprateSampels;
     std::vector<std::vector<MyMesh::Normal>> normalsofsampels;
 

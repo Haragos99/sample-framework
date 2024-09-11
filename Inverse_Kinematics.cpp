@@ -66,7 +66,9 @@ void MyViewer::inverse_kinematics(ControlPoint t, Joint* j)
     if (delatamush)
     {
         MushHelper = mesh;
-        Delta_Mush_two(vec);
+        dm.setHelper(mesh);
+        mesh=dm.Delta_Mush_two(mesh);
+        //AnDirectMush();
     }
         
 

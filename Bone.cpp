@@ -202,6 +202,7 @@ void Skelton::animate_mesh(MyMesh& mesh, bool isweight, bool inv)
             Vec4 result = point4 * M_result;
             OpenMesh::Vec3d diffrents = OpenMesh::Vec3d(result.x, result.y, result.z);
             mesh.point(v) = diffrents;
+            mesh.data(v).M = M_result;
         }
     }
 }
