@@ -65,10 +65,12 @@ void MyViewer::inverse_kinematics(ControlPoint t, Joint* j)
     //j->set_deafult_matrix(j);
     if (delatamush)
     {
-        MushHelper = mesh;
+        //MushHelper = mesh;
         dm.setHelper(mesh);
-        mesh=dm.Delta_Mush_two(mesh);
+        //dm.Delta_Mush_two(mesh);
         //AnDirectMush();
+        MushHelper = mesh;
+        Delta_Mush_two(vec);
     }
         
 

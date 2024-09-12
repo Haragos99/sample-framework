@@ -118,7 +118,7 @@ bool MyViewer::is_border_vertex(MyMesh::VertexHandle& vh) {
 
 
 
-void MyViewer::smoothvectors(std::vector<Vec>& smoothed)
+MyMesh MyViewer::smoothvectors(std::vector<Vec>& smoothed)
 {
     double smootingfactor = 0.5;
     auto size = mesh.n_vertices();
@@ -149,6 +149,7 @@ void MyViewer::smoothvectors(std::vector<Vec>& smoothed)
             smoothed[v.idx()] = (Vec(smooth.point(v)));
         }
     }
+    return mesh_;
 }
 
 void MyViewer::smoothoriginal(std::vector<Vec>& smoothed)
@@ -187,11 +188,11 @@ void MyViewer::smoothoriginal(std::vector<Vec>& smoothed)
 
 void MyViewer::Delta_Mush(std::vector<Eigen::Vector4d>& v)
 {
-    /*
+    
     std::vector<Vec> smoothed;
-    smoothvectors(smoothed);
+    auto smooth_mesh = smoothvectors(smoothed);
     int size = smoothed.size();
-
+    smooth_mesh.update_normals();
     for (auto ve : mesh.vertices()) {
 
         Eigen::MatrixXd R;
@@ -200,12 +201,12 @@ void MyViewer::Delta_Mush(std::vector<Eigen::Vector4d>& v)
         Eigen::Vector4d v_vector;
         p_vector << mesh.point(ve)[0], mesh.point(ve)[1], mesh.point(ve)[2], 1;
         R.resize(4, 4);
-        MyMesh::Normal normal = mesh.normal(ve);
+        MyMesh::Normal normal = smooth_mesh.normal(ve);
         Vec t;
         Vec b;
-        for (MyMesh::VertexOHalfedgeIter voh_it = mesh.voh_iter(ve); voh_it.is_valid(); ++voh_it) {
+        for (MyMesh::VertexOHalfedgeIter voh_it = smooth_mesh.voh_iter(ve); voh_it.is_valid(); ++voh_it) {
             MyMesh::HalfedgeHandle heh = *voh_it;
-            auto ed = mesh.calc_edge_vector(heh);
+            auto ed = smooth_mesh.calc_edge_vector(heh);
             t = Vec((ed - (ed | normal) * normal).normalize());
 
             b = (t ^ Vec(normal)).unit();
@@ -243,13 +244,13 @@ void MyViewer::Delta_Mush(std::vector<Eigen::Vector4d>& v)
 
 
     }
-    */
+    
 }
 
 
 
 void MyViewer::Delta_Mush_two(std::vector<Eigen::Vector4d> v) 
-{/* 
+{
  for (int i = 0; i < v.size(); i++)
     {
         v[i][0] *= deltaMushFactor;
@@ -258,19 +259,20 @@ void MyViewer::Delta_Mush_two(std::vector<Eigen::Vector4d> v)
     }
     auto m = MushHelper;
     std::vector<Vec> smoothed;
-    smoothvectors(smoothed);
+    auto smooth_mesh = smoothvectors(smoothed);
+    smooth_mesh.update_normals();
     int size = smoothed.size();
     for (auto ve : m.vertices()) {
         Eigen::MatrixXd C(4, 4);
         Eigen::Vector4d p_vector;
         Eigen::Vector4d v_vector;
         p_vector << m.point(ve)[0], m.point(ve)[1], m.point(ve)[2], 1;
-        MyMesh::Normal normal = m.normal(ve);
+        MyMesh::Normal normal = smooth_mesh.normal(ve);
         Vec t;
         Vec b;
-        for (MyMesh::VertexOHalfedgeIter voh_it = m.voh_iter(ve); voh_it.is_valid(); ++voh_it) {
+        for (MyMesh::VertexOHalfedgeIter voh_it = smooth_mesh.voh_iter(ve); voh_it.is_valid(); ++voh_it) {
             MyMesh::HalfedgeHandle heh = *voh_it;
-            auto ed = m.calc_edge_vector(heh);
+            auto ed = smooth_mesh.calc_edge_vector(heh);
             t = Vec((ed - (ed | normal) * normal).normalize());
 
             b = -(t ^ Vec(normal)).unit();
@@ -304,5 +306,5 @@ void MyViewer::Delta_Mush_two(std::vector<Eigen::Vector4d> v)
     }
 
    // createL_smooot(mesh);
-   */
+   
 }

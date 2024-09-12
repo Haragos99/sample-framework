@@ -70,10 +70,11 @@ public:
     void delta(){
         weigh();
         dm = DeltaMush(mesh);
-        MushHelper = mesh;
         dm.setHelper(mesh);
-        dm.Delta_Mush();
+        MushHelper = mesh;
+        //dm.Delta_Mush();
         //DirectMush();
+        Delta_Mush(vec);
         delatamush = true;
         
         update();
@@ -122,10 +123,11 @@ public:
     void setSlider(int value) {
         deltaMushFactor = (float)value/100.0f;
         dm.deltaMushFactor = deltaMushFactor;
-        //dm.setHelper(mesh);
+        dm.setHelper(mesh);
         if (delatamush)
         {
-           mesh=dm.Delta_Mush_two(mesh);
+            Delta_Mush_two(vec);
+           //dm.Delta_Mush_two(mesh);
         }
         update();
     }
@@ -486,7 +488,7 @@ private:
     }
 
     bool delatamush = false;
-    void smoothvectors(std::vector<Vec>& smoothed);
+    MyMesh smoothvectors(std::vector<Vec>& smoothed);
     void smoothoriginal(std::vector<Vec>& smoothed);
     void Delta_Mush(std::vector<Eigen::Vector4d>& v);
     void Delta_Mush_two(std::vector<Eigen::Vector4d> v);

@@ -6,13 +6,14 @@
 
 
 
-MyMesh DeltaMush::smoothvectors(std::vector<Vec>& smoothed, MyMesh _mesh)
+
+MyMesh DeltaMush::smoothvectors(std::vector<Vec>& smoothed, MyMesh& _mesh)
 {
     double smootingfactor = 0.5;
     auto size = mesh.n_vertices();
     smoothed.resize(size);
-    auto mesh_ = MushHelper;
-    for (int i = 0; i < 10; i++)
+    auto mesh_ = _mesh;
+    for (int i = 0; i < 20; i++)
     {
         auto smooth = mesh_;
         for (auto v : mesh.vertices()) {
@@ -38,6 +39,7 @@ MyMesh DeltaMush::smoothvectors(std::vector<Vec>& smoothed, MyMesh _mesh)
             
         }
     }
+    Smooth = mesh_;
     return mesh_;
 }
 
@@ -73,7 +75,7 @@ Eigen::MatrixXd DeltaMush::BuiledMatrix(MyMesh::Normal normal, Vec t, Vec b, Vec
 
 void DeltaMush::Delta_Mush()
 {
-    
+    delta.clear();
     std::vector<Vec> smoothed;
     auto _mesh = smoothvectors(smoothed,mesh);
     int size = smoothed.size();
@@ -110,33 +112,57 @@ void DeltaMush::Delta_Mush()
 }
 
 
-
-MyMesh DeltaMush::Delta_Mush_two( MyMesh _mesh) // TODO Laplace eredmeny 0*v  Colison detection
-{ 
-    MushHelper = _mesh;
-    //_mesh.update_normals();
-    for (int i = 0; i < delta.size(); i++)
+void DeltaMush::draw()
+{
+    if (deltaMushFactor < 1)
     {
-        delta[i][0] *= deltaMushFactor;
-        delta[i][2] *= deltaMushFactor;
-        delta[i][1] *= deltaMushFactor;
+        auto v_d = setMushFactor(delta);
+        for (auto v : Smooth.vertices())
+        {
+            glLineWidth(10.0);
+            glBegin(GL_LINES);
+            glColor3d(1.0, 0.0, 0.0);
+            //glVertex3dv(Smooth.point(v).data());
+            Eigen::Vector4d p_vector;
+            p_vector << Smooth.point(v)[0], Smooth.point(v)[1], Smooth.point(v)[2], 1;
+            Eigen::Vector4d d = p_vector + v_d[v.idx()];
+            //glVertex3dv(d.data());
+            glColor3d(1.0, 0.0, 0.0);;
+            glEnd();
+        }
     }
+
+}
+
+std::vector<Eigen::Vector4d> DeltaMush::setMushFactor(std::vector<Eigen::Vector4d> v)
+{
+    for (int i = 0; i < v.size(); i++)
+    {
+        v[i][0] *= deltaMushFactor;
+        v[i][1] *= deltaMushFactor;
+        v[i][2] *= deltaMushFactor;
+    }
+    return v;
+}
+void DeltaMush::Delta_Mush_two( MyMesh& _mesh) 
+{ 
+    auto v_d =setMushFactor(delta);
     auto m = _mesh;
     std::vector<Vec> smoothed;
-    auto me = smoothvectors(smoothed,m);
-    me.update_normals();
+    auto smooth_mesh = smoothvectors(smoothed,_mesh);
+    smooth_mesh.update_normals();
     int size = smoothed.size();
     for (auto ve : m.vertices()) {
         Eigen::MatrixXd C(4,4);
         Eigen::Vector4d p_vector;
         Eigen::Vector4d v_vector;
         p_vector << m.point(ve)[0], m.point(ve)[1], m.point(ve)[2], 1;
-        MyMesh::Normal normal = me.normal(ve);
+        MyMesh::Normal normal = smooth_mesh.normal(ve);
         Vec t;
         Vec b;
-        for (MyMesh::VertexOHalfedgeIter voh_it = me.voh_iter(ve); voh_it.is_valid(); ++voh_it) {
+        for (MyMesh::VertexOHalfedgeIter voh_it = smooth_mesh.voh_iter(ve); voh_it.is_valid(); ++voh_it) {
             MyMesh::HalfedgeHandle heh = *voh_it;
-            auto ed = me.calc_edge_vector(heh);
+            auto ed = smooth_mesh.calc_edge_vector(heh);
             t = Vec((ed - (ed | normal) * normal).normalize());
 
             b = -(t ^ Vec(normal)).unit();
@@ -144,12 +170,8 @@ MyMesh DeltaMush::Delta_Mush_two( MyMesh _mesh) // TODO Laplace eredmeny 0*v  Co
         }
        
         C = BuiledMatrix(normal, t, b, smoothed[ve.idx()]);
-        auto d = C * delta[ve.idx()];
-
-        m.point(ve) = MyMesh::Point(d[0], d[1], d[2]);
-
-
+        auto d = C * v_d[ve.idx()];
+        _mesh.point(ve) = MyMesh::Point(d[0], d[1], d[2]);
     }
-    return m;
-
+   // mesh = _mesh;
 }

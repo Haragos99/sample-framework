@@ -66,7 +66,7 @@ void BonePoly::calculatepoly()
     origin = start->point + ir * 1.0 / 5;
     Vec v = end->point - start->point;
     Vec u = Vec(1, 0, 0);
-    double factor = 6;
+    double factor = 8;
 
     Vec w = v ^ u;
     Vec wn = w * (v.norm() / (factor * w.norm()));
