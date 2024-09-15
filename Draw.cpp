@@ -12,7 +12,7 @@ void MyViewer::draw() {
     if (model_type == ModelType::BEZIER_SURFACE && show_control_points)
         drawControlNet();
 
-
+    transparent = true;
     if (transparent) {
         glEnable(GL_BLEND);
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
@@ -163,7 +163,7 @@ void MyViewer::draw() {
         glEnable(GL_LIGHTING);
     }
     dm.draw();
-
+    drawDelta();
     if (axes.shown)
         drawAxes();
     glDisable(GL_LIGHTING);
@@ -266,6 +266,32 @@ void MyViewer::drawSkleton()
 
 }
 
+
+void MyViewer::drawDelta()
+{
+    if (deltaMushFactor < 1)
+    {
+        auto vd = setMushFactor(vec);
+
+        for (auto v : smooth.vertices())
+        {
+
+           
+            glLineWidth(10.0);
+            glBegin(GL_LINES);
+            glColor3d(1.0, 0.0, 0.0);
+            glVertex3dv(smooth.point(v).data());
+            Eigen::Vector4d p_vector;
+            p_vector << smooth.point(v)[0], smooth.point(v)[1], smooth.point(v)[2], 1;
+            Eigen::Vector4d d = p_vector + vd[v.idx()];
+            glVertex3dv(d.data());
+            glColor3d(1.0, 0.0, 0.0);
+            //drawArrow(Vec(p_vector.data()), Vec(d.data()), 0, 02);
+            glEnd();
+
+        }
+    }
+}
 
 void MyViewer::drawControlNet() const {
     glDisable(GL_LIGHTING);

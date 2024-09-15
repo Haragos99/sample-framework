@@ -1,6 +1,8 @@
 #include "MyViewer.h"
 
-
+#include <tbb/concurrent_unordered_set.h>
+#include <tbb/concurrent_vector.h>
+#include <igl/Timer.h>
 
 void MyViewer::DirectMush()
 {
@@ -149,6 +151,7 @@ MyMesh MyViewer::smoothvectors(std::vector<Vec>& smoothed)
             smoothed[v.idx()] = (Vec(smooth.point(v)));
         }
     }
+    smooth = mesh_;
     return mesh_;
 }
 
@@ -184,6 +187,46 @@ void MyViewer::smoothoriginal(std::vector<Vec>& smoothed)
 
 
 
+void MyViewer::saveMeshToEigen(const MyMesh& _mesh, Eigen::MatrixXd& V)
+{
+    int numVertices = _mesh.n_vertices();
+    V.resize(numVertices, 3);
+    int i = 0;
+    for (const auto& vh : _mesh.vertices()) {
+        auto point = _mesh.point(vh);
+        V(i, 0) = point[0];  // x-coordinate
+        V(i, 1) = point[1];  // y-coordinate
+        V(i, 2) = point[2];  // z-coordinate
+        ++i;
+    }
+}
+
+void MyViewer::saveMeshFaceToEigen(const MyMesh& _mesh, Eigen::MatrixXi& F)
+{
+    int numFaces = _mesh.n_faces();
+    F.resize(numFaces, 3);
+    int i = 0;
+    for (const auto& fh : _mesh.faces()) {
+        int j = 0;
+        for (const auto& vh : _mesh.fv_range(fh)) {
+            F(i, j) = vh.idx();  // Store vertex index
+            ++j;
+        }
+        ++i;
+    }
+}
+
+
+std::vector<Eigen::Vector4d> MyViewer::setMushFactor(std::vector<Eigen::Vector4d> v)
+{
+    for (int i = 0; i < v.size(); i++)
+    {
+        v[i][0] *= deltaMushFactor;
+        v[i][1] *= deltaMushFactor;
+        v[i][2] *= deltaMushFactor;
+    }
+    return v;
+}
 
 
 void MyViewer::Delta_Mush(std::vector<Eigen::Vector4d>& v)
@@ -304,7 +347,37 @@ void MyViewer::Delta_Mush_two(std::vector<Eigen::Vector4d> v)
 
 
     }
+    collisonTest();
+}
 
-   // createL_smooot(mesh);
-   
+
+void MyViewer::collisonTest()
+{
+    igl::Timer timer;
+    // createL_smooot(mesh);
+    Eigen::MatrixXd V, VS;
+    Eigen::MatrixXi F;
+    saveMeshToEigen(mesh, V);
+    saveMeshToEigen(smooth, VS);
+    saveMeshFaceToEigen(mesh, F);
+
+
+
+    mcl::BVHTree<double, 3> tree;
+    tree.options.box_eta = std::numeric_limits<float>::epsilon();
+    timer.start();
+    tbb::concurrent_vector<std::tuple<Eigen::Vector4i, int, double>> contacts;  // CCD results: (collision info, type, TOI)
+    std::set<std::pair<int, int>> discrete;
+    tree.update(V, VS, F); // creates or updates BVH
+    tree.append_pair = [&](const Eigen::Vector4i& sten, int type, const double& toi)->void
+    {
+        contacts.emplace_back(sten, type, toi);
+    };
+    tree.append_discrete = [&](int p0, int p1)->bool
+    {
+        discrete.emplace(p0, p1); // tri-tri or edge-edge
+        return false; // return true to stop traversing
+    };
+    tree.traverse(V, VS, F); // perform collision detection
+    int Tsize = contacts.size();
 }

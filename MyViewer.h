@@ -1,6 +1,5 @@
 // -*- mode: c++ -*-
 #pragma once
-
 #include <string>
 #include <QGLViewer/qglviewer.h>
 #include <OpenMesh/Core/Mesh/TriMesh_ArrayKernelT.hh>
@@ -23,6 +22,7 @@
 #include"HRBF.h"
 #include "MarchingCubes.h"
 #include "DeltaMush.h"
+#include "BVHTree.hpp"
 
 using qglviewer::Vec;
 
@@ -72,6 +72,7 @@ public:
         dm = DeltaMush(mesh);
         dm.setHelper(mesh);
         MushHelper = mesh;
+        Helper = mesh;
         //dm.Delta_Mush();
         //DirectMush();
         Delta_Mush(vec);
@@ -236,6 +237,11 @@ private:
     // Other
     void fairMesh();
 
+
+    void saveMeshToEigen(const MyMesh& _mesh, Eigen::MatrixXd& V);
+    void saveMeshFaceToEigen(const MyMesh& _mesh, Eigen::MatrixXi& F);
+    void collisonTest();
+
     //////////////////////
     // Member variables //
     //////////////////////
@@ -249,6 +255,7 @@ private:
 
     MyMesh smooth;
     MyMesh MushHelper;
+    MyMesh Helper;
      
     DeltaMush dm;
 
@@ -493,8 +500,8 @@ private:
     void Delta_Mush(std::vector<Eigen::Vector4d>& v);
     void Delta_Mush_two(std::vector<Eigen::Vector4d> v);
 
-
-
+    void drawDelta();
+    std::vector<Eigen::Vector4d> setMushFactor(std::vector<Eigen::Vector4d> v);
 
     void selectedjoin();
 
