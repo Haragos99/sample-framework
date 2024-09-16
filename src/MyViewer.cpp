@@ -2,7 +2,7 @@
 #include <cmath>
 #include <map>
 #include "Bone.h"
-#include "Bspline.h"
+
 
 #ifdef BETTER_MEAN_CURVATURE
 #include "Eigen/Eigenvalues"

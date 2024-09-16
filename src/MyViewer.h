@@ -8,7 +8,6 @@
 #include <QTextStream>
 #include <QGLViewer/quaternion.h>
 #include"Bone.h"
-#include "Openfiler.hpp"
 #include <fstream>
 #include <iostream>
 #include <vector>
@@ -22,7 +21,7 @@
 #include"HRBF.h"
 #include "MarchingCubes.h"
 #include "DeltaMush.h"
-#include "BVHTree.hpp"
+#include "mclccd\BVHTree.hpp"
 
 using qglviewer::Vec;
 
@@ -240,7 +239,7 @@ private:
 
     void saveMeshToEigen(const MyMesh& _mesh, Eigen::MatrixXd& V);
     void saveMeshFaceToEigen(const MyMesh& _mesh, Eigen::MatrixXi& F);
-    void collisonTest();
+    void collisonTest(std::vector<Eigen::Vector4d> v);
 
     //////////////////////
     // Member variables //

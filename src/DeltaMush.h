@@ -2,6 +2,7 @@
 #include "Matrix4.h"
 #include <Eigen/Eigen>
 #include "Mesh.h"
+#include "mclccd\BVHTree.hpp"
 
 using qglviewer::Vec;
 using MyMesh = OpenMesh::TriMesh_ArrayKernelT<MyTraits>;
@@ -28,5 +29,6 @@ private:
 	MyMesh Smooth;
 	std::vector<Vec> smoothed;
 	std::vector<Eigen::Vector4d> delta;
+	mcl::BVHTree<double, 3> tree;
 };
 

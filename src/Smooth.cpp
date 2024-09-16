@@ -193,6 +193,7 @@ void MyViewer::saveMeshToEigen(const MyMesh& _mesh, Eigen::MatrixXd& V)
     V.resize(numVertices, 3);
     int i = 0;
     for (const auto& vh : _mesh.vertices()) {
+        mesh.data(vh).color = Vec(0, 0, 0);
         auto point = _mesh.point(vh);
         V(i, 0) = point[0];  // x-coordinate
         V(i, 1) = point[1];  // y-coordinate
@@ -341,17 +342,19 @@ void MyViewer::Delta_Mush_two(std::vector<Eigen::Vector4d> v)
         C(3, 2) = smoothed[ve.idx()].z;
         C(3, 3) = 1;
 
+        mesh.data(ve).C = C.transpose();
+
         auto d = C.transpose() * v[ve.idx()];
 
         mesh.point(ve) = MyMesh::Point(d[0], d[1], d[2]);
 
 
     }
-    collisonTest();
+    collisonTest(v);
 }
 
 
-void MyViewer::collisonTest()
+void MyViewer::collisonTest(std::vector<Eigen::Vector4d> v)
 {
     igl::Timer timer;
     // createL_smooot(mesh);
@@ -360,15 +363,13 @@ void MyViewer::collisonTest()
     saveMeshToEigen(mesh, V);
     saveMeshToEigen(smooth, VS);
     saveMeshFaceToEigen(mesh, F);
-
-
-
+    V *= 8;
     mcl::BVHTree<double, 3> tree;
     tree.options.box_eta = std::numeric_limits<float>::epsilon();
     timer.start();
     tbb::concurrent_vector<std::tuple<Eigen::Vector4i, int, double>> contacts;  // CCD results: (collision info, type, TOI)
     std::set<std::pair<int, int>> discrete;
-    tree.update(V, VS, F); // creates or updates BVH
+    tree.update(VS, V, F); // creates or updates BVH
     tree.append_pair = [&](const Eigen::Vector4i& sten, int type, const double& toi)->void
     {
         contacts.emplace_back(sten, type, toi);
@@ -378,6 +379,28 @@ void MyViewer::collisonTest()
         discrete.emplace(p0, p1); // tri-tri or edge-edge
         return false; // return true to stop traversing
     };
-    tree.traverse(V, VS, F); // perform collision detection
+    tree.traverse(VS, V, F); // perform collision detection
     int Tsize = contacts.size();
+    for (const auto& contact : contacts) {
+        Eigen::Vector4i sten = std::get<0>(contact);  // Collision info
+        double fa = std::get<2>(contact);
+        int v_idx = sten[0];  // Index of the collided vertex
+        fa  =0.9;
+        // Set the color of the collided vertex to red
+        if (v_idx < mesh.n_vertices()) {
+            MyMesh::VertexHandle vh = mesh.vertex_handle(v_idx);
+            //mesh.set_color(vh, MyMesh::Color(255, 0, 0));  // Set color to red (RGB)
+            mesh.data(vh).color = Vec(1, 0, 0);
+
+
+            //TODO : Work on the right factor
+            v[vh.idx()][0] *= fa;
+            v[vh.idx()][1] *= fa;
+            v[vh.idx()][2] *= fa;
+
+            auto d =mesh.data(vh).C * v[vh.idx()];
+            mesh.point(vh) = MyMesh::Point(d[0], d[1], d[2]);
+
+        }
+    }
 }

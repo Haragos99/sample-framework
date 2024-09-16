@@ -86,6 +86,7 @@ void MyViewer::draw() {
                     glTexCoord1d(mesh.point(v) | slicing_dir * slicing_scaling);
                 else if (visualization == Visualization::WEIGH) //Itt adjuk meg a súlyokat
                 {
+                    
                     Vec color = Vec(0, 0, 0);
                     for (int i = 0; i < skel.getSize(); i++)
                     {
@@ -94,12 +95,17 @@ void MyViewer::draw() {
                             color += (mesh.data(v).weigh[i] * skel.bones[i].color);
                         }
                     }
+                    color = mesh.data(v).color == Vec(0, 0, 0) ? color : mesh.data(v).color;
                     if (transparent) {
                         glColor4d(color.x, color.y, color.z, 0.5);
                     }
                     else {
                         glColor3d(color.x,color.y,color.z);
                     }
+                    
+                    
+                    
+                    
                 }
                 else if (visualization == Visualization::WEIGH2)
                 {
