@@ -76,7 +76,12 @@ void MyViewer::draw() {
             glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_DECAL);
             glEnable(GL_TEXTURE_1D);
         }
-        draw_smooth();
+
+
+        if (showSmooth)
+        {
+            draw_smooth();
+        }
         for (auto f : mesh.faces()) {
             glBegin(GL_POLYGON);
             for (auto v : mesh.fv_range(f)) {
@@ -283,12 +288,12 @@ void MyViewer::drawDelta()
         {
 
            
-            glLineWidth(10.0);
+            glLineWidth(2.0);
             glBegin(GL_LINES);
             glColor3d(1.0, 0.0, 0.0);
-            glVertex3dv(smooth.point(v).data());
+            glVertex3dv(mesh.point(v).data());
             Eigen::Vector4d p_vector;
-            p_vector << smooth.point(v)[0], smooth.point(v)[1], smooth.point(v)[2], 1;
+            p_vector << mesh.point(v)[0], mesh.point(v)[1], mesh.point(v)[2], 1;
             Eigen::Vector4d d = p_vector + vd[v.idx()];
             glVertex3dv(d.data());
             glColor3d(1.0, 0.0, 0.0);

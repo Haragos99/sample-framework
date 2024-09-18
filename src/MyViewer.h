@@ -22,6 +22,7 @@
 #include "MarchingCubes.h"
 #include "DeltaMush.h"
 #include "mclccd\BVHTree.hpp"
+#include "ControlPoint.h"
 
 using qglviewer::Vec;
 
@@ -251,6 +252,7 @@ private:
     MyMesh mesh;
 
     bool showSampels;
+    bool showSmooth;
 
     MyMesh smooth;
     MyMesh MushHelper;
@@ -303,48 +305,6 @@ private:
     }
 
     void drawMesh();
-
-    struct ControlPoint {
-        Vec position;
-        Vec color;
-        int jointid;
-        int id;
-        ControlPoint() {}
-        ControlPoint(Vec _position)
-        {
-            position = _position;
-            color = Vec(1, 0, 0);
-
-        }
-
-        ControlPoint(Vec _position,int _id)
-        {
-            position = _position;
-            color = Vec(1, 0, 0);
-            id = _id;
-        }
-
-        void drawarrow()
-        {
-            Vec const& p = position;
-            glPushName(id);
-            glRasterPos3fv(p);
-            glPopName();
-
-        }
-        void draw()
-        {
-            glDisable(GL_LIGHTING);
-            glColor3d(color.x, color.y, color.z);
-            glPointSize(50.0);
-            glBegin(GL_POINTS);
-            glVertex3dv(position);
-            glEnd();
-            glEnable(GL_LIGHTING);
-        }
-
-
-    };
 
     ControlPoint target;
     struct SamplePoint {

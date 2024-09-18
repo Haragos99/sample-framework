@@ -1,25 +1,11 @@
 #pragma once
 #include <QGLViewer/qglviewer.h>
 #include "Matrix4.h"
+#include "Keyframe.h"
 using qglviewer::Vec;
 
 
-struct Keyframe {
-    Keyframe(float time, int index, const Vec& angles)
-        : time_(time), index_of_join(index), angles_(angles) {}
 
-    float time() const { return time_; }
-    const Vec& position() const { return position_; }
-    const Vec& angeles() const { return angles_; }
-    Vec angles_;
-    Vec position_;
-    Vec selected_point;
-    int index_of_join;
-private:
-    float time_;
-
-
-};
 
 
 

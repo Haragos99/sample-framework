@@ -6,8 +6,19 @@
 
 void MyViewer::animate()
 {
-   
-    if (isAnimating_)
+    //TODO: finish this
+    if (startAnimationTime_ < 1) {
+        for (auto& cp : cps)
+        {
+            //cp.animate(startAnimationTime_);
+            //inverse_kinematics(cp,skel.root);
+            cp.position = (qreal)(1.0f - startAnimationTime_) * cp.position + (qreal)startAnimationTime_ * Vec(1, 1, 1);
+            inverse_kinematics(cp, skel.root);
+        }
+        startAnimationTime_ += 0.1;
+    }
+    
+    if (isAnimating_&& false)
     {
         float current_time = (currentTime() - startAnimationTime_) * 10;
         FrameSecond = current_time;
@@ -77,6 +88,7 @@ void MyViewer::Frame()
     isAnimating_ = true;
     animationDuration_ = 10.0;
     startAnimationTime_ = currentTime();
+    startAnimationTime_ = 0;
     //Invers();
     Reset();
     startAnimation();

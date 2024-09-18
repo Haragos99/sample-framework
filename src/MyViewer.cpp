@@ -494,6 +494,7 @@ void MyViewer::init() {
     glTexParameteri(GL_TEXTURE_1D, GL_TEXTURE_WRAP_S, GL_REPEAT);
     static const unsigned char slicing_img[] = { 0b11111111, 0b00011100 };
     glTexImage1D(GL_TEXTURE_1D, 0, GL_RGB, 2, 0, GL_RGB, GL_UNSIGNED_BYTE_3_3_2, &slicing_img);
+    setAnimationPeriod(16);
 }
 
 
@@ -559,8 +560,11 @@ void MyViewer::Rotate()
         
         skel.animate_mesh(mesh,isweight);
         
-        if (delatamush)
+        if (delatamush) {
+            MushHelper = mesh;
             Delta_Mush_two(vec);
+        }
+           
         update();
     }
 
@@ -788,6 +792,7 @@ void MyViewer::keyPressEvent(QKeyEvent* e) {
             transparent = !transparent;
             update();
             break;
+
         case Qt::Key_5:
             //ani = true;
             
@@ -911,8 +916,15 @@ void MyViewer::keyPressEvent(QKeyEvent* e) {
             show_wireframe = !show_wireframe;
             update();
             break;
+
+
         case Qt::Key_F:
             fairMesh();
+            update();
+            break;
+
+        case Qt::Key_Z:
+            showSmooth = !showSmooth;
             update();
             break;
        

@@ -1,8 +1,10 @@
 #include "MyViewer.h"
 #include <math.h>
-
+#include <igl/Timer.h>
 void MyViewer::inverse_kinematics(ControlPoint t, Joint* j)
 {
+    igl::Timer timer;
+    timer.start();
     ik.clear();
     tree_to_array(j);
     double dis = abs(distance(ik[0], t.position));
@@ -63,6 +65,9 @@ void MyViewer::inverse_kinematics(ControlPoint t, Joint* j)
     
     skel.animate_mesh(mesh,isweight,true);
     //j->set_deafult_matrix(j);
+
+    timer.stop();
+    double td = timer.getElapsedTimeInSec();
     if (delatamush)
     {
         //MushHelper = mesh;

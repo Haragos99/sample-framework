@@ -222,9 +222,9 @@ std::vector<Eigen::Vector4d> MyViewer::setMushFactor(std::vector<Eigen::Vector4d
 {
     for (int i = 0; i < v.size(); i++)
     {
-        v[i][0] *= deltaMushFactor;
-        v[i][1] *= deltaMushFactor;
-        v[i][2] *= deltaMushFactor;
+        v[i][0] *= 1.0 - deltaMushFactor;
+        v[i][1] *= 1.0 - deltaMushFactor;
+        v[i][2] *= 1.0 - deltaMushFactor;
     }
     return v;
 }
@@ -236,26 +236,28 @@ void MyViewer::Delta_Mush(std::vector<Eigen::Vector4d>& v)
     std::vector<Vec> smoothed;
     auto smooth_mesh = smoothvectors(smoothed);
     int size = smoothed.size();
+
+    smooth_mesh.request_face_normals();
+    smooth_mesh.request_vertex_normals();
     smooth_mesh.update_normals();
+
     for (auto ve : mesh.vertices()) {
 
         Eigen::MatrixXd R;
         Eigen::FullPivLU< Eigen::MatrixXd> solver;
         Eigen::Vector4d p_vector;
         Eigen::Vector4d v_vector;
-        p_vector << mesh.point(ve)[0], mesh.point(ve)[1], mesh.point(ve)[2], 1;
+        auto p = mesh.point(ve);
+        p_vector << p[0], p[1], p[2], 1;
         R.resize(4, 4);
+
         MyMesh::Normal normal = smooth_mesh.normal(ve);
-        Vec t;
-        Vec b;
-        for (MyMesh::VertexOHalfedgeIter voh_it = smooth_mesh.voh_iter(ve); voh_it.is_valid(); ++voh_it) {
-            MyMesh::HalfedgeHandle heh = *voh_it;
-            auto ed = smooth_mesh.calc_edge_vector(heh);
-            t = Vec((ed - (ed | normal) * normal).normalize());
 
-            b = (t ^ Vec(normal)).unit();
+        MyMesh::HalfedgeHandle heh = *smooth_mesh.voh_iter(ve);
+        auto ed = smooth_mesh.calc_edge_vector(heh);
+        Vec t = Vec((ed - (ed | normal) * normal).normalize());
+        Vec b = (t ^ Vec(normal)).unit();
 
-        }
         R(0, 0) = t[0];
         R(0, 1) = t[1];
         R(0, 2) = t[2];
@@ -271,9 +273,10 @@ void MyViewer::Delta_Mush(std::vector<Eigen::Vector4d>& v)
         R(2, 2) = b[2];
         R(2, 3) = 0;
 
-        R(3, 0) = smoothed[ve.idx()].x;
-        R(3, 1) = smoothed[ve.idx()].y;
-        R(3, 2) = smoothed[ve.idx()].z;
+
+        R(3, 0) = smooth_mesh.point(ve)[0];
+        R(3, 1) = smooth_mesh.point(ve)[1];
+        R(3, 2) = smooth_mesh.point(ve)[2];
         R(3, 3) = 1;
 
         Eigen::MatrixXd I(4, 4);
@@ -295,6 +298,8 @@ void MyViewer::Delta_Mush(std::vector<Eigen::Vector4d>& v)
 
 void MyViewer::Delta_Mush_two(std::vector<Eigen::Vector4d> v) 
 {
+    igl::Timer timer;
+    timer.start();
  for (int i = 0; i < v.size(); i++)
     {
         v[i][0] *= deltaMushFactor;
@@ -304,24 +309,19 @@ void MyViewer::Delta_Mush_two(std::vector<Eigen::Vector4d> v)
     auto m = MushHelper;
     std::vector<Vec> smoothed;
     auto smooth_mesh = smoothvectors(smoothed);
+    smooth_mesh.request_face_normals();
+    smooth_mesh.request_vertex_normals();
     smooth_mesh.update_normals();
     int size = smoothed.size();
     for (auto ve : m.vertices()) {
         Eigen::MatrixXd C(4, 4);
-        Eigen::Vector4d p_vector;
-        Eigen::Vector4d v_vector;
-        p_vector << m.point(ve)[0], m.point(ve)[1], m.point(ve)[2], 1;
         MyMesh::Normal normal = smooth_mesh.normal(ve);
-        Vec t;
-        Vec b;
-        for (MyMesh::VertexOHalfedgeIter voh_it = smooth_mesh.voh_iter(ve); voh_it.is_valid(); ++voh_it) {
-            MyMesh::HalfedgeHandle heh = *voh_it;
-            auto ed = smooth_mesh.calc_edge_vector(heh);
-            t = Vec((ed - (ed | normal) * normal).normalize());
 
-            b = -(t ^ Vec(normal)).unit();
+        MyMesh::HalfedgeHandle heh = *smooth_mesh.voh_iter(ve);
+        auto ed = smooth_mesh.calc_edge_vector(heh);
+        Vec t = Vec((ed - (ed | normal) * normal).normalize());
+        Vec b = (t ^ Vec(normal)).unit();
 
-        }
         C(0, 0) = t[0];
         C(0, 1) = t[1];
         C(0, 2) = t[2];
@@ -337,9 +337,9 @@ void MyViewer::Delta_Mush_two(std::vector<Eigen::Vector4d> v)
         C(2, 2) = b[2];
         C(2, 3) = 0;
 
-        C(3, 0) = smoothed[ve.idx()].x;
-        C(3, 1) = smoothed[ve.idx()].y;
-        C(3, 2) = smoothed[ve.idx()].z;
+        C(3, 0) = smooth_mesh.point(ve)[0];
+        C(3, 1) = smooth_mesh.point(ve)[1];
+        C(3, 2) = smooth_mesh.point(ve)[2];
         C(3, 3) = 1;
 
         mesh.data(ve).C = C.transpose();
@@ -350,26 +350,33 @@ void MyViewer::Delta_Mush_two(std::vector<Eigen::Vector4d> v)
 
 
     }
-    collisonTest(v);
+    timer.stop();
+    double tt = timer.getElapsedTimeInSec();
+    //collisonTest(v);
 }
 
 
 void MyViewer::collisonTest(std::vector<Eigen::Vector4d> v)
 {
-    igl::Timer timer;
+
     // createL_smooot(mesh);
     Eigen::MatrixXd V, VS;
     Eigen::MatrixXi F;
     saveMeshToEigen(mesh, V);
     saveMeshToEigen(smooth, VS);
     saveMeshFaceToEigen(mesh, F);
-    V *= 8;
+    igl::Timer timer;
+    timer.start();
+   
+    //V *= 10;
+    //VS /= 5;
     mcl::BVHTree<double, 3> tree;
     tree.options.box_eta = std::numeric_limits<float>::epsilon();
-    timer.start();
+    ;
     tbb::concurrent_vector<std::tuple<Eigen::Vector4i, int, double>> contacts;  // CCD results: (collision info, type, TOI)
     std::set<std::pair<int, int>> discrete;
     tree.update(VS, V, F); // creates or updates BVH
+
     tree.append_pair = [&](const Eigen::Vector4i& sten, int type, const double& toi)->void
     {
         contacts.emplace_back(sten, type, toi);
@@ -380,12 +387,14 @@ void MyViewer::collisonTest(std::vector<Eigen::Vector4d> v)
         return false; // return true to stop traversing
     };
     tree.traverse(VS, V, F); // perform collision detection
+    timer.stop();
+    double tt = timer.getElapsedTimeInSec();
     int Tsize = contacts.size();
     for (const auto& contact : contacts) {
         Eigen::Vector4i sten = std::get<0>(contact);  // Collision info
         double fa = std::get<2>(contact);
         int v_idx = sten[0];  // Index of the collided vertex
-        fa  =0.9;
+        //fa = 0.95;
         // Set the color of the collided vertex to red
         if (v_idx < mesh.n_vertices()) {
             MyMesh::VertexHandle vh = mesh.vertex_handle(v_idx);
@@ -400,7 +409,20 @@ void MyViewer::collisonTest(std::vector<Eigen::Vector4d> v)
 
             auto d =mesh.data(vh).C * v[vh.idx()];
             mesh.point(vh) = MyMesh::Point(d[0], d[1], d[2]);
+            for (auto vi : mesh.vv_range(vh)) {
+
+                fa = 0.99;
+                v[vi.idx()][0] *= fa;
+                v[vi.idx()][1] *= fa;
+                v[vi.idx()][2] *= fa;
+                auto di = mesh.data(vi).C * v[vi.idx()];
+                mesh.point(vi) = MyMesh::Point(di[0], di[1], di[2]);
+            }
+
 
         }
+        
     }
+
+
 }
