@@ -127,6 +127,7 @@ public:
         dm.setHelper(mesh);
         if (delatamush)
         {
+            //TestDelta(vec);
             Delta_Mush_two(vec);
            //dm.Delta_Mush_two(mesh);
         }
@@ -254,12 +255,16 @@ private:
     bool showSampels;
     bool showSmooth;
 
+    std::vector<int> index;
+    void TestDelta(std::vector<Eigen::Vector4d> v);
+    void collisonTest2(std::vector<Eigen::Vector4d> v);
+
     MyMesh smooth;
     MyMesh MushHelper;
     MyMesh Helper;
      
     DeltaMush dm;
-
+    std::vector<float> tios;
     Eigen::SparseMatrix<double> A;
     std::vector<Vec4> delt;
     void DirectMush();

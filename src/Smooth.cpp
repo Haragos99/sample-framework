@@ -3,84 +3,38 @@
 #include <tbb/concurrent_unordered_set.h>
 #include <tbb/concurrent_vector.h>
 #include <igl/Timer.h>
+#include "tight_inclusion/ccd.hpp"
 
-void MyViewer::DirectMush()
-{
-    int n = mesh.n_vertices();
-    Eigen::SparseMatrix<double> U(4, n);
-    
-    for (auto v : mesh.vertices())
-    {
-        U.coeffRef(0, v.idx()) = mesh.point(v)[0];
-        U.coeffRef(1, v.idx()) = mesh.point(v)[1];
-        U.coeffRef(2, v.idx()) = mesh.point(v)[2];
-        U.coeffRef(3, v.idx()) = 1;
-    }
-    Eigen::SparseMatrix<double> L;
-    createL(L);
-    Eigen::SparseMatrix<double> D(n, n);
-    D.makeCompressed();
-    for (auto v : mesh.vertices())
-    {
-        D.coeffRef(v.idx(), v.idx()) = L.coeffRef(v.idx(), v.idx());
-    }
-    D.makeCompressed();
-    Eigen::SimplicialLDLT< Eigen::SparseMatrix<double>> solver;
-    Eigen::SparseMatrix<double> I(n, n);
-    I.setIdentity();
-    solver.compute(D);
-    double smootingfactor = 0.5;
-    auto D_inv = solver.solve(I);
-    auto _L = L * D_inv;
-    A = (I - smootingfactor * _L);
-    auto _U = U * A;
-    for (int i = 0; i < n; i++)
-    {
 
-        Eigen::VectorXd u = U.col(i);
-        Eigen::VectorXd _u =_U.col(i);
-        Eigen::VectorXd d = u -_u;
-        delt.push_back(Vec4(d[0],d[1],d[2],0));
-    }
 
+// Custom hash function for Eigen::Vector4i
+namespace std {
+    template <>
+    struct hash<Eigen::Vector4i> {
+        std::size_t operator()(const Eigen::Vector4i& vec) const {
+            std::size_t seed = 0;
+            for (int i = 0; i < 4; ++i) {
+                seed ^= std::hash<int>{}(vec[i]) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
+            }
+            return seed;
+        }
+    };
+
+    // Custom hash function for tuple<Eigen::Vector4i, int, double>
+    template <>
+    struct hash<std::tuple<Eigen::Vector4i, int, double>> {
+        std::size_t operator()(const std::tuple<Eigen::Vector4i, int, double>& t) const {
+            const auto& [vec, i, d] = t;
+            std::size_t seed = 0;
+            seed ^= std::hash<Eigen::Vector4i>{}(vec)+0x9e3779b9 + (seed << 6) + (seed >> 2);
+            seed ^= std::hash<int>{}(i)+0x9e3779b9 + (seed << 6) + (seed >> 2);
+            seed ^= std::hash<double>{}(d)+0x9e3779b9 + (seed << 6) + (seed >> 2);
+            return seed;
+        }
+    };
 }
 
 
-void MyViewer::AnDirectMush()
-{
-
-
-    int n = mesh.n_vertices();
-    Eigen::SparseMatrix<double> V(4, n);
-
-    for (auto v : mesh.vertices())
-    {
-        V.coeffRef(0, v.idx()) = mesh.point(v)[0];
-        V.coeffRef(1, v.idx()) = mesh.point(v)[1];
-        V.coeffRef(2, v.idx()) = mesh.point(v)[2];
-        V.coeffRef(3, v.idx()) = 1;
-    }
-    auto _V = V * A;
-
-    for (auto v : mesh.vertices())
-    {
-        Mat4 R = mesh.data(v).M;
-        R.rows[3] = Vec4(0, 0, 0, 0);
-        delt[v.idx()] = delt[v.idx()] * R;
-        Eigen::VectorXd _v = _V.col(v.idx());
-        Eigen::VectorXd d;
-        d.resize(4);
-        d[0] = delt[v.idx()].x;
-        d[1] = delt[v.idx()].y;
-        d[2] = delt[v.idx()].z;
-        d[3] = 0;
-        auto x = _v + d;
-
-        mesh.point(v) = MyMesh::Point(x[0], x[1], x[2]);
-
-    }
-
-}
 
 
 void MyViewer::createL_smooot(MyMesh& m)
@@ -352,69 +306,167 @@ void MyViewer::Delta_Mush_two(std::vector<Eigen::Vector4d> v)
     }
     timer.stop();
     double tt = timer.getElapsedTimeInSec();
+    collisonTest2(v);
     //collisonTest(v);
 }
 
+Eigen::Vector3f toEigenVec(const MyMesh::Point& v) {
+    return Eigen::Vector3f(v[0], v[1], v[2]);
+}
+
+
+
+
+
+void MyViewer::collisonTest2(std::vector<Eigen::Vector4d> vi)
+{
+    tios.clear();
+    Eigen::Vector3f v_t0, v_t1;
+    Eigen::Vector3f f0_t0, f1_t0, f2_t0;
+    Eigen::Vector3f f0_t1, f1_t1, f2_t1;
+    float toi = 0;
+
+    Eigen::Vector3f err = Eigen::Vector3f(-1, -1, -1);  // Error bounds
+    float tmax = 1.0;
+    float tmaxiter = 1e7;
+
+    float tolerance =1e-6;
+    float outtolerance;
+
+    float mc = 1e-6;
+
+    for (auto v : mesh.vertices())
+    {
+        v_t0 = toEigenVec(mesh.point(v));
+        v_t1 = toEigenVec(smooth.point(v));
+
+
+        for (auto f : mesh.faces())
+        {
+            MyMesh::FaceVertexIter fv_it =mesh.fv_iter(f);
+            MyMesh::VertexHandle v0 = *fv_it;
+            MyMesh::VertexHandle v1 = *(++fv_it);
+            MyMesh::VertexHandle v2 = *(++fv_it);
+
+            if (v0 == v || v1 == v || v2 == v)
+            {
+                break;
+            }
+
+
+
+            f0_t0 = toEigenVec(mesh.point(v0));
+            f0_t1 = toEigenVec(smooth.point(v0));
+
+            f1_t0 = toEigenVec(mesh.point(v1));
+            f1_t1 = toEigenVec(smooth.point(v1));
+
+            f2_t0 = toEigenVec(mesh.point(v2));
+            f2_t1 = toEigenVec(smooth.point(v2));
+
+
+           bool a = ticcd::vertexFaceCCD(
+                v_t0, f0_t0, f1_t0, f2_t0,
+                v_t1, f0_t1, f1_t1, f2_t1,
+                err, mc, toi, tolerance, tmax, tmaxiter, outtolerance
+            );
+           if (a) {
+               mesh.data(v).color = Vec(1, 0, 0);
+               tios.push_back(toi);
+               vi[v.idx()][0] *= toi;
+               vi[v.idx()][1] *= toi;
+               vi[v.idx()][2] *= toi;
+               auto di = mesh.data(v).C * vi[v.idx()];
+               mesh.point(v) = MyMesh::Point(di[0], di[1], di[2]);
+           }
+           else
+           {
+               //mesh.data(v).color = Vec(0, 0, 0);
+           }
+            //break;
+        }
+        //break;
+    }
+}
 
 void MyViewer::collisonTest(std::vector<Eigen::Vector4d> v)
 {
-
+    index.clear();
     // createL_smooot(mesh);
     Eigen::MatrixXd V, VS;
     Eigen::MatrixXi F;
     saveMeshToEigen(mesh, V);
     saveMeshToEigen(smooth, VS);
-    saveMeshFaceToEigen(mesh, F);
+    saveMeshFaceToEigen(smooth, F);
     igl::Timer timer;
     timer.start();
    
-    //V *= 10;
     //VS /= 5;
     mcl::BVHTree<double, 3> tree;
     tree.options.box_eta = std::numeric_limits<float>::epsilon();
     ;
-    tbb::concurrent_vector<std::tuple<Eigen::Vector4i, int, double>> contacts;  // CCD results: (collision info, type, TOI)
+    std::vector<std::tuple<Eigen::Vector4i, int, double>> contacts;  // CCD results: (collision info, type, TOI)
     std::set<std::pair<int, int>> discrete;
-    tree.update(VS, V, F); // creates or updates BVH
-
+    tbb::concurrent_unordered_set<Eigen::Vector4i> co;
+    tree.update(V, VS, F); // creates or updates BVH
+    tree.options.threaded = false;
     tree.append_pair = [&](const Eigen::Vector4i& sten, int type, const double& toi)->void
     {
-        contacts.emplace_back(sten, type, toi);
+        double s = toi *10;
+        if ( s <= 1)
+        {
+            contacts.emplace_back(sten, type, toi);
+            
+            //co.emplace(sten);
+        }           
     };
     tree.append_discrete = [&](int p0, int p1)->bool
     {
         discrete.emplace(p0, p1); // tri-tri or edge-edge
         return false; // return true to stop traversing
     };
-    tree.traverse(VS, V, F); // perform collision detection
+    tree.traverse(V, VS, F); // perform collision detection
     timer.stop();
     double tt = timer.getElapsedTimeInSec();
     int Tsize = contacts.size();
+    int Set = co.size();
+    std::vector<Eigen::Vector4i> tios;
+    for (const auto& contact : contacts) {
+        double fa = std::get<2>(contact);
+        
+        Eigen::Vector4i sten = std::get<0>(contact);
+        tios.push_back(sten);
+        int v_idx = sten[0];
+        index.push_back(v_idx);
+    }
+    
+
     for (const auto& contact : contacts) {
         Eigen::Vector4i sten = std::get<0>(contact);  // Collision info
         double fa = std::get<2>(contact);
         int v_idx = sten[0];  // Index of the collided vertex
+
+
+
         //fa = 0.95;
         // Set the color of the collided vertex to red
         if (v_idx < mesh.n_vertices()) {
             MyMesh::VertexHandle vh = mesh.vertex_handle(v_idx);
             //mesh.set_color(vh, MyMesh::Color(255, 0, 0));  // Set color to red (RGB)
             mesh.data(vh).color = Vec(1, 0, 0);
-
-
+            fa =1.0-fa;
             //TODO : Work on the right factor
-            v[vh.idx()][0] *= fa;
-            v[vh.idx()][1] *= fa;
-            v[vh.idx()][2] *= fa;
+            //v[vh.idx()][0] *= fa;
+            //v[vh.idx()][1] *= fa;
+            //v[vh.idx()][2] *= fa;
 
             auto d =mesh.data(vh).C * v[vh.idx()];
             mesh.point(vh) = MyMesh::Point(d[0], d[1], d[2]);
             for (auto vi : mesh.vv_range(vh)) {
-
                 fa = 0.99;
-                v[vi.idx()][0] *= fa;
-                v[vi.idx()][1] *= fa;
-                v[vi.idx()][2] *= fa;
+               //v[vi.idx()][0] *= fa;
+              //v[vi.idx()][1] *= fa;
+              //v[vi.idx()][2] *= fa;
                 auto di = mesh.data(vi).C * v[vi.idx()];
                 mesh.point(vi) = MyMesh::Point(di[0], di[1], di[2]);
             }
@@ -424,5 +476,19 @@ void MyViewer::collisonTest(std::vector<Eigen::Vector4d> v)
         
     }
 
+}
 
+void MyViewer::TestDelta(std::vector<Eigen::Vector4d> v)
+{
+    for (auto v_idx : index)
+    {
+        MyMesh::VertexHandle vh = mesh.vertex_handle(v_idx);
+        v[vh.idx()][0] *= deltaMushFactor;
+        v[vh.idx()][1] *= deltaMushFactor;
+        v[vh.idx()][2] *= deltaMushFactor;
+
+        auto d = mesh.data(vh).C * v[vh.idx()];
+        mesh.point(vh) = MyMesh::Point(d[0], d[1], d[2]);
+    }
+    
 }
