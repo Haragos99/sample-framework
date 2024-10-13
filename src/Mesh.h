@@ -14,6 +14,7 @@ struct MyTraits : public OpenMesh::DefaultTraits {
       Mat4 M;
       int idx_of_closest_bone; 
       Eigen::MatrixXd C;
+      bool close2joint;
     };
     VertexAttributes(OpenMesh::Attributes::Normal |
         OpenMesh::Attributes::Color | OpenMesh::Attributes::Status);

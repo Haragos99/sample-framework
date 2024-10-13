@@ -26,6 +26,7 @@ struct ControlPoint {
     }
     Vec interpolatedPosition(float t);
     void drawarrow();
+    void addkeyframe(Keyframe& k) { keyframes.push_back(k); }
     void animate(float t);
     void draw();
 };

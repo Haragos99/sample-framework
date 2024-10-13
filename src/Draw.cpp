@@ -135,6 +135,9 @@ void MyViewer::draw() {
             }
             glEnd();
         }
+
+
+
         if (visualization == Visualization::ISOPHOTES) {
             glDisable(GL_TEXTURE_GEN_S);
             glDisable(GL_TEXTURE_GEN_T);
@@ -163,6 +166,7 @@ void MyViewer::draw() {
 
     drawMesh();
     mc.draw();
+
     if(false)
     {
         glColor3d(0.0, 1.0, 0.0);
@@ -294,7 +298,8 @@ void MyViewer::drawDelta()
             glVertex3dv(mesh.point(v).data());
             Eigen::Vector4d p_vector;
             p_vector << mesh.point(v)[0], mesh.point(v)[1], mesh.point(v)[2], 1;
-            Eigen::Vector4d d = p_vector + vd[v.idx()];
+            Eigen::Vector4d d = mesh.data(v).C * vd[v.idx()];
+            d = d;
             glVertex3dv(d.data());
             glColor3d(1.0, 0.0, 0.0);
             //drawArrow(Vec(p_vector.data()), Vec(d.data()), 0, 02);

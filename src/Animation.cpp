@@ -7,15 +7,19 @@
 void MyViewer::animate()
 {
     //TODO: finish this
-    if (startAnimationTime_ < 1) {
+    if (startAnimationTime_ < endanimation) {
+        FrameSecond = startAnimationTime_;
         for (auto& cp : cps)
         {
             //cp.animate(startAnimationTime_);
             //inverse_kinematics(cp,skel.root);
-            cp.position = (qreal)(1.0f - startAnimationTime_) * cp.position + (qreal)startAnimationTime_ * Vec(1, 1, 1);
+            cp.animate(startAnimationTime_);
+
+
+            //cp.position = (qreal)(1.0f - startAnimationTime_) * cp.position + (qreal)startAnimationTime_ * Vec(1, 1, 1);
             inverse_kinematics(cp, skel.root);
         }
-        startAnimationTime_ += 0.1;
+        startAnimationTime_ += 0.01;
     }
     
     if (isAnimating_&& false)
@@ -70,16 +74,28 @@ void MyViewer::keyframe_add()
 
     if (dlg->exec() == QDialog::Accepted) 
     {
-        qglviewer::Quaternion qx = qglviewer::Quaternion(Vec(1, 0, 0), angels.x / 180.0 * M_PI);
-        qglviewer::Quaternion qy = qglviewer::Quaternion(Vec(0, 1, 0), angels.y / 180.0 * M_PI);
-        qglviewer::Quaternion qz = qglviewer::Quaternion(Vec(0, 0, 1), angels.z / 180.0 * M_PI);
-        qglviewer::Quaternion q = qz * qy * qx;
 
-        Joint* j = skel.root->searchbyid(skel.root, selected_vertex);
-        Keyframe k = Keyframe(sb->value(), j->id, angels);
 
-        skel.root->addframe(j, k);
-        keyframes_.push_back(k);
+        if (model_type == ModelType::INVERZ)
+        {
+            Keyframe k = Keyframe(sb->value(), cps[selected_vertex].position,cps[selected_vertex].id);
+            cps[selected_vertex].addkeyframe(k);
+            keyframes_.push_back(k);
+        }
+        else
+        {
+            qglviewer::Quaternion qx = qglviewer::Quaternion(Vec(1, 0, 0), angels.x / 180.0 * M_PI);
+            qglviewer::Quaternion qy = qglviewer::Quaternion(Vec(0, 1, 0), angels.y / 180.0 * M_PI);
+            qglviewer::Quaternion qz = qglviewer::Quaternion(Vec(0, 0, 1), angels.z / 180.0 * M_PI);
+            qglviewer::Quaternion q = qz * qy * qx;
+
+            Joint* j = skel.root->searchbyid(skel.root, selected_vertex);
+            Keyframe k = Keyframe(sb->value(), j->id, angels);
+
+            skel.root->addframe(j, k);
+            keyframes_.push_back(k);
+        }
+
     }
 }
 void MyViewer::Frame()
@@ -89,6 +105,7 @@ void MyViewer::Frame()
     animationDuration_ = 10.0;
     startAnimationTime_ = currentTime();
     startAnimationTime_ = 0;
+    endanimation = keyframes_.back().time();
     //Invers();
     Reset();
     startAnimation();

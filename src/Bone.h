@@ -75,6 +75,10 @@ struct Bone {
 
     void manypoints();
 
+    bool isLastBone();
+
+    float lenght() { return (start->point - end->point).norm(); }
+
 
 };
 

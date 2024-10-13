@@ -69,6 +69,7 @@ public:
     }
     void delta(){
         weigh();
+        SetDistance();
         dm = DeltaMush(mesh);
         dm.setHelper(mesh);
         MushHelper = mesh;
@@ -134,6 +135,11 @@ public:
         update();
     }
     
+    std::vector<MyMesh::VertexHandle> verteces;
+    std::set<MyMesh::VertexHandle> colliedverteces;
+    std::set<MyMesh::FaceHandle> colliedfaces;
+    std::set<MyMesh::EdgeHandle> colliededges;
+
 
     void Epsil() {
         auto dlg = std::make_unique<QDialog>(this);
@@ -183,6 +189,7 @@ public:
     void Invers();
 
     void Databone();
+    void smoothpoints();
 
     void Frame();
     Vec angels;
@@ -262,7 +269,10 @@ private:
     MyMesh smooth;
     MyMesh MushHelper;
     MyMesh Helper;
-     
+    
+
+    void SetDistance();
+
     DeltaMush dm;
     std::vector<float> tios;
     Eigen::SparseMatrix<double> A;
@@ -505,6 +515,7 @@ private:
     std::vector<Vec> points;
     std::vector<Vec> selected_points_storage;
     float startAnimationTime_ = 0.0;
+    float endanimation = 0.0;
     float animationDuration_ = 1.0;
     std::vector<Keyframe> keyframes_;
     bool isAnimating_;

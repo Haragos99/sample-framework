@@ -137,6 +137,12 @@ void Bone::manypoints()
 }
 
 
+bool Bone::isLastBone()
+{
+    return end->children.size() == 0;
+}
+
+
 
 
 void Skelton::animate(float current_time, MyMesh& mesh)
