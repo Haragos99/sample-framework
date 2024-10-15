@@ -179,6 +179,13 @@ void MyViewer::draw() {
     }
     dm.draw();
     drawDelta();
+    
+    if (isAnimating_)
+    {
+        QImage frame = QOpenGLWidget::grabFramebuffer();
+        render.addframe(frame);
+    }
+
     if (axes.shown)
         drawAxes();
     glDisable(GL_LIGHTING);

@@ -23,6 +23,8 @@
 #include "DeltaMush.h"
 #include "mclccd\BVHTree.hpp"
 #include "ControlPoint.h"
+#include "Render.h"
+#include <QOpenGLWidget>
 
 using qglviewer::Vec;
 
@@ -241,7 +243,7 @@ private:
     void drawJointAxes(std::vector<Axes>& a) const;
     void drawAxesWithNames() const;
     static Vec intersectLines(const Vec& ap, const Vec& ad, const Vec& bp, const Vec& bd);
-
+    Render render;
     // Other
     void fairMesh();
 

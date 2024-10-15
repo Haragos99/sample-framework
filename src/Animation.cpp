@@ -21,6 +21,13 @@ void MyViewer::animate()
         }
         startAnimationTime_ += 0.01;
     }
+    else
+    {
+        isAnimating_ = false;
+        render.saveVideo();
+        int s = render.sizeframes();
+        stopAnimation();
+    }
     
     if (isAnimating_&& false)
     {
