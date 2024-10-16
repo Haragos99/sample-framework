@@ -40,7 +40,7 @@ MyViewer::MyViewer(QWidget* parent) :
     setSelectRegionWidth(10);
     setSelectRegionHeight(10);
     axes.shown = false;
-    startAnimationTime_ = false;
+    isAnimating_ = false;
 }
 
 MyViewer::~MyViewer() {

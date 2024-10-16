@@ -9,11 +9,14 @@ extern "C" {
 #include <QImage>
 #include <vector>
 #include <stdexcept>
+#include <iostream>
+#include <filesystem>
+#include "gif.h"
 
 class Render
 {
 public:
-	Render() { outputFilename = "C:\\Dev\\"; }
+	Render() { outputFilename = "C:\\Dev\\render\\"; }
 
 	void saveVideo();
 	void addframe(QImage frame);
@@ -21,8 +24,11 @@ public:
 	void savepPicture();
 
 private:
+	
 	std::vector<QImage> frames;
 	std::string outputFilename;
+	//cv::Mat QImageToCvMat(const QImage& inImage);
 	void encodeFrame(AVCodecContext* codecCtx, AVFrame* frame, AVPacket* pkt, AVFormatContext* formatCtx, AVStream* stream);
+	
 
 };

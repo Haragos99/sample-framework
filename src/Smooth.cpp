@@ -317,7 +317,7 @@ Eigen::Vector3f toEigenVec(const MyMesh::Point& v) {
 
 void MyViewer::SetDistance()
 {
-    float factor = 2;
+    float factor = 1;
     colliedverteces.clear();
     colliedfaces.clear();
     colliededges.clear();
