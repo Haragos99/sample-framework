@@ -80,7 +80,7 @@ MyMesh MyViewer::smoothvectors(std::vector<Vec>& smoothed)
     auto size = mesh.n_vertices();
     smoothed.resize(size);
     auto mesh_ = MushHelper;
-    for (int i = 0; i < 15; i++)
+    for (int i = 0; i < 10; i++)
     {
         auto smooth = mesh_;
         for (auto v : mesh.vertices()) {
@@ -317,7 +317,7 @@ Eigen::Vector3f toEigenVec(const MyMesh::Point& v) {
 
 void MyViewer::SetDistance()
 {
-    float factor = 1;
+    float factor = 1.5;
     colliedverteces.clear();
     colliedfaces.clear();
     colliededges.clear();
@@ -407,21 +407,38 @@ void MyViewer::SetDistance()
 
 }
 
+void projectPointToPlane(const MyMesh::Point& P, const MyMesh::Normal& N, MyMesh::Point& Q) {
+    // normalize the normal
+    MyMesh::Normal norm = N;
+    norm.normalize();
 
+    // distance between the pointand the plane
+    float d = dot(P - Q, norm);
+
+    //  projected point
+    Q = Q + (-d * norm);
+}
 
 void MyViewer::smoothpoints()
 {
-    double smootingfactor = 0.5;
-    for (int i = 0; i < 8; i++)
+    mesh.update_face_normals();
+    mesh.update_vertex_normals();
+    double smootingfactor = 0.1;
+    for (int i = 0; i < 1; i++)
     {
         auto smooth = mesh;
-        for (auto vi : verteces)
+        for (auto vis : verteces)
         {
-            for (auto v : mesh.vv_range(vi)) {
+            for (auto v : mesh.vv_range(vis)) {
                 Vec Avg;
                 int n = 0;
                 for (auto vi : mesh.vv_range(v)) {
-                    Vec vertex = Vec(mesh.point(v));
+
+                    auto point = mesh.point(vi);
+
+                    projectPointToPlane(mesh.point(v), mesh.normal(v), point);
+
+                    Vec vertex = Vec(point);
                     Avg += vertex;
                     n++;
                 }
@@ -451,7 +468,7 @@ void MyViewer::collisonTest2(std::vector<Eigen::Vector4d> vi)
     float tmax = 1.0;
     float tmaxiter = 1e7;
 
-    float tolerance = 0.107;
+    float tolerance = 1e-6;
     float outtolerance;
 
     float mc = 1e-6;

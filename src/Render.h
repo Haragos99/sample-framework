@@ -1,11 +1,5 @@
 #pragma once
-extern "C" {
-#include <libavcodec/avcodec.h>
-#include <libavformat/avformat.h>
-#include <libavutil/imgutils.h>
-#include <libavutil/avutil.h>
-#include <libswscale/swscale.h>
-}
+
 #include <QImage>
 #include <vector>
 #include <stdexcept>
@@ -27,8 +21,5 @@ private:
 	
 	std::vector<QImage> frames;
 	std::string outputFilename;
-	//cv::Mat QImageToCvMat(const QImage& inImage);
-	void encodeFrame(AVCodecContext* codecCtx, AVFrame* frame, AVPacket* pkt, AVFormatContext* formatCtx, AVStream* stream);
-	
 
 };
