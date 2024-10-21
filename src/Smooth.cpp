@@ -5,7 +5,7 @@
 #include <igl/Timer.h>
 #include "tight_inclusion/ccd.hpp"
 
-
+#include <BVH.h>
 
 // Custom hash function for Eigen::Vector4i
 namespace std {
@@ -80,7 +80,7 @@ MyMesh MyViewer::smoothvectors(std::vector<Vec>& smoothed)
     auto size = mesh.n_vertices();
     smoothed.resize(size);
     auto mesh_ = MushHelper;
-    for (int i = 0; i < 10; i++)
+    for (int i = 0; i < 12; i++)
     {
         auto smooth = mesh_;
         for (auto v : mesh.vertices()) {
@@ -183,7 +183,7 @@ std::vector<Eigen::Vector4d> MyViewer::setMushFactor(std::vector<Eigen::Vector4d
     return v;
 }
 
-
+BVH bvh;
 void MyViewer::Delta_Mush(std::vector<Eigen::Vector4d>& v)
 {
     
@@ -245,8 +245,8 @@ void MyViewer::Delta_Mush(std::vector<Eigen::Vector4d>& v)
 
 
     }
-    
 }
+
 
 
 
@@ -301,13 +301,16 @@ void MyViewer::Delta_Mush_two(std::vector<Eigen::Vector4d> v)
         auto d = C.transpose() * v[ve.idx()];
 
         mesh.point(ve) = MyMesh::Point(d[0], d[1], d[2]);
-
+ 
 
     }
     timer.stop();
     double tt = timer.getElapsedTimeInSec();
-    collisonTest2(v);
+   // collisonTest2(v);
     //collisonTest(v);
+    bvh = BVH(mesh, smooth);
+    bvh.build();
+    bvh.traverse(mesh, smooth,v);
 }
 
 Eigen::Vector3f toEigenVec(const MyMesh::Point& v) {
@@ -317,7 +320,7 @@ Eigen::Vector3f toEigenVec(const MyMesh::Point& v) {
 
 void MyViewer::SetDistance()
 {
-    float factor = 1.5;
+    float factor = 2;
     colliedverteces.clear();
     colliedfaces.clear();
     colliededges.clear();
@@ -423,7 +426,7 @@ void MyViewer::smoothpoints()
 {
     mesh.update_face_normals();
     mesh.update_vertex_normals();
-    double smootingfactor = 0.1;
+    double smootingfactor = 0.3;
     for (int i = 0; i < 1; i++)
     {
         auto smooth = mesh;
@@ -468,7 +471,7 @@ void MyViewer::collisonTest2(std::vector<Eigen::Vector4d> vi)
     float tmax = 1.0;
     float tmaxiter = 1e7;
 
-    float tolerance = 1e-6;
+    float tolerance = 1e-2;
     float outtolerance;
 
     float mc = 1e-6;
