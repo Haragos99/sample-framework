@@ -1,9 +1,9 @@
 #pragma once
-#include <AABB.h>
+#include "AABB.h"
 #include <memory>
 #include <vector>
 #include <set>
-#include <src/Mesh.h>
+#include "Mesh.h"
 using MyMesh = OpenMesh::TriMesh_ArrayKernelT<MyTraits>;
 struct BVHNode {
     AABB boundingBox;  // The bounding volume (an Axis-Aligned Bounding Box - AABB)

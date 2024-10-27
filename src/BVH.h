@@ -1,6 +1,6 @@
 #pragma once
-#include <src/Mesh.h>
-#include <BVHNode.h>
+#include "Mesh.h"
+#include "BVHNode.h"
 #include <set>
 using MyMesh = OpenMesh::TriMesh_ArrayKernelT<MyTraits>;
 

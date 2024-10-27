@@ -48,7 +48,7 @@ struct Joint {
 
     Mat4 getMatrix();
     
-    Joint* getDeapest(Joint* j);
+    Joint* getLeaf(Joint* j);
 
     void calculateMatrecies(Joint* j, Vec pivot, Vec angles);
 

@@ -1,7 +1,8 @@
 #include "MyViewer.h"
 #include <igl/Timer.h>
 #include "tight_inclusion/ccd.hpp"
-#include <BVH.h>
+
+#include "BVH.h"
 
 
 void MyViewer::createL_smooot(MyMesh& m)
@@ -47,7 +48,7 @@ MyMesh MyViewer::smoothvectors(std::vector<Vec>& smoothed)
     auto size = mesh.n_vertices();
     smoothed.resize(size);
     auto mesh_ = MushHelper;
-    for (int i = 0; i < 12; i++)
+    for (int i = 0; i < 30; i++)
     {
         auto smooth = mesh_;
         for (auto v : mesh.vertices()) {
@@ -188,6 +189,7 @@ void MyViewer::Delta_Mush(std::vector<Eigen::Vector4d>& v)
 
 void MyViewer::Delta_Mush_two(std::vector<Eigen::Vector4d> v) 
 {
+    //emit startComputation(tr("Fairing mesh..."));
     igl::Timer timer;
     timer.start();
  for (int i = 0; i < v.size(); i++)
@@ -242,7 +244,13 @@ void MyViewer::Delta_Mush_two(std::vector<Eigen::Vector4d> v)
     }
     timer.stop();
     double tt = timer.getElapsedTimeInSec();
-    collisonTest2(v);
+    
+
+    //emit endComputation();
+    //col.test(mesh, smooth);
+
+
+    //collisonTest2(v);
     //collisonTest(v);
     /*
     bvh = BVH(mesh, smooth);
@@ -258,7 +266,7 @@ Eigen::Vector3f toEigenVec(const MyMesh::Point& v) {
 
 void MyViewer::SetDistance()
 {
-    float factor = 2;
+    float factor = 1.5;
     colliedverteces.clear();
     colliedfaces.clear();
     colliededges.clear();
@@ -313,7 +321,6 @@ void MyViewer::SetDistance()
         }
 
     }
-
     for (auto e : mesh.edges())
     {
         MyMesh::EdgeHandle eh1 = e;
@@ -364,7 +371,7 @@ void MyViewer::smoothpoints()
 {
     mesh.update_face_normals();
     mesh.update_vertex_normals();
-    double smootingfactor = 0.3;
+    double smootingfactor = 0.13;
     for (int i = 0; i < 1; i++)
     {
         auto smooth = mesh;
@@ -409,7 +416,7 @@ void MyViewer::collisonTest2(std::vector<Eigen::Vector4d> vi)
     float tmax = 1.0;
     float tmaxiter = 1e7;
 
-    float tolerance = 1e-2;
+    float tolerance = 1e-6;
     float outtolerance;
 
     float mc = 1e-6;

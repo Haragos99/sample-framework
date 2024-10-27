@@ -81,13 +81,13 @@ Joint* Joint::searchbyid(Joint* j, int key)
 }
 
 
-Joint* Joint::getDeapest(Joint* j)
+Joint* Joint::getLeaf(Joint* j)
 {
     if ( j->children.size()==0) { return j; }
 
     for (int i = 0; i < j->children.size(); i++)
     {
-        Joint* result = getDeapest(j->children[i]);
+        Joint* result = getLeaf(j->children[i]);
         if (result != nullptr)
             return result;
     }

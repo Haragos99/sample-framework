@@ -1,5 +1,5 @@
 #include "BVH.h"
-#include <src/tight_inclusion/ccd.hpp>
+#include "tight_inclusion/ccd.hpp"
 
 void BVH::build()
 {

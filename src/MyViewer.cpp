@@ -679,8 +679,8 @@ void MyViewer::Error(MyMesh& m, HRBF& h) {
 
 void MyViewer::createControlPoins(Joint* j)
 {
-    Joint* deep = j->getDeapest(j);
-    ControlPoint cp = ControlPoint(deep->point*1.1, cps.size());
+    Joint* leaf = j->getLeaf(j);
+    ControlPoint cp = ControlPoint(leaf->point*1.1, cps.size());
     cp.jointid = j->id;
     cps.push_back(cp);
 }
@@ -823,6 +823,15 @@ void MyViewer::keyPressEvent(QKeyEvent* e) {
             update();
             break;
 
+        case Qt::Key_G:
+            Delta_Mush_two(vec);
+            col.init(vec);
+            col.colliedfaces = colliedfaces;
+            col.colliedverteces = colliedverteces;
+            col.colliededges = colliededges;
+            col.test(mesh, smooth);
+            update();
+            break;
         case Qt::Key_4:
             if (axes.shown) {
                 selectedjoin();

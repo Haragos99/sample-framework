@@ -25,7 +25,7 @@
 #include "ControlPoint.h"
 #include "Render.h"
 #include <QOpenGLWidget>
-
+#include "Collison.h"
 
 using qglviewer::Vec;
 
@@ -323,7 +323,7 @@ private:
     }
 
     void drawMesh();
-
+    Collison col;
     ControlPoint target;
     struct SamplePoint {
         MyMesh::FaceHandle tri;
