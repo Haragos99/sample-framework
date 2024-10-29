@@ -45,7 +45,7 @@ private:
 	}
 	void setRestToi(float newtoi);
 	void setMeshTio(MyMesh::VertexHandle& v, MyMesh& mesh);
-	void setSmalest(MyMesh::VertexHandle& v, MyMesh::FaceHandle& f, MyMesh& mesh);
+	void setSmalest(MyMesh::VertexHandle& v, MyMesh::FaceHandle& f, MyMesh::EdgeHandle& e ,MyMesh& mesh);
 	void restCollied();
 	void smoothpoints(MyMesh& mesh);
 	void projectPointToPlane(const MyMesh::Point& P, const MyMesh::Normal& N, MyMesh::Point& Q);

@@ -142,7 +142,7 @@ public:
     std::set<MyMesh::VertexHandle> colliedverteces;
     std::set<MyMesh::FaceHandle> colliedfaces;
     std::set<MyMesh::EdgeHandle> colliededges;
-
+    void smoothcollison(std::set<MyMesh::VertexHandle> verteces);
 
     void Epsil() {
         auto dlg = std::make_unique<QDialog>(this);

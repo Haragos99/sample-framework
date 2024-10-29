@@ -823,6 +823,11 @@ void MyViewer::keyPressEvent(QKeyEvent* e) {
             update();
             break;
 
+        case Qt::Key_H:
+            smoothcollison(col.verteces);
+            update();
+            break;
+
         case Qt::Key_G:
             Delta_Mush_two(vec);
             col.init(vec);

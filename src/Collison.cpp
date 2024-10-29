@@ -39,6 +39,7 @@ bool Collison::collisondetec(MyMesh& mesh, MyMesh& smooth)
     bool isanycollied = false;
     MyMesh::VertexHandle vindex;
     MyMesh::FaceHandle findex;
+    MyMesh::EdgeHandle eindex;
 
     for (auto v : colliedverteces)
     {
@@ -46,8 +47,8 @@ bool Collison::collisondetec(MyMesh& mesh, MyMesh& smooth)
         {
             continue;
         }
-        v_t0 = toEigenVec(mesh.point(v));
-        v_t1 = toEigenVec(smooth.point(v));
+        v_t1 = toEigenVec(mesh.point(v));
+        v_t0 = toEigenVec(smooth.point(v));
         for (auto f : colliedfaces)
         {
             MyMesh::FaceVertexIter fv_it = mesh.fv_iter(f);
@@ -65,14 +66,14 @@ bool Collison::collisondetec(MyMesh& mesh, MyMesh& smooth)
                 continue;
             }
 
-            f0_t0 = toEigenVec(mesh.point(v0));
-            f0_t1 = toEigenVec(smooth.point(v0));
+            f0_t1 = toEigenVec(mesh.point(v0));
+            f0_t0 = toEigenVec(smooth.point(v0));
 
-            f1_t0 = toEigenVec(mesh.point(v1));
-            f1_t1 = toEigenVec(smooth.point(v1));
+            f1_t1 = toEigenVec(mesh.point(v1));
+            f1_t0 = toEigenVec(smooth.point(v1));
 
-            f2_t0 = toEigenVec(mesh.point(v2));
-            f2_t1 = toEigenVec(smooth.point(v2));
+            f2_t1 = toEigenVec(mesh.point(v2));
+            f2_t0 = toEigenVec(smooth.point(v2));
 
             bool iscollied = ticcd::vertexFaceCCD(
                 v_t0, f0_t0, f1_t0, f2_t0,
@@ -97,8 +98,6 @@ bool Collison::collisondetec(MyMesh& mesh, MyMesh& smooth)
         }
     }
 
-    /*
-
     for (auto e : colliededges) {
         MyMesh::EdgeHandle eh1 = e;
 
@@ -114,12 +113,12 @@ bool Collison::collisondetec(MyMesh& mesh, MyMesh& smooth)
         }
 
         // Convert OpenMesh vertices to Eigen vectors for t0
-        Eigen::Vector3f ea0_t0 = toEigenVec(mesh.point(v0_1));
-        Eigen::Vector3f ea1_t0 = toEigenVec(mesh.point(v1_1));
+        Eigen::Vector3f ea0_t1 = toEigenVec(mesh.point(v0_1));
+        Eigen::Vector3f ea1_t1 = toEigenVec(mesh.point(v1_1));
 
         // Assume edge 1 moves (displacement example for t1)
-        Eigen::Vector3f ea0_t1 = toEigenVec(smooth.point(v0_1));
-        Eigen::Vector3f ea1_t1 = toEigenVec(smooth.point(v1_1));
+        Eigen::Vector3f ea0_t0 = toEigenVec(smooth.point(v0_1));
+        Eigen::Vector3f ea1_t0 = toEigenVec(smooth.point(v1_1));
 
 
         // Loop over all edges (again) to check edge-edge collision
@@ -135,16 +134,16 @@ bool Collison::collisondetec(MyMesh& mesh, MyMesh& smooth)
 
             if (v0_1 == v0_2 || v1_1 == v1_2 || v1_1 == v0_2 || v0_1 == v1_2)
             {
-                break;
+                continue;
             }
 
             // Convert OpenMesh vertices to Eigen vectors for t0
-            Eigen::Vector3f eb0_t0 = toEigenVec(mesh.point(v0_2));
-            Eigen::Vector3f eb1_t0 = toEigenVec(mesh.point(v1_2));
+            Eigen::Vector3f eb0_t1 = toEigenVec(mesh.point(v0_2));
+            Eigen::Vector3f eb1_t1 = toEigenVec(mesh.point(v1_2));
 
             // Assume edge 2 moves (displacement example for t1)
-            Eigen::Vector3f eb0_t1 = toEigenVec(smooth.point(v0_2));
-            Eigen::Vector3f eb1_t1 = toEigenVec(smooth.point(v1_2));
+            Eigen::Vector3f eb0_t0 = toEigenVec(smooth.point(v0_2));
+            Eigen::Vector3f eb1_t0 = toEigenVec(smooth.point(v1_2));
 
             // Perform edge-edge collision detection
             bool is_colliding = ticcd::edgeEdgeCCD(
@@ -162,14 +161,19 @@ bool Collison::collisondetec(MyMesh& mesh, MyMesh& smooth)
 
             if (is_colliding) {
 
-                verteces.insert(v0_1);
-                verteces.insert(v1_1);
+                //verteces.insert(v0_1);
+                //verteces.insert(v1_1);
+                if (toi < smallestTio)
+                {
+                    smallestTio = toi;
+                    eindex = e;
+                }
+                isanycollied = true;
+               
 
             }
         }
     }
-
-    */
 
 
     
@@ -177,28 +181,51 @@ bool Collison::collisondetec(MyMesh& mesh, MyMesh& smooth)
     alfa = alfa + (1 - alfa) * smallestTio;
     prevTio = smallestTio;
 
-    setSmalest(vindex, findex, mesh);
+    setSmalest(vindex, findex, eindex ,mesh);
     return isanycollied;
 }
 
-void Collison::setSmalest(MyMesh::VertexHandle& v, MyMesh::FaceHandle& f, MyMesh& mesh)
+void Collison::setSmalest(MyMesh::VertexHandle& v, MyMesh::FaceHandle& f, MyMesh::EdgeHandle& e, MyMesh& mesh)
 {
-    if (!mesh.is_valid_handle(v) || !mesh.is_valid_handle(f)) 
-    { 
-        return; 
-    }
-    mesh.data(v).color = Vec(0, 0, 1);
-    deltas[v.idx()].toi = alfa;
-    setMeshTio(v, mesh);
-    
-    deltas[v.idx()].isCollied = true;
-    for (auto vi : mesh.fv_range(f))
+    if (!mesh.is_valid_handle(e))
     {
-        deltas[vi.idx()].toi = alfa;
-        setMeshTio(vi, mesh);
-        deltas[vi.idx()].isCollied = true;
-        mesh.data(vi).color = Vec(0, 0, 0.5);
+        if (!mesh.is_valid_handle(v) || !mesh.is_valid_handle(f))
+        {
+            return;
+        }
+        mesh.data(v).color = Vec(0, 0, 1);
+        deltas[v.idx()].toi = alfa;
+        setMeshTio(v, mesh);
+
+        deltas[v.idx()].isCollied = true;
+        for (auto vi : mesh.fv_range(f))
+        {
+            deltas[vi.idx()].toi = alfa;
+            setMeshTio(vi, mesh);
+            deltas[vi.idx()].isCollied = true;
+            mesh.data(vi).color = Vec(0, 0, 0.5);
+        }
     }
+    else
+    {
+        MyMesh::HalfedgeHandle heh1 = mesh.halfedge_handle(e, 0);  // First halfedge
+        MyMesh::VertexHandle v0 = mesh.from_vertex_handle(heh1);   // Start vertex of edge 
+        MyMesh::VertexHandle v1 = mesh.to_vertex_handle(heh1);     // End vertex of edge 
+        mesh.data(v0).color = Vec(0.5, 0, 0);
+        deltas[v0.idx()].toi = alfa;
+        setMeshTio(v0, mesh);
+        deltas[v0.idx()].isCollied = true;
+
+        mesh.data(v1).color = Vec(0.5, 0,0 );
+        deltas[v1.idx()].toi = alfa;
+        setMeshTio(v1, mesh);
+        deltas[v1.idx()].isCollied = true;
+
+
+
+
+    }
+  
 }
 
 
@@ -232,7 +259,7 @@ void Collison::test(MyMesh& mesh, MyMesh& smooth)
             }
             if (alfa >= 1)
             {
-                break;
+                //break;
             }
             count++;
             counter += 0.1;
@@ -243,7 +270,7 @@ void Collison::test(MyMesh& mesh, MyMesh& smooth)
             //setMeshTio(v, mesh);
         }
     }
-    smoothpoints(mesh);
+    //smoothpoints(mesh);
 }
 void Collison::restCollied()
 {

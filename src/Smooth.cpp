@@ -48,7 +48,7 @@ MyMesh MyViewer::smoothvectors(std::vector<Vec>& smoothed)
     auto size = mesh.n_vertices();
     smoothed.resize(size);
     auto mesh_ = MushHelper;
-    for (int i = 0; i < 30; i++)
+    for (int i = 0; i < 40; i++)
     {
         auto smooth = mesh_;
         for (auto v : mesh.vertices()) {
@@ -182,6 +182,7 @@ void MyViewer::Delta_Mush(std::vector<Eigen::Vector4d>& v)
 
 
     }
+    
 }
 
 
@@ -291,7 +292,7 @@ void MyViewer::SetDistance()
                     colliedverteces.emplace(v);
                 }
             }
-           
+            break;
 
         }
 
@@ -308,16 +309,17 @@ void MyViewer::SetDistance()
         centroid /= static_cast<float>(vertexcount);
         for (auto b : skel.bones)
         {
-            if (!b.isLastBone()/ factor)
+            if (!b.isLastBone())
             {
                 Vec bonepoint = b.end->point;
                 float distance = (Vec(centroid) - bonepoint).norm();
-                if (distance <= b.lenght())
+                if (distance <= b.lenght() / factor)
                 {
                     colliedfaces.emplace(f);
                 }
 
             }
+            break;
         }
 
     }
@@ -346,6 +348,7 @@ void MyViewer::SetDistance()
                 }
 
             }
+            break;
         }
 
 
@@ -366,6 +369,36 @@ void projectPointToPlane(const MyMesh::Point& P, const MyMesh::Normal& N, MyMesh
     //  projected point
     Q = Q + (-d * norm);
 }
+
+
+void MyViewer::smoothcollison(std::set<MyMesh::VertexHandle> verteces)
+{
+    float smootingfactor = 0.5;
+    for (int i = 0; i < 3; i++)
+    {
+
+        for (auto v : verteces)
+        {
+            Vec Avg;
+            int n = 0;
+            for (auto vi : mesh.vv_range(v)) {
+
+                auto point = mesh.point(vi);
+
+                projectPointToPlane(mesh.point(v), mesh.normal(v), point);
+
+                Vec vertex = Vec(point);
+                Avg += vertex;
+                n++;
+            }
+            Avg /= n;
+            MyMesh::Point pointavg = MyMesh::Point(Avg.x, Avg.y, Avg.z);
+
+            mesh.point(v) += smootingfactor * (pointavg - mesh.point(v));
+        }
+    }
+}
+
 
 void MyViewer::smoothpoints()
 {
