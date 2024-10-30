@@ -27,7 +27,7 @@ private:
 class Collison {
 		
 public:
-	Collison(){}
+	Collison();
 	void init(std::vector<Eigen::Vector4d> v);
 
 	bool collisondetec(MyMesh& mesh, MyMesh& smooth);
@@ -37,7 +37,8 @@ public:
 	std::set<MyMesh::FaceHandle> colliedfaces;
 	std::set<MyMesh::EdgeHandle> colliededges;
 	std::set<MyMesh::VertexHandle> verteces;
-
+	float getAlfa() { return alfa; }
+	void setAlfa(float newalfa) { alfa = newalfa; }
 
 
 private:

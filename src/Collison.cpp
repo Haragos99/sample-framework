@@ -1,10 +1,7 @@
 #include "Collison.h"
-void Collison::init(std::vector<Eigen::Vector4d> v)
-{
-    for (auto d : v)
-    {
-        deltas.push_back(Delta(d,1.0f,false));
-    }
+#include "AABB.h"
+
+Collison::Collison() {
     err = Eigen::Vector3f(-1, -1, -1);  // Error bounds
     tmax = 1.0;
     tmaxiter = 1e7;
@@ -12,6 +9,14 @@ void Collison::init(std::vector<Eigen::Vector4d> v)
     mc = 1e-6;
     smallestTio = 1.0f;
     alfa = 0;
+}
+void Collison::init(std::vector<Eigen::Vector4d> v)
+{
+    for (auto d : v)
+    {
+        deltas.push_back(Delta(d,1.0f,false));
+    }
+
 }
 
 
@@ -55,10 +60,18 @@ bool Collison::collisondetec(MyMesh& mesh, MyMesh& smooth)
             MyMesh::VertexHandle v0 = *fv_it;
             MyMesh::VertexHandle v1 = *(++fv_it);
             MyMesh::VertexHandle v2 = *(++fv_it);
-
+            AABB vertex;
+            AABB face;
             bool isInTriangle = v0 == v || v1 == v || v2 == v;
 
             //bool isCollied = v0 == v || v1 == v || v2 == v;
+            vertex.expand(v_t0.data());
+            vertex.expand(v_t1.data());
+
+
+
+
+
 
 
             if (isInTriangle)
@@ -74,6 +87,18 @@ bool Collison::collisondetec(MyMesh& mesh, MyMesh& smooth)
 
             f2_t1 = toEigenVec(mesh.point(v2));
             f2_t0 = toEigenVec(smooth.point(v2));
+
+            face.expand(f0_t1.data());
+            face.expand(f1_t1.data());
+            face.expand(f2_t0.data());
+            face.expand(f0_t0.data());
+            face.expand(f1_t0.data());
+            face.expand(f2_t0.data());
+
+            if (!vertex.overlaps(face))//delete if you want better
+            {
+                continue;
+            }
 
             bool iscollied = ticcd::vertexFaceCCD(
                 v_t0, f0_t0, f1_t0, f2_t0,
@@ -130,20 +155,35 @@ bool Collison::collisondetec(MyMesh& mesh, MyMesh& smooth)
             MyMesh::VertexHandle v0_2 = mesh.from_vertex_handle(heh2);   // Start vertex of edge 2
             MyMesh::VertexHandle v1_2 = mesh.to_vertex_handle(heh2);     // End vertex of edge 2
 
-
+            AABB ed1, ed2;
 
             if (v0_1 == v0_2 || v1_1 == v1_2 || v1_1 == v0_2 || v0_1 == v1_2)
             {
                 continue;
             }
 
-            // Convert OpenMesh vertices to Eigen vectors for t0
+            // Convert OpenMesh vertices to Eigen vectors for t1
             Eigen::Vector3f eb0_t1 = toEigenVec(mesh.point(v0_2));
             Eigen::Vector3f eb1_t1 = toEigenVec(mesh.point(v1_2));
 
-            // Assume edge 2 moves (displacement example for t1)
+            // Assume edge 2 moves (displacement example for t0)
             Eigen::Vector3f eb0_t0 = toEigenVec(smooth.point(v0_2));
             Eigen::Vector3f eb1_t0 = toEigenVec(smooth.point(v1_2));
+
+            ed1.expand(eb0_t1.data());
+            ed1.expand(eb1_t1.data());
+
+
+            ed1.expand(eb0_t0.data());
+            ed1.expand(eb1_t0.data());
+
+
+            if (!ed2.overlaps(ed1))// delete if you want better
+            {
+                continue;
+            }
+
+
 
             // Perform edge-edge collision detection
             bool is_colliding = ticcd::edgeEdgeCCD(
@@ -182,6 +222,11 @@ bool Collison::collisondetec(MyMesh& mesh, MyMesh& smooth)
     prevTio = smallestTio;
 
     setSmalest(vindex, findex, eindex ,mesh);
+    setRestToi(alfa);
+    for (auto v : mesh.vertices())
+    {
+        setMeshTio(v, mesh);
+    }
     return isanycollied;
 }
 
@@ -252,10 +297,10 @@ void Collison::test(MyMesh& mesh, MyMesh& smooth)
         //while (collisondetec(mesh, smooth) || counter <= 1)
         {
             //alfa += 0.1;
-            setRestToi(alfa);
+            //setRestToi(alfa);
             for (auto v : mesh.vertices())
             {
-                setMeshTio(v, mesh);
+                //setMeshTio(v, mesh);
             }
             if (alfa >= 1)
             {

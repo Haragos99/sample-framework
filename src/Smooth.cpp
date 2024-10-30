@@ -188,12 +188,9 @@ void MyViewer::Delta_Mush(std::vector<Eigen::Vector4d>& v)
 
 
 
-void MyViewer::Delta_Mush_two(std::vector<Eigen::Vector4d> v) 
+void MyViewer::DeltaMush2(std::vector<Eigen::Vector4d> v)
 {
-    //emit startComputation(tr("Fairing mesh..."));
-    igl::Timer timer;
-    timer.start();
- for (int i = 0; i < v.size(); i++)
+    for (int i = 0; i < v.size(); i++)
     {
         v[i][0] *= deltaMushFactor;
         v[i][1] *= deltaMushFactor;
@@ -240,9 +237,34 @@ void MyViewer::Delta_Mush_two(std::vector<Eigen::Vector4d> v)
         auto d = C.transpose() * v[ve.idx()];
 
         mesh.point(ve) = MyMesh::Point(d[0], d[1], d[2]);
- 
+
 
     }
+}
+
+
+
+void MyViewer::Delta_Mush_two(std::vector<Eigen::Vector4d> v) 
+{
+    
+    igl::Timer timer;
+    timer.start();
+    DeltaMush2(v);
+    
+    col.init(v);
+    col.colliedfaces = colliedfaces;
+    col.colliedverteces = colliedverteces;
+    col.colliededges = colliededges;
+    emit startComputation(tr("Fairing mesh..."));
+    while (col.collisondetec(mesh, smooth))
+    {
+        DeltaMush2(v);
+        float alfa = col.getAlfa();
+        int percent = alfa * 100;
+        emit midComputation(percent);
+        col.setAlfa(0);
+    }
+    emit endComputation();
     timer.stop();
     double tt = timer.getElapsedTimeInSec();
     
@@ -282,10 +304,10 @@ void MyViewer::SetDistance()
         {
             if (!b.isLastBone())
             {
-                Vec bonepoint = b.end->point;
+                Vec bonepoint = skel.bones[0].end->point;
                 float distance = (meshpoint - bonepoint).norm();
                 
-                if (distance <= b.lenght()/ factor)
+                if (distance <= skel.bones[0].lenght()/ factor)
                 {
 
                     mesh.data(v).color = Vec(0, 1, 0);
@@ -311,9 +333,9 @@ void MyViewer::SetDistance()
         {
             if (!b.isLastBone())
             {
-                Vec bonepoint = b.end->point;
+                Vec bonepoint = skel.bones[0].end->point;
                 float distance = (Vec(centroid) - bonepoint).norm();
-                if (distance <= b.lenght() / factor)
+                if (distance <= skel.bones[0].lenght() / factor)
                 {
                     colliedfaces.emplace(f);
                 }
@@ -338,11 +360,11 @@ void MyViewer::SetDistance()
         {
             if (!b.isLastBone())
             {
-                Vec bonepoint = b.end->point;
+                Vec bonepoint = skel.bones[0].end->point;
                 float distance1 = (edge1 - bonepoint).norm();
                 float distance2 = (edge2 - bonepoint).norm();
 
-                if (distance1 <= b.lenght() / factor || distance2 <= b.lenght() / factor)
+                if (distance1 <= skel.bones[0].lenght() / factor || distance2 <= skel.bones[0].lenght() / factor)
                 {
                     colliededges.emplace(e);
                 }
@@ -453,7 +475,68 @@ void MyViewer::collisonTest2(std::vector<Eigen::Vector4d> vi)
     float outtolerance;
 
     float mc = 1e-6;
+    for (auto e : colliededges) {
+        MyMesh::EdgeHandle eh1 = e;
 
+        // Get the start and end vertices of the first edge
+        MyMesh::HalfedgeHandle heh1 = mesh.halfedge_handle(eh1, 0);  // First halfedge
+        MyMesh::VertexHandle v0_1 = mesh.from_vertex_handle(heh1);   // Start vertex of edge 1
+        MyMesh::VertexHandle v1_1 = mesh.to_vertex_handle(heh1);     // End vertex of edge 1
+
+        // Convert OpenMesh vertices to Eigen vectors for t0
+        Eigen::Vector3f ea0_t0 = toEigenVec(mesh.point(v0_1));
+        Eigen::Vector3f ea1_t0 = toEigenVec(mesh.point(v1_1));
+
+        // Assume edge 1 moves (displacement example for t1)
+        Eigen::Vector3f ea0_t1 = toEigenVec(smooth.point(v0_1));
+        Eigen::Vector3f ea1_t1 = toEigenVec(smooth.point(v1_1));
+
+
+        // Loop over all edges (again) to check edge-edge collision
+        for (auto e2 : colliededges) {
+            MyMesh::EdgeHandle eh2 = e2;
+
+            // Get the start and end vertices of the second edge
+            MyMesh::HalfedgeHandle heh2 = mesh.halfedge_handle(eh2, 0);  // Second halfedge
+            MyMesh::VertexHandle v0_2 = mesh.from_vertex_handle(heh2);   // Start vertex of edge 2
+            MyMesh::VertexHandle v1_2 = mesh.to_vertex_handle(heh2);     // End vertex of edge 2
+
+
+
+            if (v0_1 == v0_2 || v1_1 == v1_2 || v1_1 == v0_2 || v0_1 == v1_2)
+            {
+                break;
+            }
+
+            // Convert OpenMesh vertices to Eigen vectors for t0
+            Eigen::Vector3f eb0_t0 = toEigenVec(mesh.point(v0_2));
+            Eigen::Vector3f eb1_t0 = toEigenVec(mesh.point(v1_2));
+
+            // Assume edge 2 moves (displacement example for t1)
+            Eigen::Vector3f eb0_t1 = toEigenVec(smooth.point(v0_2));
+            Eigen::Vector3f eb1_t1 = toEigenVec(smooth.point(v1_2));
+
+            // Perform edge-edge collision detection
+            bool is_colliding = ticcd::edgeEdgeCCD(
+                ea0_t0, ea1_t0, eb0_t0, eb1_t0,  // Edges at time t0
+                ea0_t1, ea1_t1, eb0_t1, eb1_t1,  // Edges at time t1
+                err,                             // Error bounds
+                mc,                              // Minimum separation
+                toi,                             // Time of impact (output)
+                tolerance,                       // Solving precision
+                tmax,                           // Time interval upper bound (0 <= t_max <= 1)
+                tmaxiter,                         // Maximum iterations
+                outtolerance,                // Output precision under max_itr
+                true                             // Refine for zero toi
+            );
+
+            if (is_colliding) {
+                mesh.data(v0_1).color = Vec(0, 0, 1);
+                mesh.data(v1_1).color = Vec(0, 0, 1);
+
+            }
+        }
+    }
     for (auto v : colliedverteces)
     {
    
@@ -492,97 +575,16 @@ void MyViewer::collisonTest2(std::vector<Eigen::Vector4d> vi)
             );
             if (iscollied) {
                 mesh.data(v).color = Vec(1, 0, 0);
-                tios.push_back(toi);
-                vi[v.idx()][0] *= toi;
-                vi[v.idx()][1] *= toi;
-                vi[v.idx()][2] *= toi;
-                auto di = mesh.data(v).C * vi[v.idx()];
-                mesh.point(v) = MyMesh::Point(di[0], di[1], di[2]);
-                verteces.push_back(v);
+
             }
 
         }
     }
     
     
-    for (auto e : colliededges) {
-        MyMesh::EdgeHandle eh1 = e;
 
-        // Get the start and end vertices of the first edge
-        MyMesh::HalfedgeHandle heh1 = mesh.halfedge_handle(eh1, 0);  // First halfedge
-        MyMesh::VertexHandle v0_1 = mesh.from_vertex_handle(heh1);   // Start vertex of edge 1
-        MyMesh::VertexHandle v1_1 = mesh.to_vertex_handle(heh1);     // End vertex of edge 1
-
-        // Convert OpenMesh vertices to Eigen vectors for t0
-        Eigen::Vector3f ea0_t0 = toEigenVec(mesh.point(v0_1));
-        Eigen::Vector3f ea1_t0 = toEigenVec(mesh.point(v1_1));
-
-        // Assume edge 1 moves (displacement example for t1)
-        Eigen::Vector3f ea0_t1 = toEigenVec(smooth.point(v0_1));
-        Eigen::Vector3f ea1_t1 = toEigenVec(smooth.point(v1_1));
-
-
-        // Loop over all edges (again) to check edge-edge collision
-        for (auto e2 : colliededges) {
-            MyMesh::EdgeHandle eh2 = e2;
-
-            // Get the start and end vertices of the second edge
-            MyMesh::HalfedgeHandle heh2 = mesh.halfedge_handle(eh2, 0);  // Second halfedge
-            MyMesh::VertexHandle v0_2 = mesh.from_vertex_handle(heh2);   // Start vertex of edge 2
-            MyMesh::VertexHandle v1_2 = mesh.to_vertex_handle(heh2);     // End vertex of edge 2
-
-            
-            
-            if (v0_1 == v0_2 || v1_1 == v1_2||v1_1 == v0_2 || v0_1 == v1_2)
-            {
-                break;
-            }
-
-            // Convert OpenMesh vertices to Eigen vectors for t0
-            Eigen::Vector3f eb0_t0 = toEigenVec(mesh.point(v0_2));
-            Eigen::Vector3f eb1_t0 = toEigenVec(mesh.point(v1_2));
-
-            // Assume edge 2 moves (displacement example for t1)
-            Eigen::Vector3f eb0_t1 = toEigenVec(smooth.point(v0_2));
-            Eigen::Vector3f eb1_t1 = toEigenVec(smooth.point(v1_2));
-            
-            // Perform edge-edge collision detection
-            bool is_colliding = ticcd::edgeEdgeCCD(
-                ea0_t0, ea1_t0, eb0_t0, eb1_t0,  // Edges at time t0
-                ea0_t1, ea1_t1, eb0_t1, eb1_t1,  // Edges at time t1
-                err,                             // Error bounds
-                mc,                              // Minimum separation
-                toi,                             // Time of impact (output)
-                tolerance,                       // Solving precision
-                tmax,                           // Time interval upper bound (0 <= t_max <= 1)
-                tmaxiter,                         // Maximum iterations
-                outtolerance,                // Output precision under max_itr
-                true                             // Refine for zero toi
-            );
-
-            if (is_colliding) {
-                mesh.data(v0_1).color = Vec(0, 0, 1);
-                mesh.data(v1_1).color = Vec(0, 0, 1);
-                vi[v0_1.idx()][0] *= toi;
-                vi[v0_1.idx()][1] *= toi;
-                vi[v0_1.idx()][2] *= toi;
-                auto di = mesh.data(v0_1).C * vi[v0_1.idx()];
-                mesh.point(v0_1) = MyMesh::Point(di[0], di[1], di[2]);
-
-
-                vi[v1_1.idx()][0] *= toi;
-                vi[v1_1.idx()][1] *= toi;
-                vi[v1_1.idx()][2] *= toi;
-                auto d = mesh.data(v1_1).C * vi[v1_1.idx()];
-                mesh.point(v1_1) = MyMesh::Point(d[0], d[1], d[2]);
-                verteces.push_back(v0_1);
-                verteces.push_back(v1_1);
-
-            }
-        }
-    }
     
-    smoothpoints();
+    //smoothpoints();
 
 }
 

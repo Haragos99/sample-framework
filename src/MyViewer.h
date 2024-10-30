@@ -144,6 +144,10 @@ public:
     std::set<MyMesh::EdgeHandle> colliededges;
     void smoothcollison(std::set<MyMesh::VertexHandle> verteces);
 
+
+    void DeltaMush2(std::vector<Eigen::Vector4d> v);
+
+
     void Epsil() {
         auto dlg = std::make_unique<QDialog>(this);
         auto* hb1 = new QHBoxLayout;
