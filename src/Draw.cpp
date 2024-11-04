@@ -12,7 +12,7 @@ void MyViewer::draw() {
     if (model_type == ModelType::BEZIER_SURFACE && show_control_points)
         drawControlNet();
 
-    transparent = true;
+    //transparent = true;
     if (transparent) {
         glEnable(GL_BLEND);
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
@@ -166,7 +166,7 @@ void MyViewer::draw() {
 
     drawMesh();
     mc.draw();
-
+    //col.draw(mesh);
     if(false)
     {
         glColor3d(0.0, 1.0, 0.0);
@@ -178,8 +178,12 @@ void MyViewer::draw() {
         glEnable(GL_LIGHTING);
     }
     dm.draw();
-    drawDelta();
-    
+    //drawDelta();
+    if (transparent2)
+    {
+        //drawTransparent();
+    }
+    //
     if (isAnimating_)
     {
         QImage frame = QOpenGLWidget::grabFramebuffer();
@@ -286,6 +290,35 @@ void MyViewer::drawSkleton()
     }
 
 
+}
+
+
+void MyViewer::drawTransparent()
+{
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    for (auto f : mtransperent.faces()) {
+        glBegin(GL_POLYGON);
+        for (auto v : mtransperent.fv_range(f)) {
+
+            if (visualization == Visualization::WEIGH) //Itt adjuk meg a súlyokat
+            {
+                Vec color = Vec(0, 0, 0);
+                for (int i = 0; i < skel.bones.size(); i++)
+                {
+                    if (mtransperent.data(v).weigh[i] != 0)
+                    {
+                        color += (mtransperent.data(v).weigh[i] * skel.bones[i].color);
+                    }
+                }
+                glColor4d(color.x, color.y, color.z, 0.3);
+            }
+            glNormal3dv(mtransperent.normal(v).data());
+            glVertex3dv(mtransperent.point(v).data());
+        }
+        glEnd();
+    }
+    glDisable(GL_BLEND);
 }
 
 

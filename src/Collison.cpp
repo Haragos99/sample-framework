@@ -12,9 +12,13 @@ Collison::Collison() {
 }
 void Collison::init(std::vector<Eigen::Vector4d> v)
 {
-    for (auto d : v)
+    if (deltas.empty())
     {
-        deltas.push_back(Delta(d,1.0f,false));
+        for (auto& d : v)
+        {
+            deltas.push_back(Delta(d, 1.0f, false));
+        }
+
     }
 
 }
@@ -32,6 +36,24 @@ void Collison::setRestToi(float newtoi)
     
 }
 
+
+void Collison::draw(MyMesh& mesh)
+{
+    for (auto c : colors)
+    {
+        glDisable(GL_LIGHTING);
+
+        glColor3d(c.second[0], c.second[1], c.second[2]);
+        glPointSize(15.0);
+        glBegin(GL_POINTS);
+        glVertex3dv(mesh.point(c.first).data());
+        glEnd();
+        glEnable(GL_LIGHTING);
+
+    }
+
+}
+
 bool Collison::collisondetec(MyMesh& mesh, MyMesh& smooth)
 {
     smallestTio = 1;
@@ -44,8 +66,9 @@ bool Collison::collisondetec(MyMesh& mesh, MyMesh& smooth)
     bool isanycollied = false;
     MyMesh::VertexHandle vindex;
     MyMesh::FaceHandle findex;
-    MyMesh::EdgeHandle eindex;
-
+    std::vector<MyMesh::EdgeHandle> eindex;
+    eindex.resize(2);
+    
     for (auto v : colliedverteces)
     {
         if (deltas[v.idx()].isCollied) 
@@ -97,7 +120,7 @@ bool Collison::collisondetec(MyMesh& mesh, MyMesh& smooth)
 
             if (!vertex.overlaps(face))//delete if you want better
             {
-                continue;
+                //continue;
             }
 
             bool iscollied = ticcd::vertexFaceCCD(
@@ -122,7 +145,7 @@ bool Collison::collisondetec(MyMesh& mesh, MyMesh& smooth)
 
         }
     }
-
+    
     for (auto e : colliededges) {
         MyMesh::EdgeHandle eh1 = e;
 
@@ -171,17 +194,17 @@ bool Collison::collisondetec(MyMesh& mesh, MyMesh& smooth)
             Eigen::Vector3f eb1_t0 = toEigenVec(smooth.point(v1_2));
 
             ed1.expand(eb0_t1.data());
-            ed1.expand(eb1_t1.data());
-
-
-            ed1.expand(eb0_t0.data());
             ed1.expand(eb1_t0.data());
 
 
-            if (!ed2.overlaps(ed1))// delete if you want better
+            ed2.expand(eb0_t0.data());
+            ed2.expand(eb1_t1.data());
+
+            if (ed1.overlaps(ed2))
             {
-                continue;
+                //continue;
             }
+   
 
 
 
@@ -201,12 +224,13 @@ bool Collison::collisondetec(MyMesh& mesh, MyMesh& smooth)
 
             if (is_colliding) {
 
-                //verteces.insert(v0_1);
-                //verteces.insert(v1_1);
+                verteces.insert(v0_1);
+                verteces.insert(v1_1);
                 if (toi < smallestTio)
                 {
                     smallestTio = toi;
-                    eindex = e;
+                    eindex[0] = e;
+                    eindex[1] = e2;
                 }
                 isanycollied = true;
                
@@ -214,11 +238,11 @@ bool Collison::collisondetec(MyMesh& mesh, MyMesh& smooth)
             }
         }
     }
-
+    
 
     
 
-    alfa = alfa + (1 - alfa) * smallestTio;
+    alfa = smallestTio;
     prevTio = smallestTio;
 
     setSmalest(vindex, findex, eindex ,mesh);
@@ -230,9 +254,10 @@ bool Collison::collisondetec(MyMesh& mesh, MyMesh& smooth)
     return isanycollied;
 }
 
-void Collison::setSmalest(MyMesh::VertexHandle& v, MyMesh::FaceHandle& f, MyMesh::EdgeHandle& e, MyMesh& mesh)
+void Collison::setSmalest(MyMesh::VertexHandle& v, MyMesh::FaceHandle& f, std::vector<MyMesh::EdgeHandle>& edegs,  MyMesh& mesh)
 {
-    if (!mesh.is_valid_handle(e))
+    colors.clear();
+    if (!mesh.is_valid_handle(edegs[0]))
     {
         if (!mesh.is_valid_handle(v) || !mesh.is_valid_handle(f))
         {
@@ -241,7 +266,8 @@ void Collison::setSmalest(MyMesh::VertexHandle& v, MyMesh::FaceHandle& f, MyMesh
         mesh.data(v).color = Vec(0, 0, 1);
         deltas[v.idx()].toi = alfa;
         setMeshTio(v, mesh);
-
+        colors.emplace(v, Vec(0, 0, 1));
+        
         deltas[v.idx()].isCollied = true;
         for (auto vi : mesh.fv_range(f))
         {
@@ -249,25 +275,29 @@ void Collison::setSmalest(MyMesh::VertexHandle& v, MyMesh::FaceHandle& f, MyMesh
             setMeshTio(vi, mesh);
             deltas[vi.idx()].isCollied = true;
             mesh.data(vi).color = Vec(0, 0, 0.5);
+            colors.emplace(vi, Vec(0, 0, 0.5));
         }
     }
     else
     {
-        MyMesh::HalfedgeHandle heh1 = mesh.halfedge_handle(e, 0);  // First halfedge
-        MyMesh::VertexHandle v0 = mesh.from_vertex_handle(heh1);   // Start vertex of edge 
-        MyMesh::VertexHandle v1 = mesh.to_vertex_handle(heh1);     // End vertex of edge 
-        mesh.data(v0).color = Vec(0.5, 0, 0);
-        deltas[v0.idx()].toi = alfa;
-        setMeshTio(v0, mesh);
-        deltas[v0.idx()].isCollied = true;
+        for (auto e : edegs)
+        {
+            MyMesh::HalfedgeHandle heh1 = mesh.halfedge_handle(e, 0);  // First halfedge
+            MyMesh::VertexHandle v0 = mesh.from_vertex_handle(heh1);   // Start vertex of edge 
+            MyMesh::VertexHandle v1 = mesh.to_vertex_handle(heh1);     // End vertex of edge 
+            mesh.data(v0).color = Vec(0.5, 0, 0);
+            deltas[v0.idx()].toi = alfa;
+            setMeshTio(v0, mesh);
+            deltas[v0.idx()].isCollied = true;
 
-        mesh.data(v1).color = Vec(0.5, 0,0 );
-        deltas[v1.idx()].toi = alfa;
-        setMeshTio(v1, mesh);
-        deltas[v1.idx()].isCollied = true;
-
-
-
+            mesh.data(v1).color = Vec(0.5, 0, 0);
+            deltas[v1.idx()].toi = alfa;
+            setMeshTio(v1, mesh);
+            deltas[v1.idx()].isCollied = true;
+            colors.emplace(v0, Vec(0.5, 0, 0));
+            colors.emplace(v1, Vec(0.5, 0, 0));
+        
+        }
 
     }
   
@@ -285,35 +315,15 @@ void Collison::setMeshTio(MyMesh::VertexHandle& v, MyMesh& mesh)
 void Collison::test(MyMesh& mesh, MyMesh& smooth)
 {
     int count = 0;
-    //collisondetec(mesh, smooth);
     double counter = 0;
     prevTio = 0;
     
     for (int i = 0; i < 1; i++)
     {
         
-        //restCollied();
+
         collisondetec(mesh, smooth);
-        //while (collisondetec(mesh, smooth) || counter <= 1)
-        {
-            //alfa += 0.1;
-            //setRestToi(alfa);
-            for (auto v : mesh.vertices())
-            {
-                //setMeshTio(v, mesh);
-            }
-            if (alfa >= 1)
-            {
-                //break;
-            }
-            count++;
-            counter += 0.1;
-        }
-        //setRestToi(1);
-        for (auto v : mesh.vertices())
-        {
-            //setMeshTio(v, mesh);
-        }
+
     }
     //smoothpoints(mesh);
 }

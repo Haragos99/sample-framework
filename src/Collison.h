@@ -31,7 +31,7 @@ public:
 	void init(std::vector<Eigen::Vector4d> v);
 
 	bool collisondetec(MyMesh& mesh, MyMesh& smooth);
-
+	void draw(MyMesh& mesh);
 	void test(MyMesh& mesh, MyMesh& smooth);
 	std::set<MyMesh::VertexHandle> colliedverteces;
 	std::set<MyMesh::FaceHandle> colliedfaces;
@@ -44,9 +44,10 @@ public:
 private:
 	Eigen::Vector3f toEigenVec(const MyMesh::Point& v) {return Eigen::Vector3f(v[0], v[1], v[2]);
 	}
+	std::map<MyMesh::VertexHandle, Vec> colors;
 	void setRestToi(float newtoi);
 	void setMeshTio(MyMesh::VertexHandle& v, MyMesh& mesh);
-	void setSmalest(MyMesh::VertexHandle& v, MyMesh::FaceHandle& f, MyMesh::EdgeHandle& e ,MyMesh& mesh);
+	void setSmalest(MyMesh::VertexHandle& v, MyMesh::FaceHandle& f, std::vector<MyMesh::EdgeHandle>& edegs,MyMesh& mesh);
 	void restCollied();
 	void smoothpoints(MyMesh& mesh);
 	void projectPointToPlane(const MyMesh::Point& P, const MyMesh::Normal& N, MyMesh::Point& Q);

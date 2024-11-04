@@ -250,25 +250,31 @@ void MyViewer::Delta_Mush_two(std::vector<Eigen::Vector4d> v)
     igl::Timer timer;
     timer.start();
     DeltaMush2(v);
-    
-    col.init(v);
-    col.colliedfaces = colliedfaces;
-    col.colliedverteces = colliedverteces;
-    col.colliededges = colliededges;
-    emit startComputation(tr("Fairing mesh..."));
-    while (col.collisondetec(mesh, smooth))
+    Collison co;
+    if (Mydelta)
     {
-        DeltaMush2(v);
-        float alfa = col.getAlfa();
-        int percent = alfa * 100;
-        emit midComputation(percent);
-        col.setAlfa(0);
+        co.init(v);
+        co.colliedfaces = colliedfaces;
+        co.colliedverteces = colliedverteces;
+        co.colliededges = colliededges;
+        emit startComputation(tr("CCD mesh..."));
+        while (co.collisondetec(mesh, smooth))
+        {
+            DeltaMush2(v);
+            float alfa = co.getAlfa();
+            int percent = alfa * 100;
+            emit midComputation(percent);
+            co.setAlfa(0);
+        }
+        emit endComputation();
     }
-    emit endComputation();
+
     timer.stop();
     double tt = timer.getElapsedTimeInSec();
-    
 
+    emit displayMessage(std::to_string(tt).c_str());
+    vert = co.verteces;
+    smoothcollison(vert);
     //emit endComputation();
     //col.test(mesh, smooth);
 
@@ -289,7 +295,8 @@ Eigen::Vector3f toEigenVec(const MyMesh::Point& v) {
 
 void MyViewer::SetDistance()
 {
-    float factor = 1.5;
+    int index = 9;
+    float factor = 1.0;
     colliedverteces.clear();
     colliedfaces.clear();
     colliededges.clear();
@@ -304,10 +311,10 @@ void MyViewer::SetDistance()
         {
             if (!b.isLastBone())
             {
-                Vec bonepoint = skel.bones[0].end->point;
+                Vec bonepoint = skel.bones[index].end->point;
                 float distance = (meshpoint - bonepoint).norm();
                 
-                if (distance <= skel.bones[0].lenght()/ factor)
+                if (distance <= skel.bones[index].lenght()/ factor)
                 {
 
                     mesh.data(v).color = Vec(0, 1, 0);
@@ -333,9 +340,9 @@ void MyViewer::SetDistance()
         {
             if (!b.isLastBone())
             {
-                Vec bonepoint = skel.bones[0].end->point;
+                Vec bonepoint = skel.bones[index].end->point;
                 float distance = (Vec(centroid) - bonepoint).norm();
-                if (distance <= skel.bones[0].lenght() / factor)
+                if (distance <= skel.bones[index].lenght() / factor)
                 {
                     colliedfaces.emplace(f);
                 }
@@ -360,11 +367,11 @@ void MyViewer::SetDistance()
         {
             if (!b.isLastBone())
             {
-                Vec bonepoint = skel.bones[0].end->point;
+                Vec bonepoint = skel.bones[index].end->point;
                 float distance1 = (edge1 - bonepoint).norm();
                 float distance2 = (edge2 - bonepoint).norm();
 
-                if (distance1 <= skel.bones[0].lenght() / factor || distance2 <= skel.bones[0].lenght() / factor)
+                if (distance1 <= skel.bones[index].lenght() / factor || distance2 <= skel.bones[index].lenght() / factor)
                 {
                     colliededges.emplace(e);
                 }
@@ -389,14 +396,14 @@ void projectPointToPlane(const MyMesh::Point& P, const MyMesh::Normal& N, MyMesh
     float d = dot(P - Q, norm);
 
     //  projected point
-    Q = Q + (-d * norm);
+    Q = Q - (d * norm);
 }
 
 
 void MyViewer::smoothcollison(std::set<MyMesh::VertexHandle> verteces)
 {
-    float smootingfactor = 0.5;
-    for (int i = 0; i < 3; i++)
+    float smootingfactor = 0.4;
+    for (int i = 0; i < 2; i++)
     {
 
         for (auto v : verteces)
@@ -426,31 +433,29 @@ void MyViewer::smoothpoints()
 {
     mesh.update_face_normals();
     mesh.update_vertex_normals();
-    double smootingfactor = 0.13;
-    for (int i = 0; i < 1; i++)
+    double smootingfactor = 0.5;
+    for (int i = 0; i < 5; i++)
     {
         auto smooth = mesh;
-        for (auto vis : verteces)
-        {
-            for (auto v : mesh.vv_range(vis)) {
-                Vec Avg;
-                int n = 0;
-                for (auto vi : mesh.vv_range(v)) {
 
-                    auto point = mesh.point(vi);
+        for (auto v : mesh.vertices()) {
+            Vec Avg;
+            int n = 0;
+            for (auto vi : mesh.vv_range(v)) {
 
-                    projectPointToPlane(mesh.point(v), mesh.normal(v), point);
+                auto point = mesh.point(vi);
 
-                    Vec vertex = Vec(point);
-                    Avg += vertex;
-                    n++;
-                }
-                Avg /= n;
-                MyMesh::Point pointavg = MyMesh::Point(Avg.x, Avg.y, Avg.z);
+                projectPointToPlane(mesh.point(v), mesh.normal(v), point);
 
-                mesh.point(v) += smootingfactor * (pointavg - mesh.point(v));
-
+                Vec vertex = Vec(point);
+                Avg += vertex;
+                n++;
             }
+            Avg /= n;
+            MyMesh::Point pointavg = MyMesh::Point(Avg.x, Avg.y, Avg.z);
+
+            mesh.point(v) += smootingfactor * (pointavg - mesh.point(v));
+
         }
 
 

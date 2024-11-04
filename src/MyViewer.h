@@ -81,7 +81,7 @@ public:
         //DirectMush();
         Delta_Mush(vec);
         delatamush = true;
-        
+        mtransperent = mesh;
         update();
     }
     void poission() { seperateMesh(); }
@@ -138,12 +138,14 @@ public:
         update();
     }
     
+    std::set<MyMesh::VertexHandle> vert;
     std::vector<MyMesh::VertexHandle> verteces;
     std::set<MyMesh::VertexHandle> colliedverteces;
     std::set<MyMesh::FaceHandle> colliedfaces;
     std::set<MyMesh::EdgeHandle> colliededges;
     void smoothcollison(std::set<MyMesh::VertexHandle> verteces);
 
+    bool Mydelta;
 
     void DeltaMush2(std::vector<Eigen::Vector4d> v);
 
@@ -174,7 +176,7 @@ public:
     }
 
     bool transparent = false;
-
+    bool transparent2 = true;
     float& getFrameSecond() { return FrameSecond; }
     double epsilon = 0.001;
     void Reset();
@@ -328,6 +330,9 @@ private:
 
     void drawMesh();
     Collison col;
+    MyMesh mtransperent;
+
+    void drawTransparent();
     ControlPoint target;
     struct SamplePoint {
         MyMesh::FaceHandle tri;

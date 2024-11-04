@@ -15,9 +15,9 @@ void MyViewer::animate()
             //inverse_kinematics(cp,skel.root);
             cp.animate(startAnimationTime_);
 
-
+            Joint* j = skel.root->searchbyid(skel.root, cps[selected_vertex].jointid);
             //cp.position = (qreal)(1.0f - startAnimationTime_) * cp.position + (qreal)startAnimationTime_ * Vec(1, 1, 1);
-            inverse_kinematics(cp, skel.root);
+            inverse_kinematics(cp, j);
         }
         startAnimationTime_ += 0.01;
     }
@@ -131,6 +131,7 @@ void MyViewer::Reset()
     for (auto v : mesh.vertices())
     {
         mesh.point(v)= mesh.data(v).original;
+        mesh.data(v).color = Vec(0, 0, 0);
     }
     update();
 }

@@ -41,6 +41,7 @@ MyViewer::MyViewer(QWidget* parent) :
     setSelectRegionHeight(10);
     axes.shown = false;
     isAnimating_ = false;
+    Mydelta = false;
 }
 
 MyViewer::~MyViewer() {
@@ -564,6 +565,7 @@ void MyViewer::Rotate()
         if (delatamush) {
             MushHelper = mesh;
             Delta_Mush_two(vec);
+            mtransperent= mesh;
         }
            
         update();
@@ -823,14 +825,21 @@ void MyViewer::keyPressEvent(QKeyEvent* e) {
             update();
             break;
 
+        case Qt::Key_J:
+            Mydelta = !Mydelta;
+            update();
+            break;
         case Qt::Key_H:
-            smoothcollison(col.verteces);
+            //smoothcollison(col.verteces);
+            //smoothpoints();
+            smoothcollison(vert);
             update();
             break;
 
         case Qt::Key_G:
             Delta_Mush_two(vec);
             col.init(vec);
+            col.setAlfa(0);
             col.colliedfaces = colliedfaces;
             col.colliedverteces = colliedverteces;
             col.colliededges = colliededges;
