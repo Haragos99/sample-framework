@@ -49,6 +49,21 @@ void Joint::setMatrix(Vec& angel)
 }
 
 
+
+
+void Joint::draw()
+{
+
+    glDisable(GL_LIGHTING);
+    glColor3d(1.0, 0.0, 1.0);
+    glPointSize(50.0);
+    glBegin(GL_POINTS);
+    glVertex3dv(point);
+    glEnd();
+    glEnable(GL_LIGHTING);
+
+}
+
 void Joint::draw(Joint* j)
 {
     Vec const& p = j->point;

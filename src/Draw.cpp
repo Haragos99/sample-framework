@@ -9,6 +9,11 @@ void MyViewer::draw() {
         : QApplication::font().pointSize())),
         QString("Frame:") + QString(std::to_string(FrameSecond).c_str()));*/
 
+
+   // kinect.ProcessSkeleton();
+    kinect.update();
+    kinect.draw();
+
     if (model_type == ModelType::BEZIER_SURFACE && show_control_points)
         drawControlNet();
 

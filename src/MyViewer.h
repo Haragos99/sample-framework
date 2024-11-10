@@ -26,6 +26,8 @@
 #include "Render.h"
 #include <QOpenGLWidget>
 #include "Collison.h"
+#include "KinectSkelton.h"
+
 
 using qglviewer::Vec;
 
@@ -174,6 +176,8 @@ public:
 
 
     }
+
+    KinectSkelton kinect;
 
     bool transparent = false;
     bool transparent2 = true;

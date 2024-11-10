@@ -55,6 +55,7 @@ struct Bone {
     Vec color;
     BonePoly bp;
     std::vector<Vec> points;
+    Bone():start(nullptr), end(nullptr) {}
     Bone(Joint* s, Joint* e,int _id,Vec _color)
     {
         start = s;

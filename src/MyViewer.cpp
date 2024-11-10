@@ -29,6 +29,9 @@ MyViewer::MyViewer(QWidget* parent) :
     visualization(Visualization::PLAIN), slicing_dir(0, 0, 1), slicing_scaling(1),
     last_filename("")
 {
+
+
+
     //QDir* logdir = new QDir();
     //logdir->mkdir("logs");
     //QString log_path("logs/log_");
@@ -943,12 +946,14 @@ void MyViewer::keyPressEvent(QKeyEvent* e) {
 
 
         case Qt::Key_F:
-            fairMesh();
+            //fairMesh();
+            kinect.CreateFirstConnected();
             update();
             break;
 
         case Qt::Key_Z:
-            showSmooth = !showSmooth;
+            //showSmooth = !showSmooth;
+            kinect.setSkeltonTracking();
             update();
             break;
        

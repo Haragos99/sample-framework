@@ -108,14 +108,18 @@ void BonePoly::calculatepoly()
 
 void Bone::draw()
 {
-    glLineWidth(200.0);
-    glBegin(GL_LINES);
-    glColor3d(color.x, color.y, color.z);
-    glVertex3dv(start->point);
-    glVertex3dv(end->point);
-    glEnd();
+    if (start != nullptr)// Make it better
+    {
+        glLineWidth(200.0);
+        glBegin(GL_LINES);
+        glColor3d(color.x, color.y, color.z);
+        glVertex3dv(start->point);
+        glVertex3dv(end->point);
+        glEnd();
 
-    bp.calculatepoly();
+        bp.calculatepoly();
+    }
+    
 
 
 }

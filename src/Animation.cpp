@@ -15,7 +15,7 @@ void MyViewer::animate()
             //inverse_kinematics(cp,skel.root);
             cp.animate(startAnimationTime_);
 
-            Joint* j = skel.root->searchbyid(skel.root, cps[selected_vertex].jointid);
+            Joint* j = skel.root->searchbyid(skel.root, cp.jointid);
             //cp.position = (qreal)(1.0f - startAnimationTime_) * cp.position + (qreal)startAnimationTime_ * Vec(1, 1, 1);
             inverse_kinematics(cp, j);
         }

@@ -20,7 +20,7 @@ struct Joint {
     Vec pivot;
     std::vector<Joint*> children;
     std::vector<Keyframe> keyframes;
-    Joint() {}
+    Joint() { point = Vec(); }
     Joint(Vec p, int _id) { point = p; id = _id; Tpose = p; parent = nullptr; }
     Mat4 M;
     Mat4 R;
@@ -31,6 +31,7 @@ struct Joint {
     void drawarrow(Joint* j);
 
     void draw(Joint* j);
+    void draw();
 
     void change_all_position(Joint* j, Vec dif);
 
