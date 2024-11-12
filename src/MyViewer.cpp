@@ -947,7 +947,9 @@ void MyViewer::keyPressEvent(QKeyEvent* e) {
 
         case Qt::Key_F:
             //fairMesh();
+            points = kinect.skelton.getPointlist();
             kinect.CreateFirstConnected();
+            setupCameraBone();
             update();
             break;
 

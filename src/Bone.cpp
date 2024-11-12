@@ -251,7 +251,49 @@ void Skelton::buildTree(std::vector<Joint*>& joints)
 }
 
 
+void Skelton::loadFile(const std::string& filename)
+{
+    std::ifstream file(filename); // Replace "data.txt" with your file name
 
+    std::vector<int> children;
+
+
+    std::string line;
+    while (getline(file, line)) {
+        std::stringstream ss(line);
+        char type;
+        ss >> type;
+
+        if (type == 'b') {
+            char dummy;
+            double x, y, z;
+            ss >> dummy >> x >> dummy >> y >> dummy >> z >> dummy;
+            points.push_back({ x, y, z });
+        }
+        else if (type == 'a') {
+            char dummy;
+            int idx1, idx2;
+            ss >> dummy >> idx1 >> dummy >> idx2 >> dummy;
+            indexes.push_back({ idx1, idx2 });
+        }
+        else if (type == 'i') {
+            char dummy;
+            int idx;
+            int size;
+            ss >> dummy >> size;
+            for (int i = 0; i < size; i++)
+            {
+                ss >> dummy >> idx;
+                children.push_back(idx);
+            }
+            childrenMatrix.push_back(children);
+            children.clear();
+        }
+    }
+
+    file.close();
+
+}
 
 void Skelton::build()
 {

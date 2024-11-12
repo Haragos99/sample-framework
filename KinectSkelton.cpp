@@ -2,11 +2,24 @@
 
 KinectSkelton::KinectSkelton(): m_hNextSkeletonEvent(INVALID_HANDLE_VALUE), m_pSkeletonStreamHandle(INVALID_HANDLE_VALUE) , m_pNuiSensor(nullptr)
 {
-    joints.resize(20);
-    bones.resize(20);
+
+
+    skelton.loadFile("C:\\Dev\\sample-framework-master\\Bones\\tpose.bone");
+    skelton.build();
+
 }
 
+void KinectSkelton::genareteSkelton()
+{
 
+
+
+    
+
+
+
+
+}
 
 
 HRESULT KinectSkelton::CreateFirstConnected()
@@ -87,10 +100,12 @@ void KinectSkelton::creatSkelton(NUI_SKELETON_DATA& skel)
     {
 
         Vec poin = Vec(skel.SkeletonPositions[i].x / skel.SkeletonPositions[i].w, skel.SkeletonPositions[i].y / skel.SkeletonPositions[i].w, skel.SkeletonPositions[i].z / skel.SkeletonPositions[i].w);
-        joints[i] = new Joint(poin, i);
+        //joints[i] = new Joint(poin, i);
+        Joint* joint = skelton.root->searchbyid(skelton.root, i);
+        joint->point = poin;
 
     }
-
+   
     DrawBone(skel, NUI_SKELETON_POSITION_HEAD, NUI_SKELETON_POSITION_SHOULDER_CENTER,0);
     DrawBone(skel, NUI_SKELETON_POSITION_SHOULDER_CENTER, NUI_SKELETON_POSITION_SHOULDER_LEFT,1);
     DrawBone(skel, NUI_SKELETON_POSITION_SHOULDER_CENTER, NUI_SKELETON_POSITION_SHOULDER_RIGHT,2);
@@ -175,18 +190,7 @@ KinectSkelton::~KinectSkelton()
 
 void KinectSkelton::draw()
 {
-    for (auto join : joints)
-    {
-        if (join != nullptr)
-        {
-            join->draw();
-        }
-      
-    }
-    for (auto bone : bones)
-    {
-        bone.draw();
-    }
+    skelton.draw();
 }
 
 
@@ -211,7 +215,7 @@ void KinectSkelton::DrawBone(const NUI_SKELETON_DATA& skel, NUI_SKELETON_POSITIO
     // We assume all drawn bones are inferred unless BOTH joints are tracked
     if (joint0State == NUI_SKELETON_POSITION_TRACKED && joint1State == NUI_SKELETON_POSITION_TRACKED)
     {
-        Bone b = Bone(joints[joint0], joints[joint1], boneindex, Vec(0, 1, 0));
-        bones[boneindex] = b;
+        //Bone b = Bone(joints[joint0], joints[joint1], boneindex, Vec(0, 1, 0));
+        //bones[boneindex] = b;
     }
 }

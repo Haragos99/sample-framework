@@ -158,6 +158,7 @@ public:
         return true;
     }
 
+    void loadFile(const std::string& filename);
 
     void getList(Joint* j)
     {
@@ -181,6 +182,8 @@ public:
     std::vector<Axes>arrows();
 
     void build();
+
+    std::vector<Vec> getPointlist() { return points; }
 
     void buildTree(std::vector<Joint*>& joints);
 
