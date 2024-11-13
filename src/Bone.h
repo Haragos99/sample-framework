@@ -183,6 +183,8 @@ public:
 
     void build();
 
+    void calculateMatrix();
+
     std::vector<Vec> getPointlist() { return points; }
 
     void buildTree(std::vector<Joint*>& joints);

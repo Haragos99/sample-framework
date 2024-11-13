@@ -29,7 +29,7 @@ MyViewer::MyViewer(QWidget* parent) :
     visualization(Visualization::PLAIN), slicing_dir(0, 0, 1), slicing_scaling(1),
     last_filename("")
 {
-
+    timer = new QTimer(this);
 
 
     //QDir* logdir = new QDir();
@@ -472,6 +472,9 @@ void MyViewer::setupCamera() {
 void MyViewer::init() {
     glLightModeli(GL_LIGHT_MODEL_TWO_SIDE, 1);
 
+
+    connect(timer, &QTimer::timeout, this, &MyViewer::callKinekcnUpdate);
+
     QImage img(":/isophotes.png");
     glGenTextures(1, &isophote_texture);
     glBindTexture(GL_TEXTURE_2D, isophote_texture);
@@ -868,36 +871,7 @@ void MyViewer::keyPressEvent(QKeyEvent* e) {
             break;
         case Qt::Key_2:
 
-            if (points.size() != 0 && mesh.n_vertices() != 0)
-            {
-
-
-                if (isweight == true && mehet == true)
-                {
-                    visualization = Visualization::WEIGH2;
-                    Smooth();
-                    model_type = ModelType::SKELTON;
-
-                    text = new QLabel(tr("Success"));
-
-                }
-                else
-                {
-                    text = new QLabel(tr("Error: No weight in the mesh"));
-                }
-            }
-            else
-            {
-                text = new QLabel(tr("Error: No mesh or skellton"));
-            }
-            hb1->addWidget(text);
-            vb->addLayout(hb1);
-            dlg->setWindowTitle(tr("Message"));
-            dlg->setLayout(vb);
-            if (dlg->exec() == QDialog::Accepted) {
-                update();
-            }
-            //mehet = false;
+            startTimer();
             break;
 
 
@@ -980,6 +954,13 @@ void MyViewer::keyPressEvent(QKeyEvent* e) {
     else
         QGLViewer::keyPressEvent(e);
 }
+
+void MyViewer::startTimer() {
+    if (!timer->isActive()) {
+        timer->start(10);  // Start the timer with a 1-second interval
+    }
+}
+
 
 Vec MyViewer::intersectLines(const Vec& ap, const Vec& ad, const Vec& bp, const Vec& bd) {
     // always returns a point on the (ap, ad) line

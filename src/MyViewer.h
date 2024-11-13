@@ -27,7 +27,7 @@
 #include <QOpenGLWidget>
 #include "Collison.h"
 #include "KinectSkelton.h"
-
+#include <QTimer>
 
 using qglviewer::Vec;
 
@@ -178,7 +178,7 @@ public:
     }
 
     KinectSkelton kinect;
-
+    QTimer* timer;
     bool transparent = false;
     bool transparent2 = true;
     float& getFrameSecond() { return FrameSecond; }
@@ -198,6 +198,25 @@ public:
         show_solid = !show_solid;
         update();
     }
+
+    void callKinekcnUpdate() {
+        // Call the kinect's update function
+        kinect.update();
+
+        // Optionally refresh the viewer
+        update();
+    }
+
+
+    void startTimer();
+
+    void stopTimer() {
+        if (timer->isActive()) {
+            timer->stop();  // Stop the timer
+        }
+    }
+
+
 
     void Invers();
 

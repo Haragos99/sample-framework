@@ -2,14 +2,14 @@
 #include <Windows.h>    // Required for NuiApi.h
 #include <NuiApi.h>
 #include <vector>
-#include "src/Matrix4.h"
-#include "src/Bone.h"
+#include "Matrix4.h"
+#include "Bone.h"
 #define IDC_VIDEOVIEW           1003
 class KinectSkelton {
 	// Current Kinect
-	INuiSensor* m_pNuiSensor;
-	HANDLE m_hNextSkeletonEvent;
-	HANDLE m_pSkeletonStreamHandle;
+	INuiSensor* NuiSensor;
+	HANDLE NextSkeletonEvent;
+	HANDLE SkeletonStreamHandle;
 	HWND  m_hWnd;
 	std::vector<Bone> bones;
 	std::vector<Joint*> joints;
@@ -17,7 +17,7 @@ class KinectSkelton {
 
 
 public:
-	void setSkeltonTracking(){ m_pNuiSensor->NuiSkeletonTrackingEnable(m_hNextSkeletonEvent, 0); }
+	void setSkeltonTracking() { if (NuiSensor) { NuiSensor->NuiSkeletonTrackingEnable(NextSkeletonEvent, 0); } }
 
 	void genareteSkelton();
 

@@ -1,6 +1,6 @@
 #include "KinectSkelton.h"
 
-KinectSkelton::KinectSkelton(): m_hNextSkeletonEvent(INVALID_HANDLE_VALUE), m_pSkeletonStreamHandle(INVALID_HANDLE_VALUE) , m_pNuiSensor(nullptr)
+KinectSkelton::KinectSkelton(): NextSkeletonEvent(INVALID_HANDLE_VALUE), SkeletonStreamHandle(INVALID_HANDLE_VALUE) , NuiSensor(nullptr)
 {
 
 
@@ -47,7 +47,7 @@ HRESULT KinectSkelton::CreateFirstConnected()
         hr = pNuiSensor->NuiStatus();
         if (S_OK == hr)
         {
-            m_pNuiSensor = pNuiSensor;
+            NuiSensor = pNuiSensor;
             break;
         }
 
@@ -55,21 +55,21 @@ HRESULT KinectSkelton::CreateFirstConnected()
         pNuiSensor->Release();
     }
 
-    if (NULL != m_pNuiSensor)
+    if (NULL != NuiSensor)
     {
         // Initialize the Kinect and specify that we'll be using skeleton
-        hr = m_pNuiSensor->NuiInitialize(NUI_INITIALIZE_FLAG_USES_SKELETON);
+        hr = NuiSensor->NuiInitialize(NUI_INITIALIZE_FLAG_USES_SKELETON);
         if (SUCCEEDED(hr))
         {
             // Create an event that will be signaled when skeleton data is available
-            m_hNextSkeletonEvent = CreateEventW(NULL, TRUE, FALSE, NULL);
+            NextSkeletonEvent = CreateEventW(NULL, TRUE, FALSE, NULL);
 
             // Open a skeleton stream to receive skeleton data
-            hr = m_pNuiSensor->NuiSkeletonTrackingEnable(m_hNextSkeletonEvent, 0);
+            hr = NuiSensor->NuiSkeletonTrackingEnable(NextSkeletonEvent, 0);
         }
     }
 
-    if (NULL == m_pNuiSensor || FAILED(hr))
+    if (NULL == NuiSensor || FAILED(hr))
     {
         return E_FAIL;
     }
@@ -80,13 +80,13 @@ HRESULT KinectSkelton::CreateFirstConnected()
 
 void KinectSkelton::update()
 {
-    if (NULL == m_pNuiSensor)
+    if (NULL == NuiSensor)
     {
         return;
     }
 
     // Wait for 0ms, just quickly test if it is time to process a skeleton
-    if (WAIT_OBJECT_0 == WaitForSingleObject(m_hNextSkeletonEvent, 0))
+    if (WAIT_OBJECT_0 == WaitForSingleObject(NextSkeletonEvent, 0))
     {
         ProcessSkeleton();
     }
@@ -105,6 +105,11 @@ void KinectSkelton::creatSkelton(NUI_SKELETON_DATA& skel)
         joint->point = poin;
 
     }
+    //skelton.calculateMatrix();
+
+
+
+
    
     DrawBone(skel, NUI_SKELETON_POSITION_HEAD, NUI_SKELETON_POSITION_SHOULDER_CENTER,0);
     DrawBone(skel, NUI_SKELETON_POSITION_SHOULDER_CENTER, NUI_SKELETON_POSITION_SHOULDER_LEFT,1);
@@ -142,14 +147,14 @@ void KinectSkelton::ProcessSkeleton()
     //m_pNuiSensor->NuiSkeletonTrackingEnable(m_hNextSkeletonEvent,  NUI_SKELETON_TRACKING_FLAG_ENABLE_SEATED_SUPPORT );
     NUI_SKELETON_FRAME skeletonFrame = { 0 };
 
-    HRESULT hr = m_pNuiSensor->NuiSkeletonGetNextFrame(0, &skeletonFrame);
+    HRESULT hr = NuiSensor->NuiSkeletonGetNextFrame(0, &skeletonFrame);
     if (FAILED(hr))
     {
         return;
     }
 
     // smooth out the skeleton data
-    m_pNuiSensor->NuiTransformSmooth(&skeletonFrame, NULL);
+    NuiSensor->NuiTransformSmooth(&skeletonFrame, NULL);
 
 
 
@@ -177,14 +182,14 @@ void KinectSkelton::ProcessSkeleton()
 
 KinectSkelton::~KinectSkelton()
 {
-    if (m_pNuiSensor)
+    if (NuiSensor)
     {
-        m_pNuiSensor->NuiShutdown();
+        NuiSensor->NuiShutdown();
     }
 
-    if (m_hNextSkeletonEvent && (m_hNextSkeletonEvent != INVALID_HANDLE_VALUE))
+    if (NextSkeletonEvent && (NextSkeletonEvent != INVALID_HANDLE_VALUE))
     {
-        CloseHandle(m_hNextSkeletonEvent);
+        CloseHandle(NextSkeletonEvent);
     }
 }
 
@@ -199,7 +204,7 @@ void KinectSkelton::DrawBone(const NUI_SKELETON_DATA& skel, NUI_SKELETON_POSITIO
 {
     NUI_SKELETON_POSITION_TRACKING_STATE joint0State = skel.eSkeletonPositionTrackingState[joint0];
     NUI_SKELETON_POSITION_TRACKING_STATE joint1State = skel.eSkeletonPositionTrackingState[joint1];
-
+    
     // If we can't find either of these joints, exit
     if (joint0State == NUI_SKELETON_POSITION_NOT_TRACKED || joint1State == NUI_SKELETON_POSITION_NOT_TRACKED)
     {

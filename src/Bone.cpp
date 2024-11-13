@@ -251,6 +251,44 @@ void Skelton::buildTree(std::vector<Joint*>& joints)
 }
 
 
+
+void Skelton::calculateMatrix()
+{
+    std::vector<Joint*> joints = getJointtoList(root);
+    for (int i = 1; i < n_joint; i++)
+    {
+        Joint* current = joints[i];
+        Joint* previus = joints[i-1];
+        Vec old_diff = current->Tpose - previus->Tpose;
+        Vec new_diff = current->point - previus->point;
+        old_diff = old_diff.unit();
+        new_diff = new_diff.unit();
+        Vec axis = old_diff ^ new_diff;
+        float dot = old_diff.x * new_diff.x + old_diff.y * new_diff.y + old_diff.z * new_diff.z;
+        float rotAngle = std::atan2(axis.norm(), dot);
+
+        Vec pivot = current->parent->Tpose;
+        Mat4 T1 = TranslateMatrix(-pivot);
+        Mat4 T2 = TranslateMatrix(pivot);
+
+        Mat4 R;
+        if (axis.norm() > 1E-12) {
+            axis = axis.unit();
+            //axis = Vec(0, 0, 1);
+            R = RotationMatrix(rotAngle, axis);
+
+        }
+        current->R = R;
+        Mat4 M = T1 * R * TranslateMatrix(current->parent->point);// * T2;
+        current->M = M;
+
+
+        Vec4 p = Vec4(current->Tpose) * M;
+        current->point = Vec(p.x, p.y, p.z);
+    }
+}
+
+
 void Skelton::loadFile(const std::string& filename)
 {
     std::ifstream file(filename); // Replace "data.txt" with your file name
@@ -314,12 +352,11 @@ void Skelton::build()
 
 
     // build the bones
-    int size = indexes.size();
-    int id = 0;
+    int size = indexes.size(); 
     for (int i = 0; i < size; i++)
     {
-        bones.push_back(Bone(joints[indexes[i].first], joints[indexes[i].second], id,colors_bone[i]));
-        id++;
+        bones.push_back(Bone(joints[indexes[i].first], joints[indexes[i].second], i,colors_bone[i]));
+
     }
 
 }
