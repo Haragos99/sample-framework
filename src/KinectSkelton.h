@@ -12,7 +12,7 @@ class KinectSkelton {
 	HANDLE SkeletonStreamHandle;
 	HWND  m_hWnd;
 	std::vector<Bone> bones;
-	std::vector<Joint*> joints;
+	std::vector<Vec> joints;
 	
 
 
@@ -24,7 +24,7 @@ public:
 	void ProcessSkeleton();
 
 	void DrawBone(const NUI_SKELETON_DATA& skel, NUI_SKELETON_POSITION_INDEX joint0, NUI_SKELETON_POSITION_INDEX joint1,int boneindex);
-    
+	
 	Skelton skelton;
 
 	HRESULT CreateFirstConnected();

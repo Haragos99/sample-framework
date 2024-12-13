@@ -279,12 +279,8 @@ void Skelton::calculateMatrix()
 
         }
         current->R = R;
-        Mat4 M = T1 * R * TranslateMatrix(current->parent->point);// * T2;
-        current->M = M;
-
-
-        Vec4 p = Vec4(current->Tpose) * M;
-        current->point = Vec(p.x, p.y, p.z);
+       // Mat4 M = T1 * R * TranslateMatrix(current->parent->point);// * T2;
+  
     }
 }
 

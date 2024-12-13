@@ -13,6 +13,7 @@ void Render::saveVideo()
         GifWriteFrame(&writer, image, size.width(), size.height(), 2, 8, true);
     }
     GifEnd(&writer);
+    frames.clear();
 }
 
 void Render::savepPicture()

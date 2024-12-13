@@ -1,9 +1,10 @@
 #include "KinectSkelton.h"
 
+
 KinectSkelton::KinectSkelton(): NextSkeletonEvent(INVALID_HANDLE_VALUE), SkeletonStreamHandle(INVALID_HANDLE_VALUE) , NuiSensor(nullptr)
 {
 
-
+    joints.resize(20);
     skelton.loadFile("C:\\Dev\\sample-framework-master\\Bones\\tpose.bone");
     skelton.build();
 
@@ -42,7 +43,7 @@ HRESULT KinectSkelton::CreateFirstConnected()
         {
             continue;
         }
-
+        
         // Get the status of the sensor, and if connected, then we can initialize it
         hr = pNuiSensor->NuiStatus();
         if (S_OK == hr)
@@ -96,48 +97,40 @@ void KinectSkelton::update()
 
 void KinectSkelton::creatSkelton(NUI_SKELETON_DATA& skel)
 {
+    
+    NUI_SKELETON_BONE_ORIENTATION boneOrientations[NUI_SKELETON_POSITION_COUNT];
+    HRESULT hr = NuiSkeletonCalculateBoneOrientations(&skel, boneOrientations);
+    if (FAILED(hr))
+    {
+        
+    }
     for (int i = 0; i < NUI_SKELETON_POSITION_COUNT; ++i)
     {
 
-        Vec poin = Vec(skel.SkeletonPositions[i].x / skel.SkeletonPositions[i].w, skel.SkeletonPositions[i].y / skel.SkeletonPositions[i].w, skel.SkeletonPositions[i].z / skel.SkeletonPositions[i].w);
+        Vec point = Vec(skel.SkeletonPositions[i].x / skel.SkeletonPositions[i].w, skel.SkeletonPositions[i].y / skel.SkeletonPositions[i].w, skel.SkeletonPositions[i].z / skel.SkeletonPositions[i].w);
         //joints[i] = new Joint(poin, i);
         Joint* joint = skelton.root->searchbyid(skelton.root, i);
-        joint->point = poin;
+        joint->point = point;
+        //joints[i] = point;
+        const NUI_SKELETON_BONE_ORIENTATION& boneOrientation = boneOrientations[i];
+        Matrix4 m = boneOrientation.absoluteRotation.rotationMatrix;
+        auto q = boneOrientation.absoluteRotation.rotationQuaternion;
+        qglviewer::Quaternion quaternion(q.x, q.y, q.z, q.w);
+        Mat4 matrix(m.M11, m.M12, m.M13, m.M14, 
+                    m.M21, m.M22, m.M23, m.M24,
+                    m.M31, m.M32, m.M33, m.M34,
+                    m.M41, m.M42, m.M43, m.M44);
+        Vec axies;
+        qreal angel;
 
+        quaternion.getAxisAngle(axies, angel);
+
+        joint->M = matrix;
+
+        joint->R = matrix;
+        Vec4 p = Vec4(point) * matrix;
+        //joint->point = Vec(p.x, p.y, p.z);
     }
-    //skelton.calculateMatrix();
-
-
-
-
-   
-    DrawBone(skel, NUI_SKELETON_POSITION_HEAD, NUI_SKELETON_POSITION_SHOULDER_CENTER,0);
-    DrawBone(skel, NUI_SKELETON_POSITION_SHOULDER_CENTER, NUI_SKELETON_POSITION_SHOULDER_LEFT,1);
-    DrawBone(skel, NUI_SKELETON_POSITION_SHOULDER_CENTER, NUI_SKELETON_POSITION_SHOULDER_RIGHT,2);
-    DrawBone(skel, NUI_SKELETON_POSITION_SHOULDER_CENTER, NUI_SKELETON_POSITION_SPINE,3);
-    DrawBone(skel, NUI_SKELETON_POSITION_SPINE, NUI_SKELETON_POSITION_HIP_CENTER,4);
-    DrawBone(skel, NUI_SKELETON_POSITION_HIP_CENTER, NUI_SKELETON_POSITION_HIP_LEFT,5);
-    DrawBone(skel, NUI_SKELETON_POSITION_HIP_CENTER, NUI_SKELETON_POSITION_HIP_RIGHT,6);
-
-    // Left Arm
-    DrawBone(skel, NUI_SKELETON_POSITION_SHOULDER_LEFT, NUI_SKELETON_POSITION_ELBOW_LEFT,7);
-    DrawBone(skel, NUI_SKELETON_POSITION_ELBOW_LEFT, NUI_SKELETON_POSITION_WRIST_LEFT,8);
-    DrawBone(skel, NUI_SKELETON_POSITION_WRIST_LEFT, NUI_SKELETON_POSITION_HAND_LEFT,9);
-
-    // Right Arm
-    DrawBone(skel, NUI_SKELETON_POSITION_SHOULDER_RIGHT, NUI_SKELETON_POSITION_ELBOW_RIGHT,10);
-    DrawBone(skel, NUI_SKELETON_POSITION_ELBOW_RIGHT, NUI_SKELETON_POSITION_WRIST_RIGHT,11);
-    DrawBone(skel, NUI_SKELETON_POSITION_WRIST_RIGHT, NUI_SKELETON_POSITION_HAND_RIGHT,12);
-
-    // Left Leg
-    DrawBone(skel, NUI_SKELETON_POSITION_HIP_LEFT, NUI_SKELETON_POSITION_KNEE_LEFT,13);
-    DrawBone(skel, NUI_SKELETON_POSITION_KNEE_LEFT, NUI_SKELETON_POSITION_ANKLE_LEFT,14);
-    DrawBone(skel, NUI_SKELETON_POSITION_ANKLE_LEFT, NUI_SKELETON_POSITION_FOOT_LEFT,15);
-
-    // Right Leg
-    DrawBone(skel, NUI_SKELETON_POSITION_HIP_RIGHT, NUI_SKELETON_POSITION_KNEE_RIGHT,16);
-    DrawBone(skel, NUI_SKELETON_POSITION_KNEE_RIGHT, NUI_SKELETON_POSITION_ANKLE_RIGHT,17);
-    DrawBone(skel, NUI_SKELETON_POSITION_ANKLE_RIGHT, NUI_SKELETON_POSITION_FOOT_RIGHT,18);
 }
 
 
@@ -196,6 +189,17 @@ KinectSkelton::~KinectSkelton()
 void KinectSkelton::draw()
 {
     skelton.draw();
+   
+    for (auto j : joints)
+    {
+        /*
+        glColor3d(0.0, 1.0, 0.0);
+        glPointSize(50.0);
+        glBegin(GL_POINTS);
+        glVertex3dv(j);
+        glEnd();
+        */
+    }
 }
 
 

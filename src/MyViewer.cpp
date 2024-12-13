@@ -31,12 +31,6 @@ MyViewer::MyViewer(QWidget* parent) :
 {
     timer = new QTimer(this);
 
-
-    //QDir* logdir = new QDir();
-    //logdir->mkdir("logs");
-    //QString log_path("logs/log_");
-    //log_path += QDateTime::currentDateTime().toString("yyyy-MM-dd__hh-mm-ss-zzz") + ".txt";
-    //std::ofstream of = std::ofstream(log_path.toStdString());
     of = std::ofstream("log.txt");
     std::cerr.rdbuf(of.rdbuf());
     omerr().rdbuf(of.rdbuf());
@@ -732,38 +726,8 @@ void MyViewer::keyPressEvent(QKeyEvent* e) {
     QLabel* text;
     int sizek;
     //
-    
-    
-    int GRID_MAX = 30;
 
-    std::vector<std::vector<std::vector<double>>> scalarField(GRID_MAX, std::vector<std::vector<double>>(GRID_MAX, std::vector<double>(GRID_MAX)));
-    
-
-    double radius = 0.2;
-    double centerX = 0, centerY = 0, centerZ = 0;
-    double scale = 3.0 * radius * 1.2;
-    mc.POSITION = Vec(scale/2.0, scale / 2.0, scale / 2.0);
-    double size = double(GRID_MAX - 1) / scale;
-    mc.SIZE = size;
-    for (int i = 0; i < GRID_MAX; i++)
-    {
-        for (int j = 0; j < GRID_MAX; j++)
-        {
-            for (int k = 0; k < GRID_MAX; k++)
-            {
-                double x = i / size - mc.POSITION.x, y = j / size - mc.POSITION.y, z = k / size - mc.POSITION.z;
-                double val = (centerX - x) * (centerX - x) + (centerY - y) * (centerY - y) + (centerZ - z) * (centerZ - z);
-
-                scalarField[i][j][k] = sqrt(val) - radius;
-
-               
-            }
-                
-        }
-            
-    }
         
-    
     Vec ang = Vec(20, 0, 0);
     if (e->modifiers() == Qt::NoModifier)
 
@@ -899,20 +863,6 @@ void MyViewer::keyPressEvent(QKeyEvent* e) {
                 update();
             }
             break;
-        case Qt::Key_6:
-            //stopAnimation();
-
-            mc.compute(scalarField);
-            setupCameraMC(mc.mesh_);
-            text = new QLabel("#V = " + QString::number(mc.mesh_.n_vertices()));
-            hb1->addWidget(text);
-            vb->addLayout(hb1);
-            dlg->setWindowTitle(tr("Message"));
-            dlg->setLayout(vb);
-            if (dlg->exec() == QDialog::Accepted) {
-                update();
-            }
-            break;
         case Qt::Key_W:
             show_wireframe = !show_wireframe;
             update();
@@ -924,6 +874,7 @@ void MyViewer::keyPressEvent(QKeyEvent* e) {
             points = kinect.skelton.getPointlist();
             kinect.CreateFirstConnected();
             setupCameraBone();
+            model_type = ModelType::SKELTON;
             update();
             break;
 
@@ -957,7 +908,7 @@ void MyViewer::keyPressEvent(QKeyEvent* e) {
 
 void MyViewer::startTimer() {
     if (!timer->isActive()) {
-        timer->start(10);  // Start the timer with a 1-second interval
+        timer->start(10);  
     }
 }
 

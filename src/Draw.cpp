@@ -39,10 +39,11 @@ void MyViewer::draw() {
 
     if (model_type == ModelType::SKELTON || model_type == ModelType::INVERZ)
     {
-        skel.draw();
+        //skel.draw();
         if (true)
         {
-            auto jointaxes = skel.arrows();
+           // auto jointaxes = skel.arrows();
+            auto jointaxes = kinect.skelton.arrows();
             drawJointAxes(jointaxes);
         }
 
