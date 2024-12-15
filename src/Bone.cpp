@@ -151,7 +151,7 @@ bool Bone::isLastBone()
 
 void Skelton::animate(float current_time, MyMesh& mesh)
 {
-    //root->animaterotaion(root, current_time, Mat4());
+
     for (int k = 0; k < n_joint; k++)
     {
         Joint* j = root->searchbyid(root, k);
@@ -159,20 +159,13 @@ void Skelton::animate(float current_time, MyMesh& mesh)
         {
             for (size_t i = 0; i < j->keyframes.size() - 1; ++i) {
 
-                if (current_time >= j->keyframes[i].time() && current_time <= j->keyframes[i + 1].time()) {
-
-
+                if (current_time >= j->keyframes[i].time() && current_time <= j->keyframes[i + 1].time()) 
+                {
                     Vec pivot = j->point;
-
-
-                    float t = (current_time - j->keyframes[i].time()) / (j->keyframes[i + 1].time() - j->keyframes[i].time());
-
-                    float dt = current_time - j->keyframes[i].time();
                     Vec rotated = (j->keyframes[i + 1].angeles() - j->keyframes[i].angeles());
                     float timediff_key = (j->keyframes[i + 1].time() - j->keyframes[i].time());
                     float step = 1;
-                    qglviewer::Quaternion q = qglviewer::Quaternion::slerp(j->keyframes[i].rotation, j->keyframes[i + 1].rotation, 0.01);
-                    float r =  timediff_key * step;
+                    float r = timediff_key * step;
                     Vec angels = rotated / r;
                     j->calculateMatrecies(j, pivot, angels);
 
@@ -181,43 +174,7 @@ void Skelton::animate(float current_time, MyMesh& mesh)
             }
         }
 
-
-
-
-        if (j->keyframes.size() != 0 && j->keyframes.back().time() >= current_time)
-        {
-            size_t s = 0;
-
-            // TODO
-            // think again -2 
-            while (s < j->keyframes.size() - 2 && current_time >= j->keyframes[s + 1].time()) {
-                s++;
-            }
-            const Keyframe& startKeyframe = j->keyframes[s];
-            const Keyframe& endKeyframe = j->keyframes[s + 1];
-            float timediff_key = (endKeyframe.time() - startKeyframe.time());
-            float dt = current_time - startKeyframe.time();
-            Vec rotated = (endKeyframe.angeles() - startKeyframe.angeles());
-            float r = (dt / timediff_key);
-            Vec angels = rotated * r / 10;
-            if (dt >= endKeyframe.time())angels = Vec(0, 0, 0);
-
-
-
-            Vec pivot = j->point;
-
-
-            float t = (current_time - startKeyframe.time()) / (endKeyframe.time() - startKeyframe.time());
-
-
-            qglviewer::Quaternion q = qglviewer::Quaternion::slerp(startKeyframe.rotation, endKeyframe.rotation,t);
-
-           // j->calculateMatrecies(j, pivot, q);
-
-
-        }
-        
-    }
+    } 
     root->transform_point(root);
     animate_mesh(mesh, true);
 }
