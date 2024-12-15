@@ -11,12 +11,8 @@ void MyViewer::animate()
         FrameSecond = startAnimationTime_;
         for (auto& cp : cps)
         {
-            //cp.animate(startAnimationTime_);
-            //inverse_kinematics(cp,skel.root);
             cp.animate(startAnimationTime_);
-
             Joint* j = skel.root->searchbyid(skel.root, cp.jointid);
-            //cp.position = (qreal)(1.0f - startAnimationTime_) * cp.position + (qreal)startAnimationTime_ * Vec(1, 1, 1);
             inverse_kinematics(cp, j);
         }
         skel.animate(startAnimationTime_, mesh);
@@ -29,31 +25,9 @@ void MyViewer::animate()
         //render.saveVideo();
         int s = render.sizeframes();
         stopAnimation();
-    }
-    
-    if (isAnimating_&& false)
-    {
-        float current_time = (currentTime() - startAnimationTime_) * 10;
-        FrameSecond = current_time;
-        update();
-        if (current_time < animationDuration_)
-        {
-            skel.animate(current_time,mesh);
-            //animate_mesh(); // animate the mesh
-            skel.set_deafult_matrix();
-            update();
-
-        }
-        else {
-            isAnimating_ = false;
-            stopAnimation();
-        }
-    }
-    
+    }  
      
 }
-
-
 
 
 
@@ -93,19 +67,15 @@ void MyViewer::keyframe_add()
         }
         else
         {
-            qglviewer::Quaternion qx = qglviewer::Quaternion(Vec(1, 0, 0), angels.x / 180.0 * M_PI);
-            qglviewer::Quaternion qy = qglviewer::Quaternion(Vec(0, 1, 0), angels.y / 180.0 * M_PI);
-            qglviewer::Quaternion qz = qglviewer::Quaternion(Vec(0, 0, 1), angels.z / 180.0 * M_PI);
-            qglviewer::Quaternion q = qz * qy * qx;
             Joint* j = skel.root->searchbyid(skel.root, selected_vertex);
-            Keyframe k = Keyframe(sb->value(), j->id, angels,q);
-
+            Keyframe k = Keyframe(sb->value(), j->id, angels);
             skel.root->addframe(j, k);
             keyframes_.push_back(k);
         }
 
     }
 }
+
 void MyViewer::Frame()
 {
     ang = Vec(0, 0, 0);
@@ -126,9 +96,6 @@ void MyViewer::Frame()
 void MyViewer::Reset()
 {
     skel.reset();
-
-
-
     for (auto v : mesh.vertices())
     {
         mesh.point(v)= mesh.data(v).original;

@@ -3,7 +3,7 @@
 #include <NuiApi.h>
 #include <vector>
 #include "Matrix4.h"
-#include "Bone.h"
+#include "Skelton.h"
 #define IDC_VIDEOVIEW           1003
 class KinectSkelton {
 	// Current Kinect

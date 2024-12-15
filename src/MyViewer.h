@@ -7,7 +7,7 @@
 #include <QDir>
 #include <QTextStream>
 #include <QGLViewer/quaternion.h>
-#include"Bone.h"
+#include "Skelton.h"
 #include <fstream>
 #include <iostream>
 #include <vector>
