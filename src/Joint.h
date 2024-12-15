@@ -51,7 +51,7 @@ struct Joint {
     
     Joint* getLeaf(Joint* j);
 
-    void calculateMatrecies(Joint* j, Vec pivot, Vec angles);
+    void calculateMatrecies(Joint* j, Vec pivot, Vec angels);
 
 
 };

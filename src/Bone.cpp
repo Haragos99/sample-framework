@@ -152,9 +152,38 @@ bool Bone::isLastBone()
 void Skelton::animate(float current_time, MyMesh& mesh)
 {
     //root->animaterotaion(root, current_time, Mat4());
-    for (int i = 0; i < 4; i++)
+    for (int k = 0; k < n_joint; k++)
     {
-        Joint* j = root->searchbyid(root, i);
+        Joint* j = root->searchbyid(root, k);
+        if (j->keyframes.size() != 0 && j->keyframes.back().time() >= current_time)
+        {
+            for (size_t i = 0; i < j->keyframes.size() - 1; ++i) {
+
+                if (current_time >= j->keyframes[i].time() && current_time <= j->keyframes[i + 1].time()) {
+
+
+                    Vec pivot = j->point;
+
+
+                    float t = (current_time - j->keyframes[i].time()) / (j->keyframes[i + 1].time() - j->keyframes[i].time());
+
+                    float dt = current_time - j->keyframes[i].time();
+                    Vec rotated = (j->keyframes[i + 1].angeles() - j->keyframes[i].angeles());
+                    float timediff_key = (j->keyframes[i + 1].time() - j->keyframes[i].time());
+                    float step = 1;
+                    qglviewer::Quaternion q = qglviewer::Quaternion::slerp(j->keyframes[i].rotation, j->keyframes[i + 1].rotation, 0.01);
+                    float r =  timediff_key * step;
+                    Vec angels = rotated / r;
+                    j->calculateMatrecies(j, pivot, angels);
+
+
+                }
+            }
+        }
+
+
+
+
         if (j->keyframes.size() != 0 && j->keyframes.back().time() >= current_time)
         {
             size_t s = 0;
@@ -172,8 +201,18 @@ void Skelton::animate(float current_time, MyMesh& mesh)
             float r = (dt / timediff_key);
             Vec angels = rotated * r / 10;
             if (dt >= endKeyframe.time())angels = Vec(0, 0, 0);
+
+
+
             Vec pivot = j->point;
-            j->calculateMatrecies(j, pivot, angels);
+
+
+            float t = (current_time - startKeyframe.time()) / (endKeyframe.time() - startKeyframe.time());
+
+
+            qglviewer::Quaternion q = qglviewer::Quaternion::slerp(startKeyframe.rotation, endKeyframe.rotation,t);
+
+           // j->calculateMatrecies(j, pivot, q);
 
 
         }

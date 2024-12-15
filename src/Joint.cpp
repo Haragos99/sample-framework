@@ -212,11 +212,11 @@ Mat4 Joint::getMatrix()
 
 
 
-void Joint::calculateMatrecies(Joint* j, Vec _pivot, Vec angles)
+void Joint::calculateMatrecies(Joint* j, Vec _pivot, Vec angels)
 {
-    qglviewer::Quaternion qx = qglviewer::Quaternion(Vec(1, 0, 0), angles.x / 180.0 * M_PI);
-    qglviewer::Quaternion qy = qglviewer::Quaternion(Vec(0, 1, 0), angles.y / 180.0 * M_PI);
-    qglviewer::Quaternion qz = qglviewer::Quaternion(Vec(0, 0, 1), angles.z / 180.0 * M_PI);
+    qglviewer::Quaternion qx = qglviewer::Quaternion(Vec(1, 0, 0), angels.x / 180.0 * M_PI);
+    qglviewer::Quaternion qy = qglviewer::Quaternion(Vec(0, 1, 0), angels.y / 180.0 * M_PI);
+    qglviewer::Quaternion qz = qglviewer::Quaternion(Vec(0, 0, 1), angels.z / 180.0 * M_PI);
     qglviewer::Quaternion q = qz * qy * qx;
     double qmatrix[4][4];
     q.getMatrix(qmatrix);
@@ -231,7 +231,7 @@ void Joint::calculateMatrecies(Joint* j, Vec _pivot, Vec angles)
     }
     for (int i = 0; i < j->children.size(); i++)
     {
-        calculateMatrecies(j->children[i], _pivot, angles);
+        calculateMatrecies(j->children[i], _pivot, angels);
     }
 }
 

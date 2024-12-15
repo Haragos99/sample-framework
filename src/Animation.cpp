@@ -19,12 +19,14 @@ void MyViewer::animate()
             //cp.position = (qreal)(1.0f - startAnimationTime_) * cp.position + (qreal)startAnimationTime_ * Vec(1, 1, 1);
             inverse_kinematics(cp, j);
         }
-        startAnimationTime_ += 0.01;
+        skel.animate(startAnimationTime_, mesh);
+        skel.set_deafult_matrix();
+        startAnimationTime_ += 1;
     }
     else
     {
         isAnimating_ = false;
-        render.saveVideo();
+        //render.saveVideo();
         int s = render.sizeframes();
         stopAnimation();
     }
@@ -95,9 +97,8 @@ void MyViewer::keyframe_add()
             qglviewer::Quaternion qy = qglviewer::Quaternion(Vec(0, 1, 0), angels.y / 180.0 * M_PI);
             qglviewer::Quaternion qz = qglviewer::Quaternion(Vec(0, 0, 1), angels.z / 180.0 * M_PI);
             qglviewer::Quaternion q = qz * qy * qx;
-
             Joint* j = skel.root->searchbyid(skel.root, selected_vertex);
-            Keyframe k = Keyframe(sb->value(), j->id, angels);
+            Keyframe k = Keyframe(sb->value(), j->id, angels,q);
 
             skel.root->addframe(j, k);
             keyframes_.push_back(k);

@@ -117,7 +117,7 @@ private:
     Vec(0.1, 0.7, 0.3),
     };
 
-
+    
 public:
     Joint* root;
     std::vector<Bone> bones;
