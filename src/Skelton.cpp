@@ -17,10 +17,10 @@ void Skelton::animate(float current_time, MyMesh& mesh)
                 {
                     Vec pivot = j->point;
                     Vec rotated = (j->keyframes[i + 1].angeles() - j->keyframes[i].angeles());
-                    float timediff_key = (j->keyframes[i + 1].time() - j->keyframes[i].time());
+                    float timediff = (j->keyframes[i + 1].time() - j->keyframes[i].time());
                     float step = 1;
-                    float r = timediff_key * step;
-                    Vec angels = rotated / r;
+                    float rate = timediff * step;
+                    Vec angels = rotated / rate;
                     j->calculateMatrecies(j, pivot, angels);
                 }
             }
@@ -74,6 +74,7 @@ void Skelton::addJoint(Joint* parent, Joint* child) {
     }
     else {
         parent->children.push_back(child);
+        child->parent = parent;
     }
 }
 
