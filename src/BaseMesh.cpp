@@ -1,6 +1,6 @@
 #include "BaseMesh.h"
 
-void BaseMesh::draw()
+void BaseMesh::draw(Visualization vis)
 {
 
 }

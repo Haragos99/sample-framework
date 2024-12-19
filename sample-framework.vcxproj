@@ -250,6 +250,7 @@
     <ClInclude Include="src\tight_inclusion\logger.hpp" />
     <ClInclude Include="src\tight_inclusion\timer.hpp" />
     <ClInclude Include="src\tight_inclusion\types.hpp" />
+    <ClInclude Include="src\Visualization.h" />
     <QtMoc Include="src\MyViewer.h">
     </QtMoc>
     <ClInclude Include="src\Bone.h" />

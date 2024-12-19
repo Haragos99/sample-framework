@@ -5,7 +5,7 @@ class BaseMesh : public Object3D
 {
 public:
 	BaseMesh(std::string filename);
-	virtual void draw() override;
+	virtual void draw(Visualization vis) override;
 
 
 	virtual~BaseMesh();
