@@ -1,9 +1,9 @@
 #pragma once
 #include "Bone.h"
+#include"Object3D.h"
 
 
-
-class Skelton {
+class Skelton  {
 private:
     std::vector<Vec> points;
     std::vector<Vec> Tpose;
@@ -36,8 +36,7 @@ private:
     Vec(0.1, 0.3, 0.7),
     Vec(0.1, 0.7, 0.3),
     };
-
-
+    MyMesh* mesh;
 public:
     Joint* root;
     std::vector<Bone> bones;
@@ -50,7 +49,7 @@ public:
         childrenMatrix = _childrenMatrix;
         indexes = _indexes;
     }
-    Skelton() {  }
+    Skelton() {  }//delete
 
     int getSize() { return bones.size(); }
 
