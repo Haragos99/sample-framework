@@ -147,5 +147,6 @@ public:
     bool save(const std::string& filename);
 
     void reset() { root->reset_all(root); }
+    ~Skelton(){}
 
 };
