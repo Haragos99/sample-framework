@@ -54,3 +54,14 @@ bool BaseMesh::open()
     mesh.request_face_status();
     return true;
 }
+
+
+Vec BaseMesh::postSelection(const int p)
+{
+    return Vec(mesh.point(MyMesh::VertexHandle(p)).data());
+}
+
+BaseMesh::~BaseMesh()
+{
+
+}

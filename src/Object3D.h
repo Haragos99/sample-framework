@@ -10,7 +10,7 @@ public:
 	explicit Object3D();
 	virtual void draw(Visualization& vis);
 	virtual void drawWithNames(Visualization& vis) const = 0;
-	virtual void postSelection(const int p) = 0;
+	virtual Vec postSelection(const int p) = 0;
 	virtual void movement(int selected, const Vector& position) = 0;
 	virtual void rotate(int selected, Vec angel) = 0;
 	virtual void animate(float time) = 0;

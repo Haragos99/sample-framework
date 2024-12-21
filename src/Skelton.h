@@ -3,7 +3,7 @@
 #include"Object3D.h"
 
 
-class Skelton  {
+class Skelton : public Object3D {
 private:
     std::vector<Vec> points;
     std::vector<Vec> Tpose;
@@ -131,6 +131,18 @@ public:
         }
         root->draw(root);
     }
+
+    void draw(Visualization& vis) override;
+
+    void drawWithNames(Visualization& vis) const override;
+
+    void movement(int selected, const Vector& position) override;
+
+    void rotate(int selected, Vec angel) override;
+
+    void animate(float time) override;
+
+    Vec postSelection(const int p) override;
 
     bool save(const std::string& filename);
 

@@ -5,7 +5,6 @@
 
 void Skelton::animate(float current_time, MyMesh& mesh)
 {
-
     for (int k = 0; k < n_joint; k++)
     {
         Joint* j = root->searchbyid(root, k);
@@ -32,6 +31,28 @@ void Skelton::animate(float current_time, MyMesh& mesh)
 }
 
 
+void Skelton::drawWithNames(Visualization& vis) const
+{
+    for (int i = 0; i < points.size(); i++)
+    {
+        Joint* j = root->searchbyid(root, i);
+        Vec const& p = points[j->id];
+        glPushName(j->id);
+        glRasterPos3fv(p);
+        glPopName();
+
+    }
+}
+
+
+void Skelton::draw(Visualization& vis)
+{
+    for (auto b : bones)
+    {
+        b.draw();
+    }
+    root->draw(root);
+}
 
 void Skelton::animate_mesh(MyMesh& mesh, bool isweight, bool inv)
 {
@@ -65,8 +86,6 @@ void Skelton::animate_mesh(MyMesh& mesh, bool isweight, bool inv)
     }
 }
 
-
-
 void Skelton::addJoint(Joint* parent, Joint* child) {
     if (parent == nullptr)
     {
@@ -78,12 +97,8 @@ void Skelton::addJoint(Joint* parent, Joint* child) {
     }
 }
 
-
-
-
 void Skelton::buildTree(std::vector<Joint*>& joints)
 {
-
     for (int i = 0; i < childrenMatrix.size(); ++i)
     {
         for (int j = 0; j < childrenMatrix[i].size(); ++j)
@@ -106,20 +121,15 @@ void Skelton::calculateMatrix()
 
 }
 
-
 void Skelton::loadFile(const std::string& filename)
 {
     std::ifstream file(filename); // Replace "data.txt" with your file name
-
     std::vector<int> children;
-
-
     std::string line;
     while (getline(file, line)) {
         std::stringstream ss(line);
         char type;
         ss >> type;
-
         if (type == 'b') {
             char dummy;
             double x, y, z;
@@ -148,12 +158,10 @@ void Skelton::loadFile(const std::string& filename)
     }
 
     file.close();
-
 }
 
 void Skelton::build()
 {
-
     std::vector<Joint*> joints;
     for (int i = 0; i < points.size(); i++)
     {
@@ -162,19 +170,15 @@ void Skelton::build()
     n_joint = joints.size();
 
     //Build tree by BFS
-
     root = joints[0];
 
-
     buildTree(joints);
-
 
     // build the bones
     int size = indexes.size();
     for (int i = 0; i < size; i++)
     {
         bones.push_back(Bone(joints[indexes[i].first], joints[indexes[i].second], i, colors_bone[i]));
-
     }
 
 }
@@ -224,14 +228,60 @@ bool Skelton::save(const std::string& filename)
             }
             f << line << std::endl;
         }
-
-
     }
     catch (std::ifstream::failure&) {
         return false;
     }
 
-
     return true;
 }
 
+void Skelton::movement(int selected, const Vector& position)
+{
+   Joint* joint = root->searchbyid(root, selected);
+   joint->point += Vec(position.data());
+}
+
+
+void Skelton::rotate(int selected, Vec angel)
+{
+    Joint* joint = root->searchbyid(root, selected);
+    root->change_all_rotason(joint, joint->point, angel);
+    // Toodo Animate the mesh 
+
+}
+
+
+void Skelton::animate(float time)
+{
+    for (int i = 0; i < n_joint; i++)
+    {
+        Joint* joint = root->searchbyid(root, i);
+        if (joint->keyframes.size() != 0 && joint->keyframes.back().time() >= time)
+        {
+            for (size_t j = 0; j < joint->keyframes.size() - 1; ++j) {
+                Keyframe& startFrame = joint->keyframes[j];
+                Keyframe& endFrame = joint->keyframes[j + 1];
+                if (time >= startFrame.time() && time <= endFrame.time())
+                {
+                    Vec pivot = joint->point;
+                    Vec rotated = (endFrame.angeles() - startFrame.angeles());
+                    float timediff = (endFrame.time() - startFrame.time());
+                    float step = 1;
+                    float rate = timediff * step;
+                    Vec angels = rotated / rate;
+                    joint->calculateMatrecies(joint, pivot, angels);
+                }
+            }
+        }
+
+    }
+    root->transform_point(root);
+    // Toodo Animate the mesh 
+}
+
+Vec Skelton::postSelection(const int p)
+{
+    Joint* joint = root->searchbyid(root, p);
+    return joint->point;
+}
