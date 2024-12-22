@@ -219,6 +219,7 @@
     <ClCompile Include="src\Render.cpp" />
     <ClCompile Include="src\Save.cpp" />
     <ClCompile Include="src\Skelton.cpp" />
+    <ClCompile Include="src\Skinning.cpp" />
     <ClCompile Include="src\Smooth.cpp" />
     <ClCompile Include="src\tight_inclusion\avx.cpp" />
     <ClCompile Include="src\tight_inclusion\ccd.cpp" />
@@ -229,6 +230,7 @@
   <ItemGroup>
     <ClInclude Include="src\AABB.h" />
     <ClInclude Include="src\BaseMesh.h" />
+    <ClInclude Include="src\BoneHeat.h" />
     <ClInclude Include="src\BVH.h" />
     <ClInclude Include="src\Collison.h" />
     <ClInclude Include="src\ControlPoint.h" />
@@ -243,6 +245,7 @@
     <ClInclude Include="src\mclccd\NarrowPhase.hpp" />
     <ClInclude Include="src\Object3D.h" />
     <ClInclude Include="src\Skelton.h" />
+    <ClInclude Include="src\Skinning.h" />
     <ClInclude Include="src\tight_inclusion\avx.hpp" />
     <ClInclude Include="src\tight_inclusion\ccd.hpp" />
     <ClInclude Include="src\tight_inclusion\interval.hpp" />
