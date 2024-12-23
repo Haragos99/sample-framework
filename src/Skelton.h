@@ -65,28 +65,11 @@ public:
 
     }
 
-    bool hasMultipleChildren(Joint* j) {
-        getList(j);
-        for (auto j : joint)
-        {
-            if (j->children.size() > 1)
-            {
-                return false;
-            }
-        }
-        return true;
-    }
+    bool hasMultipleChildren(Joint* j);
 
     void loadFile(const std::string& filename);
 
-    void getList(Joint* j)
-    {
-        joint.push_back(j);
-        for (int i = 0; i < j->children.size(); i++)
-        {
-            getList(j->children[i]);
-        }
-    }
+    void getList(Joint* j);
 
     void setJointMatrix(int id, Vec& angle);
 

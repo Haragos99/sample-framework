@@ -195,6 +195,18 @@ std::vector<Axes>Skelton::arrows()
 }
 
 
+bool Skelton::hasMultipleChildren(Joint* j) {
+    getList(j);
+    for (auto j : joint)
+    {
+        if (j->children.size() > 1)
+        {
+            return false;
+        }
+    }
+    return true;
+}
+
 void Skelton::setJointMatrix(int id, Vec& angle)
 {
     Joint* j = root->searchbyid(root, id);
@@ -249,6 +261,18 @@ void Skelton::rotate(int selected, Vec angel)
     root->change_all_rotason(joint, joint->point, angel);
     // Toodo Animate the mesh 
 
+}
+
+
+
+
+void Skelton::getList(Joint* j)
+{
+    joint.push_back(j);
+    for (int i = 0; i < j->children.size(); i++)
+    {
+        getList(j->children[i]);
+    }
 }
 
 

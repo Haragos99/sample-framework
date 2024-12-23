@@ -7,10 +7,11 @@ public:
 	
 	Skinning(Skelton& skelton_, MyMesh& mesh_);// Todo: Use Depedency insted asociason
 	void calculateSkinning();
+	virtual void execute(BaseMesh& basemesh, Skelton& skelton);
 	const std::vector<BaseMesh>& getDebugMeshes() const {
 		return debugMeshes;
 	}
-	
+	virtual ~Skinning();
 protected:
 
 	MyMesh& mesh;

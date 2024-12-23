@@ -15,7 +15,6 @@
 #include <OpenMesh/Tools/Smoother/JacobiLaplaceSmootherT.hh>
 #include <QtGui/QKeyEvent>
 #include <QtWidgets>
-#include <QGLViewer/quaternion.h>
 #include <map>
 #include <algorithm>
 #include"HRBF.h"
