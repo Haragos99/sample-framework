@@ -18,6 +18,7 @@ public:
 
 private:
 	MyMesh mesh;
+	std::vector<Vec> colors;
 
 };
 

@@ -1,4 +1,4 @@
-#include "MyViewer.h"
+Ôªø#include "MyViewer.h"
 #include "BoneHeat.h"
 
 void MyViewer::weigh()
@@ -15,7 +15,7 @@ void MyViewer::weigh()
         mesh.data(v).distance.clear();
         mesh.data(v).distance.resize(skel.getSize(), min_val);
 
-        // az aktu·lis pont
+        // az aktu√°lis pont
         Vec d = Vec(mesh.point(v)[0], mesh.point(v)[1], mesh.point(v)[2]);
         int indexof = 0;
         for (int i = 0; i < skel.getSize(); i++)
@@ -26,13 +26,13 @@ void MyViewer::weigh()
                 // printf("%d %d", i, j);
                 double t = distance(skel.bones[i].points[j], d);
 
-                // legkˆzelebbi s˙ly
+                // legk√∂zelebbi s√∫ly
                 if (t < min_val)
                 {
                     min_val = t;
                     indexof = i;
                 }
-                // csonton lÈvı legkˆzelebbi t·vols·g
+                // csonton l√©v≈ë legk√∂zelebbi t√°vols√°g
                 if (t < f)
                 {
                     f = t;
@@ -50,7 +50,7 @@ void MyViewer::Smooth()
 {
     omerr() << "Bone heat start: " << QDateTime::currentDateTime().toString("hh:mm:ss:zzz").toStdString() << std::endl ;
     int n = mesh.n_vertices();
-    // az aktu·los pont folyamatosan nˆvelj¸k
+    // az aktu√°los pont folyamatosan n√∂velj√ºk
     Eigen::SparseMatrix<double> L;
     createL(L);
 
@@ -64,7 +64,7 @@ nnz(v.idx()) = 1;
     for (auto v : mesh.vertices()) {
         double er = 1.0 / pow(mesh.data(v).distance[mesh.data(v).idx_of_closest_bone], 2);
 
-        // a D m·trix ·tloja feltˆltÈse
+        // a D m√°trix √°tloja felt√∂lt√©se
         D.coeffRef(v.idx(), v.idx()) = er;
     }
     D.makeCompressed();
@@ -72,13 +72,13 @@ nnz(v.idx()) = 1;
     Eigen::SparseMatrix<double> O = -L + D;
     Eigen::SimplicialLDLT< Eigen::SparseMatrix<double> > solver;
     //Eigen::SparseLU< Eigen::SparseMatrix<double> > solver;
-    solver.compute(O); // M inverz m·trix·nak (valÛj·ban: "LU felbont·s·nak") kisz·mÌt·sa
+    solver.compute(O); // M inverz m√°trix√°nak (val√≥j√°ban: "LU felbont√°s√°nak") kisz√°m√≠t√°sa
 
 
     for (int k = 0; k < skel.getSize(); k++)
     {
         Eigen::VectorXd w1(n);
-        w1 = Eigen::VectorXd::Zero(n); // Feltˆltj¸k 0-kkal
+        w1 = Eigen::VectorXd::Zero(n); // Felt√∂ltj√ºk 0-kkal
         for (auto v : mesh.vertices()) {
             w1[v.idx()] = mesh.data(v).weigh[k];
         }
@@ -88,17 +88,17 @@ nnz(v.idx()) = 1;
         Sw1 = D * w1;
 
 
-        if (solver.info() == Eigen::Success) { // Tesztelj¸k, hogy siker¸lt-e invert·lni
+        if (solver.info() == Eigen::Success) { // Tesztelj√ºk, hogy siker√ºlt-e invert√°lni
 
             Eigen::VectorXd x = solver.solve(Sw1); // Megoldjuk az M*x = v egyenletrendszert
 
-            if (solver.info() == Eigen::Success) { // Tesztelj¸k, hogy siker¸lt-e megoldani
+            if (solver.info() == Eigen::Success) { // Tesztelj√ºk, hogy siker√ºlt-e megoldani
 
                 for (auto v : mesh.vertices()) {
 
                     mesh.data(v).weigh[k] = x[v.idx()];
 
-                    //std::cerr << "Ez egy szˆveg, ez egy sz·m: " << x[v.idx()] << std::endl;
+                    //std::cerr << "Ez egy sz√∂veg, ez egy sz√°m: " << x[v.idx()] << std::endl;
                 }
 
             }
@@ -139,7 +139,7 @@ Eigen::SparseMatrix<double>  BoneHeat::createDiagolaleMatrix(MyMesh& mesh)
     for (auto v : mesh.vertices()) {
         double er = 1.0 / pow(mesh.data(v).distance[mesh.data(v).idx_of_closest_bone], 2);
 
-        // a D m·trix ·tloja feltˆltÈse
+        // a D m√°trix √°tloja felt√∂lt√©se
         Diagolal.coeffRef(v.idx(), v.idx()) = er;
     }
     Diagolal.makeCompressed();
@@ -150,19 +150,46 @@ Eigen::SparseMatrix<double>  BoneHeat::createDiagolaleMatrix(MyMesh& mesh)
 
 void BoneHeat::execute(BaseMesh& basemesh, Skelton& skelton)
 {
-    calculateSkinning();
     MyMesh& mesh = basemesh.getMesh();
+    calculateSkinning(mesh,skelton);
     auto LaplaceM = createLaplaceMatrix(mesh);
     auto DiagolalM = createDiagolaleMatrix(mesh);
-
     Eigen::SparseMatrix<double> O = -LaplaceM + DiagolalM;
-
-
-
-
-
-
+    Eigen::SimplicialLDLT< Eigen::SparseMatrix<double>> solver;
+    solver.compute(O); // For Inverz Matrix 
+    if (solver.info() == Eigen::Success) 
+    {
+        // solve this equliton (L + ùúÜD) * wùëò = ùúÜD * ~wk
+        calculateOptimalWeights(DiagolalM, solver, mesh, skelton.getSize());
+    }
 }
+
+
+void BoneHeat::calculateOptimalWeights(Eigen::SparseMatrix<double>& Diagolnal, 
+    Eigen::SimplicialLDLT<Eigen::SparseMatrix<double>>& solver,MyMesh& mesh, int nbone)
+{
+    int n = mesh.n_vertices();
+    for (int i = 0; i < nbone; i++)
+    {
+        Eigen::VectorXd baseweigh(n);
+        baseweigh = Eigen::VectorXd::Zero(n); // init with zeros
+        for (auto v : mesh.vertices()) {
+            baseweigh[v.idx()] = mesh.data(v).weigh[i];
+        }
+        Eigen::VectorXd Dbaseweigh(n);
+        Dbaseweigh = Diagolnal * baseweigh;
+        Eigen::VectorXd optimalweigh = solver.solve(Dbaseweigh);
+        if (solver.info() == Eigen::Success) { 
+
+            for (auto v : mesh.vertices()) {
+                mesh.data(v).weigh[i] = optimalweigh[v.idx()];
+            }
+        }  
+    }
+}
+
+
+
 Eigen::SparseMatrix<double> BoneHeat::createLaplaceMatrix(MyMesh& mesh)
 {
     Eigen::SparseMatrix<double> Laplace;
@@ -181,7 +208,7 @@ Eigen::SparseMatrix<double> BoneHeat::createLaplaceMatrix(MyMesh& mesh)
 
     int i = 0;
     for (auto v : mesh.vertices()) {
-        for (auto vi : mesh.vv_range(v)) { // v vertex-szel szomszÈdos vertexek
+        for (auto vi : mesh.vv_range(v)) { // v vertex-szel szomsz√©dos vertexek
 
 
             auto eij = mesh.find_halfedge(v, vi);
@@ -196,8 +223,6 @@ Eigen::SparseMatrix<double> BoneHeat::createLaplaceMatrix(MyMesh& mesh)
             if (i == vi.idx()) continue;
             Laplace.coeffRef(i, vi.idx()) = result;
         }
-
-
         i++;
     }
     for (int i = 0; i < n; i++)
@@ -230,7 +255,7 @@ void MyViewer::createL(Eigen::SparseMatrix<double>& L)
     for (auto v : mesh.vertices()) {
 
 
-        for (auto vi : mesh.vv_range(v)) { // v vertex-szel szomszÈdos vertexek
+        for (auto vi : mesh.vv_range(v)) { // v vertex-szel szomsz√©dos vertexek
 
 
             auto eij = mesh.find_halfedge(v, vi);

@@ -72,6 +72,10 @@ Eigen::MatrixXd DeltaMush::BuiledMatrix(MyMesh::Normal normal, Vec t, Vec b, Vec
 }
 
 
+void DeltaMush::execute(BaseMesh& basemesh, Skelton& skelton)
+{
+
+}
 
 void DeltaMush::Delta_Mush()
 {

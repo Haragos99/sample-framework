@@ -5,8 +5,8 @@ class Skinning
 {
 public:
 	
-	Skinning(Skelton& skelton_, MyMesh& mesh_);// Todo: Use Depedency insted asociason
-	void calculateSkinning();
+	Skinning() = default;// Todo: Use Depedency insted asociason
+	void calculateSkinning(MyMesh& mesh, Skelton& skelton);
 	virtual void execute(BaseMesh& basemesh, Skelton& skelton);
 	const std::vector<BaseMesh>& getDebugMeshes() const {
 		return debugMeshes;
@@ -14,9 +14,7 @@ public:
 	virtual ~Skinning();
 protected:
 
-	MyMesh& mesh;
-	Skelton& skelton;//rethink
 	double distance(Vec p, Vec p1);
-	void clean(MyMesh::VertexHandle& v);
+	void clean(MyMesh& mesh, Skelton& skelton);
 	std::vector<BaseMesh> debugMeshes;
 };
