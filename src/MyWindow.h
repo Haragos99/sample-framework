@@ -46,7 +46,7 @@ private slots:
   void Delta() { viewer->delta(); }
   void displayMessage(const QString& message);
   void Sample() { viewer->poission(); }
-  void Implicit() { viewer->CalculateImplicit(); }
+  void Implicit() { }
   void Slider(int value) { viewer->setSlider(value); Slayer->setText("Value: " + QString::number(value)); }
 
 private:

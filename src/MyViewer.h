@@ -27,6 +27,8 @@
 #include "Collison.h"
 #include "KinectSkelton.h"
 #include <QTimer>
+#include "ImplicitSkinning.h"
+
 
 using qglviewer::Vec;
 
@@ -85,9 +87,7 @@ public:
         mtransperent = mesh;
         update();
     }
-    void poission() { seperateMesh(); }
-
-    void CalculateImplicit();
+    void poission() {  }
 
     void Boneheat()
     {
@@ -289,29 +289,21 @@ private:
     enum class SkelltonType { MAN, WRIST, ARM, FACE } skellton_type;
     // Mesh
     MyMesh mesh;
-
     bool showSampels;
     bool showSmooth;
 
     std::vector<int> index;
     void TestDelta(std::vector<Eigen::Vector4d> v);
-    void collisonTest2(std::vector<Eigen::Vector4d> v);
 
     MyMesh smooth;
     MyMesh MushHelper;
     MyMesh Helper;
-    
-
     void SetDistance();
 
     DeltaMush dm;
     std::vector<float> tios;
     Eigen::SparseMatrix<double> A;
     std::vector<Vec4> delt;
-    void DirectMush();
-    void AnDirectMush();
-    std::vector<std::vector<MyMesh::Point>> seprateSampels;
-    std::vector<std::vector<MyMesh::Normal>> normalsofsampels;
 
     std::vector<int> used;
     std::vector<Vec> colors_bone{
@@ -342,7 +334,6 @@ private:
     };
 
 
-
     double distance(Vec p, Vec p1)
     {
         double len = sqrt(pow(p.x - p1.x, 2) + pow(p.y - p1.y, 2) + pow(p.z - p1.z, 2));
@@ -356,158 +347,25 @@ private:
 
     void drawTransparent();
     ControlPoint target;
-    struct SamplePoint {
-        MyMesh::FaceHandle tri;
-        int cell_id;
-        MyMesh::Point pos;
-        MyMesh::Normal normal;
-
-        SamplePoint(MyMesh::Point _pos, MyMesh::Normal _normal) { pos = _pos; normal = _normal; }
-    };
-    
-    float random_float(float maximum) { return float((double)rand() / (double)(RAND_MAX / maximum)); }
-
-    void seperateMesh();
-
-
     Vec calcCentriod(MyMesh& _mesh);
-
     std::vector<MyMesh::Point> sampels;
-
-    float generateSamples(int num_samples, MyMesh mesh_, std::vector<SamplePoint>& samples);
-
     std::vector<MyMesh> im;
 
     bool is_border_vertex(MyMesh::VertexHandle& vh);
-
-    float f(const float x) { return x * x * x; }
-
-
-    float li(Vec x, Vec pi) { return distance(x, pi); }
-    
-    MyMesh::Point e(Vec x, Vec pi){
-        Vec d = x - pi;
-        float l = li(x, pi);
-        Vec result = d / l;
-        result *= 3*l*l;// 3x^2
-
-        return MyMesh::Point(result.x, result.y, result.z);
-
-    }
-
-    float c(Vec x, Vec pi) {
-        float pow2 = li(x, pi)* li(x, pi);
-        float first_part = 1 / pow2;
-        float second_derivative = 6 * li(x, pi); // 6x
-        float first_derivative = 3 * pow2;// 3x^2
-        float second_part = second_derivative - (first_derivative / li(x, pi));
-
-        return first_part * second_part;
-
-    }
-
-
-
-    void CalculateImplicitSkinning(std::vector<MyMesh::Point> s, MyMesh& mesh_);
-
-
-    struct BBox {
-        MyMesh::Point min, max;
-        BBox()
-        {
-            min = MyMesh::Point(FLT_MAX, FLT_MAX, FLT_MAX);
-            max = MyMesh::Point(-FLT_MAX, -FLT_MAX, -FLT_MAX);
-        }
-
-        void add_point(MyMesh::Point& p)
-        {
-            min[0] = fminf(p[0], min[0]);
-            min[1] = fminf(p[1], min[1]);
-            min[2] = fminf(p[2], min[2]);
-            max[0] = fmaxf(p[0], max[0]);
-            max[1] = fmaxf(p[1], max[1]);
-            max[2] = fmaxf(p[2], max[2]);
-        }
-        MyMesh::Point lenghts() { return max - min; }
-        MyMesh::Point index_grid_cell(MyMesh::Point res, MyMesh::Point p)
-        {
-            MyMesh::Point cell_l = lenghts() / res;
-
-            MyMesh::Point lcl = p - min;
-            MyMesh::Point idx = lcl / cell_l;
-            MyMesh::Point int_idx = MyMesh::Point((int)floorf(idx[0]), (int)floorf(idx[1]), (int)floorf(idx[2]));
-            return int_idx;
-        }
-
-    };
-
-    struct poisson_sample {
-        MyMesh::Point pos;
-        MyMesh::Normal normal;
-    };
-
-    struct hash_data {
-        // Resulting output sample points for this cell:
-        std::vector<poisson_sample> poisson_samples;
-
-        // Index into raw_samples:
-        int first_sample_idx;
-        int sample_cnt;
-    };
-
-
-
-    float approximate_geodesic_distance(MyMesh::Point p1, MyMesh::Point p2, MyMesh::Normal n1, MyMesh::Normal  n2);
-
-
-    struct Idx3 {
-
-        MyMesh::Point _size;
-        int id;
-
-        Idx3(const MyMesh::Point& size, int idx) : _size(size), id(idx) { }
-
-        Idx3(const MyMesh::Point& size, const MyMesh::Point& pos) : _size(size) {
-            set_3d(pos);
-        }
-
-        void set_3d(const MyMesh::Point& pos) { id = to_linear(_size, pos[0], pos[1], pos[2]); }
-
-
-        int to_linear(const MyMesh::Point& size_, int x, int y, int z) {
-            return x + size_[0] * (y + size_[1] * z);
-        }
-
-        int to_linear() const { return id; }
-    };
-
-
     void createL(Eigen::SparseMatrix<double>& L);
-
-    std::vector<MyMesh::Point> poissonDisk(float radius, std::vector<SamplePoint> raw, std::vector<MyMesh::Normal>& samples_nor);
-
-
     float FrameSecond = 0.0;
     QHBoxLayout* hb1 = new QHBoxLayout;
     QLabel* text_ = new QLabel;
     QVBoxLayout* vBox = new QVBoxLayout;
-
-    //std::map<int, double> faceAreaMap;
     std::vector<std::pair<int, double>> sortedVector;
     std::vector<std::pair<int, double>> finalarea;
     std::map< MyMesh::FaceHandle, int> sortedMap;
     std::vector<Eigen::Vector4d> vec;
-    // Custom comparator function to sort by values (double) in ascending order
-    static bool sortByValue(const std::pair<int, double>& a, const std::pair<int, double>& b) {
-        return a.second < b.second;
-    }
-
     bool delatamush = false;
     MyMesh smoothvectors(std::vector<Vec>& smoothed);
     void smoothoriginal(std::vector<Vec>& smoothed);
     void Delta_Mush(std::vector<Eigen::Vector4d>& v);
     void Delta_Mush_two(std::vector<Eigen::Vector4d> v);
-
     void drawDelta();
     std::vector<Eigen::Vector4d> setMushFactor(std::vector<Eigen::Vector4d> v);
 
@@ -518,7 +376,6 @@ private:
     // this collect the bones
     std::vector<Bones> b;
 
-
     std::vector<Mat4> mteszt;
 
     void set_bone_matrix()
@@ -528,22 +385,12 @@ private:
             b[i].M = Mat4();
         }
     }
-
-
     // for the animation api (it is simpal)
-
     Skelton skel;
     Skelton fab;
     int wx = 0;
-
-
     std::vector<Vec>FABRIK_p;
-
-
     void createL_smooot(MyMesh& m);
-
-    void move(std::vector<Vec> newp, std::vector<Vec> old);
-
     int elapsedTime;
     std::vector<int>indexes;
     std::vector<Vec> points;
@@ -554,7 +401,6 @@ private:
     std::vector<Keyframe> keyframes_;
     bool isAnimating_;
     Vec rotation;
-
     // Bezier
     size_t degree[2];
     std::vector<Vec> control_points;
@@ -564,26 +410,14 @@ private:
         auto duration = now.time_since_epoch();
         return std::chrono::duration_cast<std::chrono::duration<float>>(duration).count();
     }
-
     void tree_to_array(Joint* j);
     std::vector<Vec> ik;
-
     std::vector<ControlPoint> cps;
-
     std::vector<HRBF> hrbf;
     void createControlPoins(Joint* j);
-    
     MarchingCubes mc;
-
-
     void Error(MyMesh& m, HRBF& h);
-
-
-
-
-
     void createCP();
-
     void IK_matrices(Joint *j);
     double sum_len();
     /// <summary>

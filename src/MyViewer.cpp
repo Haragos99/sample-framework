@@ -853,7 +853,7 @@ void MyViewer::keyPressEvent(QKeyEvent* e) {
             update();
             break;
         case Qt::Key_7:
-            seperateMesh();
+            
             text = new QLabel("#V = " + QString::number(mc.mesh_.n_vertices()));
             hb1->addWidget(text);
             vb->addLayout(hb1);

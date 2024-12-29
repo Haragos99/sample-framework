@@ -1,12 +1,29 @@
 #include "BaseMesh.h"
 #include <OpenMesh/Core/IO/MeshIO.hh>
+
+
+
+BaseMesh::BaseMesh(std::string filename) : Object3D(filename)
+{
+     open();
+}
+
+BaseMesh::BaseMesh(MyMesh& _mesh)
+{
+    mesh = _mesh;
+}
+
+
+
+
+
 void BaseMesh::draw(Visualization& vis)
 {
    //Toddo: Make good draw Transparent
 }
 MyMesh& BaseMesh::getMesh() { return mesh; }
 
-
+void BaseMesh::setMesh(MyMesh& _mesh) { mesh = _mesh; }
 
 void BaseMesh::drawWithNames(Visualization& vis) const {
     if (!vis.show_wireframe)

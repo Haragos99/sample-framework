@@ -216,6 +216,7 @@
     <ClCompile Include="src\main.cpp" />
     <ClCompile Include="src\mclccd\NarrowPhase.cpp" />
     <ClCompile Include="src\Open.cpp" />
+    <ClCompile Include="src\PoissonSampleGenerator.cpp" />
     <ClCompile Include="src\Render.cpp" />
     <ClCompile Include="src\Save.cpp" />
     <ClCompile Include="src\Skelton.cpp" />
@@ -235,6 +236,7 @@
     <ClInclude Include="src\Collison.h" />
     <ClInclude Include="src\ControlPoint.h" />
     <ClInclude Include="src\gif.h" />
+    <ClInclude Include="src\ImplicitSkinning.h" />
     <ClInclude Include="src\Keyframe.h" />
     <ClInclude Include="src\KinectSkelton.h" />
     <ClInclude Include="src\mclccd\ccd_internal\CTCD.hpp" />
@@ -244,6 +246,8 @@
     <ClInclude Include="src\mclccd\ccd_internal\rpoly.h" />
     <ClInclude Include="src\mclccd\NarrowPhase.hpp" />
     <ClInclude Include="src\Object3D.h" />
+    <ClInclude Include="src\PoissonResurses.h" />
+    <ClInclude Include="src\PoissonSampleGenerator.h" />
     <ClInclude Include="src\Skelton.h" />
     <ClInclude Include="src\Skinning.h" />
     <ClInclude Include="src\tight_inclusion\avx.hpp" />

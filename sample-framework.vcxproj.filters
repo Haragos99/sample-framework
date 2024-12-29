@@ -139,6 +139,9 @@
     <ClCompile Include="src\Skinning.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="src\PoissonSampleGenerator.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <QtMoc Include="src\MyViewer.h">
@@ -274,6 +277,15 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="src\BoneHeat.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\ImplicitSkinning.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\PoissonSampleGenerator.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\PoissonResurses.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
