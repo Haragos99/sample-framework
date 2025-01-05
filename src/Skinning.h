@@ -12,7 +12,7 @@ public:
 	Skinning() = default;// Todo: Use Depedency insted asociason
 	void calculateSkinning(MyMesh& mesh, Skelton& skelton);
 	virtual void execute(BaseMesh& basemesh, Skelton& skelton);
-	const std::vector<Object3D>& getDebugMeshes() const {
+	const std::vector<std::shared_ptr<Object3D>>& getDebugMeshes() const {
 		return debugMeshes;
 	}
 	virtual void animatemesh(BaseMesh& basemesh, Skelton& skelton);
@@ -21,6 +21,6 @@ protected:
 
 	double distance(Vec p, Vec p1);
 	void clean(MyMesh& mesh, Skelton& skelton);
-	std::vector<Object3D> debugMeshes;
+	std::vector<std::shared_ptr<Object3D>> debugMeshes;
 
 };

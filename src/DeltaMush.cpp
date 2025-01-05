@@ -117,7 +117,7 @@ void DeltaMush::Delta_Mush(BaseMesh& basemesh)
 
     }
     //debugMeshes.push_back(smooth_basemesh);
-    //debugMeshes.push_back(*lines);
+    debugMeshes.push_back(lines);
 }
 
 void DeltaMush::createDeltaline(Vec& start, Vec& end)
