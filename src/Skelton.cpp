@@ -1,5 +1,5 @@
 #include "Skelton.h"
-#include <src/Skinning.h>
+
 
 
 
@@ -55,7 +55,10 @@ void Skelton::setSkinning(std::unique_ptr<Skinning> skinning)
     skinningtechnic = std::move(skinning);
 }
 
+void  Skelton::skinning(std::shared_ptr<BaseMesh> basemesh)
+{
 
+}
 void Skelton::setCameraFocus(Vector& min, Vector& max)
 {
     for (auto v : points) {

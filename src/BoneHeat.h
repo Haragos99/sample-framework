@@ -3,8 +3,9 @@
 
 class BoneHeat : public Skinning {
 
-
-	void execute(BaseMesh& basemesh, Skelton& skelton) override;
+	BoneHeat() = default;
+	void execute(std::shared_ptr<BaseMesh> basemesh, std::vector<Bone>& bones) override;
+	~BoneHeat() = default;
 private:
 	 
 	Eigen::SparseMatrix<double> createLaplaceMatrix(MyMesh& mesh);

@@ -7,11 +7,10 @@
 
 
 
-BaseMesh DeltaMush::smoothMesh(BaseMesh& basemesh)
+std::shared_ptr<BaseMesh> DeltaMush::smoothMesh(std::shared_ptr<BaseMesh> basemesh)
 {
-    MyMesh _mesh = basemesh.getMesh();
+    MyMesh& _mesh = basemesh->getMesh();
     double smootingfactor = 0.5;
-
     auto mesh_ = _mesh;
     for (int i = 0; i < 20; i++)
     {
@@ -37,7 +36,7 @@ BaseMesh DeltaMush::smoothMesh(BaseMesh& basemesh)
             mesh_.point(v) = smooth.point(v);         
         }
     }
-    BaseMesh smooth(mesh_);
+    std::shared_ptr<BaseMesh> smooth = std::make_shared<BaseMesh>(mesh_);
     return smooth;
 }
 
@@ -70,19 +69,19 @@ Eigen::MatrixXd DeltaMush::BuiledMatrix(MyMesh::Normal normal, Vec t, Vec b, Vec
 }
 
 
-void DeltaMush::execute(BaseMesh& basemesh, Skelton& skelton)
+void DeltaMush::execute(std::shared_ptr<BaseMesh> basemesh, std::vector<Bone>& bones)
 {
     debugMeshes.clear();
     delta.clear();
-    calculateSkinning(basemesh.getMesh(), skelton);
+    calculateSkinning(basemesh->getMesh(), bones);
     Delta_Mush(basemesh);
 }
 
-void DeltaMush::Delta_Mush(BaseMesh& basemesh)
+void DeltaMush::Delta_Mush(std::shared_ptr<BaseMesh> basemesh)
 {
-    auto mesh = basemesh.getMesh();
+    auto mesh = basemesh->getMesh();
     auto smooth_basemesh = smoothMesh(basemesh);
-    auto smooth_mesh = smooth_basemesh.getMesh();
+    auto smooth_mesh = smooth_basemesh->getMesh();
     smooth_mesh.update_normals();
     for (auto ve : smooth_mesh.vertices()) {
 
@@ -144,13 +143,11 @@ std::vector<Eigen::Vector4d> DeltaMush::setMushFactor(std::vector<Eigen::Vector4
     return v;
 }
 
-void DeltaMush::animatemesh(BaseMesh& basemesh, Skelton& skelton)
+void DeltaMush::animatemesh(std::shared_ptr<BaseMesh> basemesh, std::vector<Bone>& bones)
 {
-    Skinning::animatemesh(basemesh,skelton);
+    Skinning::animatemesh(basemesh,bones);
     Delta_Mush_two(basemesh);
 }
-
-
 
 
 void DeltaMush::modifyDeltaLine(std::vector<Eigen::Vector4d> deltavector)
@@ -158,14 +155,14 @@ void DeltaMush::modifyDeltaLine(std::vector<Eigen::Vector4d> deltavector)
     lines->setDeltas(deltavector);
 }
 
-void DeltaMush::Delta_Mush_two(BaseMesh& basemesh)
+void DeltaMush::Delta_Mush_two(std::shared_ptr<BaseMesh> basemesh)
 {
     auto v_d = setMushFactor(delta);
     modifyDeltaLine(v_d);
-    auto m = basemesh.getMesh();
+    auto m = basemesh->getMesh();
     std::vector<Vec> smoothed;
     auto smooth_basemesh = smoothMesh(basemesh);
-    auto smooth_mesh = smooth_basemesh.getMesh();
+    auto smooth_mesh = smooth_basemesh->getMesh();
     smooth_mesh.update_normals();
     int size = smoothed.size();
     for (auto ve : m.vertices()) {

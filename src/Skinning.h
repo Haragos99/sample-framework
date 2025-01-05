@@ -1,5 +1,5 @@
 #pragma once
-#include "Skelton.h"
+#include "Bone.h"
 #include "BaseMesh.h"
 
 /*
@@ -10,17 +10,17 @@ class Skinning
 public:
 	
 	Skinning() = default;// Todo: Use Depedency insted asociason
-	void calculateSkinning(MyMesh& mesh, Skelton& skelton);
-	virtual void execute(BaseMesh& basemesh, Skelton& skelton);
+	void calculateSkinning(MyMesh& mesh, std::vector<Bone>& bones);
+	virtual void execute(std::shared_ptr<BaseMesh> basemesh, std::vector<Bone>& bones);
 	const std::vector<std::shared_ptr<Object3D>>& getDebugMeshes() const {
 		return debugMeshes;
 	}
-	virtual void animatemesh(BaseMesh& basemesh, Skelton& skelton);
+	virtual void animatemesh(std::shared_ptr<BaseMesh> basemesh, std::vector<Bone>& bones);
 	virtual ~Skinning();
 protected:
 
 	double distance(Vec p, Vec p1);
-	void clean(MyMesh& mesh, Skelton& skelton);
+	void clean(MyMesh& mesh, std::vector<Bone>& bones);
 	std::vector<std::shared_ptr<Object3D>> debugMeshes;
 
 };

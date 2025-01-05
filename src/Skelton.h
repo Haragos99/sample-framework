@@ -1,6 +1,7 @@
 #pragma once
 #include "Bone.h"
-#include"Object3D.h"
+#include "Object3D.h"
+#include "Skinning.h"
 
 
 class Skelton : public Object3D {
@@ -53,7 +54,7 @@ public:
     }
     Skelton() {  }//delete
 
-
+    void skinning(std::shared_ptr<BaseMesh> basemesh);
 
     void setSkinning(std::unique_ptr<Skinning> skinning);
 

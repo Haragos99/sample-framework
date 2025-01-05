@@ -15,8 +15,8 @@ void MyViewer::animate()
             Joint* j = skel.root->searchbyid(skel.root, cp.jointid);
             inverse_kinematics(cp, j);
         }
-        skel.animate(startAnimationTime_, mesh);
-        skel.set_deafult_matrix();
+       // skel.animate(startAnimationTime_, mesh);
+        //skel.set_deafult_matrix();
         startAnimationTime_ += 1;
     }
     else

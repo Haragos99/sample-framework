@@ -2,9 +2,9 @@
 #include "ImplicitSkinning.h"
 
 
-void ImplicitSkinning::seperateMesh(BaseMesh& basemesh, int nbones)
+void ImplicitSkinning::seperateMesh(std::shared_ptr<BaseMesh> basemesh, int nbones)
 {
-	MyMesh& mesh = basemesh.getMesh();
+	MyMesh& mesh = basemesh->getMesh();
 	for (int i = 0; i < nbones; i++)
 	{
 		MyMesh meshpart;
@@ -35,9 +35,9 @@ void ImplicitSkinning::seperateMesh(BaseMesh& basemesh, int nbones)
 }
 
 
-void ImplicitSkinning::execute(BaseMesh& basemesh, Skelton& skelton)
+void ImplicitSkinning::execute(std::shared_ptr<BaseMesh> basemesh, std::vector<Bone>& bones)
 {
-	seperateMesh(basemesh, skelton.getSize());
+	seperateMesh(basemesh, bones.size());
 	generatesampels();
 	for (int i = 0; i < implicitspaces.size(); i++)
 	{

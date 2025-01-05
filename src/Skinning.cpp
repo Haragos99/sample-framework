@@ -4,36 +4,36 @@
 
 
 
-void Skinning::clean(MyMesh& mesh, Skelton& skelton)
+void Skinning::clean(MyMesh& mesh, std::vector<Bone>& bones)
 {
     for (auto v : mesh.vertices())
     {
         mesh.data(v).weigh.clear();
-        mesh.data(v).weigh.resize(skelton.getSize(), 0.0);
+        mesh.data(v).weigh.resize(bones.size(), 0.0);
         mesh.data(v).distance.clear();
-        mesh.data(v).distance.resize(skelton.getSize(), std::numeric_limits<double>::infinity());
+        mesh.data(v).distance.resize(bones.size(), std::numeric_limits<double>::infinity());
     }
 
 }
 
 
 
-void Skinning::animatemesh(BaseMesh& basemesh, Skelton& skelton)
+void Skinning::animatemesh(std::shared_ptr<BaseMesh> basemesh, std::vector<Bone>& bones)
 {
-    MyMesh& mesh = basemesh.getMesh();
+    MyMesh& mesh = basemesh->getMesh();
     for (auto v : mesh.vertices())
     {
         // tezstként lehet leutánozni a fabrikot
         Mat4 M_result = Mat4(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
-        for (int i = 0; i < skelton.bones.size(); i++)
+        for (int i = 0; i < bones.size(); i++)
         {
             double w = mesh.data(v).weigh[i];
-            Mat4 M = skelton.bones[i].end->M.skalar(w);
+            Mat4 M = bones[i].end->M.skalar(w);
             M_result += M;
         }
         Vec4 point4;
         //origanal részt újra gondolni
-        if (false)
+        if (true)
         {
             point4 = Vec4(mesh.point(v)[0], mesh.point(v)[1], mesh.point(v)[2], 1);
         }
@@ -48,26 +48,26 @@ void Skinning::animatemesh(BaseMesh& basemesh, Skelton& skelton)
     }
 }
 
-void Skinning::execute(BaseMesh& basemesh, Skelton& skelton)
+void Skinning::execute(std::shared_ptr<BaseMesh> basemesh, std::vector<Bone>& bones)
 {
-    MyMesh& mesh = basemesh.getMesh();
-    calculateSkinning(mesh, skelton);
+    MyMesh& mesh = basemesh->getMesh();
+    calculateSkinning(mesh, bones);
 }
 
-void Skinning::calculateSkinning(MyMesh& mesh, Skelton& skelton)
+void Skinning::calculateSkinning(MyMesh& mesh, std::vector<Bone>& bones)
 {
-    clean(mesh, skelton); // TODO: May be to execute()
+    clean(mesh, bones); // TODO: May be to execute()
     for (auto v : mesh.vertices())
     {
         double min_val = std::numeric_limits<double>::infinity();
         Vec actualPoint = Vec(mesh.point(v)[0], mesh.point(v)[1], mesh.point(v)[2]);
         int indexof = 0;
-        for (int i = 0; i < skelton.getSize(); i++)
+        for (int i = 0; i < bones.size(); i++)
         {
             double bonedistance = std::numeric_limits<double>::infinity(); ;
-            for (int j = 0; j < skelton.bones[i].points.size(); j++)
+            for (int j = 0; j < bones[i].points.size(); j++)
             {
-                double distancFromBone = distance(skelton.bones[i].points[j], actualPoint);
+                double distancFromBone = distance(bones[i].points[j], actualPoint);
                 // closest weight
                 if (distancFromBone < min_val)
                 {

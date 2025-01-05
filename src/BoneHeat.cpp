@@ -148,10 +148,10 @@ Eigen::SparseMatrix<double>  BoneHeat::createDiagolaleMatrix(MyMesh& mesh)
     return Diagolal;
 }
 
-void BoneHeat::execute(BaseMesh& basemesh, Skelton& skelton)
+void BoneHeat::execute(std::shared_ptr<BaseMesh> basemesh, std::vector<Bone>& bones)
 {
-    MyMesh& mesh = basemesh.getMesh();
-    calculateSkinning(mesh,skelton);
+    MyMesh& mesh = basemesh->getMesh();
+    calculateSkinning(mesh, bones);
     auto LaplaceM = createLaplaceMatrix(mesh);
     auto DiagolalM = createDiagolaleMatrix(mesh);
     Eigen::SparseMatrix<double> O = -LaplaceM + DiagolalM;
@@ -160,7 +160,7 @@ void BoneHeat::execute(BaseMesh& basemesh, Skelton& skelton)
     if (solver.info() == Eigen::Success) 
     {
         // solve this equliton (L + 𝜆D) * w𝑘 = 𝜆D * ~wk
-        calculateOptimalWeights(DiagolalM, solver, mesh, skelton.getSize());
+        calculateOptimalWeights(DiagolalM, solver, mesh, bones.size());
     }
 }
 

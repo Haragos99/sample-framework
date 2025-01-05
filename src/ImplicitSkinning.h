@@ -6,12 +6,12 @@
 class ImplicitSkinning :public Skinning {
 public:
 	ImplicitSkinning() = default;
-	void execute(BaseMesh& basemesh, Skelton& skelton);
+	void execute(std::shared_ptr<BaseMesh> basemesh, std::vector<Bone>& bones);
 	~ImplicitSkinning() = default;
 private:
 	PoissonSampleGenerator poissongenerator;
 	std::vector<std::shared_ptr<HRBF>> implicitspaces;
-	void seperateMesh(BaseMesh& basemesh, int nbones);
+	void seperateMesh(std::shared_ptr<BaseMesh>, int nbones);
 	void generatesampels();
 	std::vector<std::shared_ptr<BaseMesh>> separetmeshes;
 	std::vector<std::vector<MyMesh::Point>> seprateSampels;
