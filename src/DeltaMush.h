@@ -4,30 +4,28 @@
 #include "Mesh.h"
 #include "mclccd\BVHTree.hpp"
 #include "Skinning.h"
+#include "Lines.h"
 
 using qglviewer::Vec;
 
 class DeltaMush : public Skinning
 {
 public:
-	DeltaMush(){}
-	DeltaMush(MyMesh& _mesh) { mesh = _mesh; MushHelper = _mesh; deltaMushFactor = 1.0f; }
-	void Delta_Mush_two(MyMesh& _mesh);
-	void Delta_Mush();
+	DeltaMush(){ deltaMushFactor = 1.0f; }
 	void execute(BaseMesh& basemesh, Skelton& skelton) override;
-	MyMesh smoothvectors(std::vector<Vec>& smoothed, MyMesh& _mesh);
-	void setHelper(MyMesh _mesh) { MushHelper = mesh; }
-	Eigen::MatrixXd BuiledMatrix(MyMesh::Normal normal, Vec t,Vec b,Vec s);
-	std::vector<Eigen::Vector4d> setMushFactor(std::vector<Eigen::Vector4d> v);
-	void draw();
+	virtual void animatemesh(BaseMesh& basemesh, Skelton& skelton) override;
 	~DeltaMush(){}
 	float deltaMushFactor;
 
 private:
-	MyMesh mesh;
-	MyMesh MushHelper;
-	MyMesh Smooth;
-	std::vector<Vec> smoothed;
+	void createDeltaline(Vec& start, Vec& end);
+	void Delta_Mush_two(BaseMesh& basemesh);
+	void Delta_Mush(BaseMesh& basemesh);
+	BaseMesh smoothMesh(BaseMesh& basemesh);
+	Eigen::MatrixXd BuiledMatrix(MyMesh::Normal normal, Vec t,Vec b,Vec s);
+	void modifyDeltaLine(std::vector<Eigen::Vector4d> deltavector);
+	std::vector<Eigen::Vector4d> setMushFactor(std::vector<Eigen::Vector4d> v);
 	std::vector<Eigen::Vector4d> delta;
+	std::shared_ptr<DeltaLines> lines;
 };
 

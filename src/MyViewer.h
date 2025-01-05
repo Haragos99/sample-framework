@@ -17,7 +17,7 @@
 #include <QtWidgets>
 #include <map>
 #include <algorithm>
-#include"HRBF.h"
+#include "HRBF.h"
 #include "MarchingCubes.h"
 #include "DeltaMush.h"
 #include "mclccd\BVHTree.hpp"
@@ -28,6 +28,7 @@
 #include "KinectSkelton.h"
 #include <QTimer>
 #include "ImplicitSkinning.h"
+#include "Object3D.h"
 
 
 using qglviewer::Vec;
@@ -76,8 +77,8 @@ public:
     void delta(){
         weigh();
         SetDistance();
-        dm = DeltaMush(mesh);
-        dm.setHelper(mesh);
+       
+       
         MushHelper = mesh;
         Helper = mesh;
         //dm.Delta_Mush();
@@ -129,7 +130,7 @@ public:
     void setSlider(int value) {
         deltaMushFactor = (float)value/100.0f;
         dm.deltaMushFactor = deltaMushFactor;
-        dm.setHelper(mesh);
+       
         if (delatamush)
         {
             //TestDelta(vec);
@@ -215,13 +216,9 @@ public:
         }
     }
 
-
-
     void Invers();
-
     void Databone();
     void smoothpoints();
-
     void Frame();
     Vec angels;
     Vec ang;
@@ -246,7 +243,6 @@ protected:
 private:
     using MyMesh = OpenMesh::TriMesh_ArrayKernelT<MyTraits>;
     using Vector = OpenMesh::VectorT<double, 3>;
-
     // Mesh
     void updateMesh(bool update_mean_range = true);
     void updateVertexNormals();
@@ -272,18 +268,18 @@ private:
     void drawJointAxes(std::vector<Axes>& a) const;
     void drawAxesWithNames() const;
     static Vec intersectLines(const Vec& ap, const Vec& ad, const Vec& bp, const Vec& bd);
+    void addObject(std::shared_ptr<Object3D> object);
+    void addObjects(const std::vector<std::shared_ptr<Object3D>>& newObjects);
+
     Render render;
     // Other
     void fairMesh();
 
-
-    void saveMeshToEigen(const MyMesh& _mesh, Eigen::MatrixXd& V);
-    void saveMeshFaceToEigen(const MyMesh& _mesh, Eigen::MatrixXi& F);
-    void collisonTest(std::vector<Eigen::Vector4d> v);
-
     //////////////////////
     // Member variables //
     //////////////////////
+
+    std::vector<std::shared_ptr<Object3D>> objects;
 
     enum class ModelType { NONE, MESH, BEZIER_SURFACE, SKELTON, INVERZ } model_type;
     enum class SkelltonType { MAN, WRIST, ARM, FACE } skellton_type;
@@ -294,46 +290,14 @@ private:
 
     std::vector<int> index;
     void TestDelta(std::vector<Eigen::Vector4d> v);
-
     MyMesh smooth;
     MyMesh MushHelper;
     MyMesh Helper;
     void SetDistance();
-
     DeltaMush dm;
     std::vector<float> tios;
     Eigen::SparseMatrix<double> A;
     std::vector<Vec4> delt;
-
-    std::vector<int> used;
-    std::vector<Vec> colors_bone{
-        Vec(0.0, 1.0, 1.0),
-        Vec(1.0, 1.0, 0.0),
-        Vec(1.0, 0.0, 1.0),
-        Vec(0.5, 1.0, 0.5),
-        Vec(1.0, 0.5, 0.5),
-        Vec(0.5, 0.5, 1.0),
-        Vec(0.1, 0.2, 0.2),
-        Vec(0.7, 0.3, 0.0),
-        Vec(0.0, 0.3, 0.7),
-        Vec(0.0, 0.7, 0.3),
-        Vec(0.7, 0.0, 0.3),
-        Vec(0.3, 0.0, 0.7),
-        Vec(0.3, 0.7, 0.0),
-        Vec(0.7, 0.0, 0.0),
-        Vec(0.0, 0.7 ,0.0),
-        Vec(0.0, 0.0, 0.7),
-        Vec(0.7, 0.7, 0.7),
-        Vec(0.5, 1.0, 0.2),
-        Vec(1.0, 0.6, 0.2),
-        Vec(0.4, 0.5, 1.0),
-        Vec(0.1, 0.2, 0.2),
-        Vec(0.5, 0.3, 0.0),
-        Vec(0.1, 0.3, 0.7),
-        Vec(0.1, 0.7, 0.3),
-    };
-
-
     double distance(Vec p, Vec p1)
     {
         double len = sqrt(pow(p.x - p1.x, 2) + pow(p.y - p1.y, 2) + pow(p.z - p1.z, 2));
@@ -370,7 +334,6 @@ private:
     std::vector<Eigen::Vector4d> setMushFactor(std::vector<Eigen::Vector4d> v);
 
     void selectedjoin();
-
     void inverse_kinematics(ControlPoint t, Joint* j);
 
     // this collect the bones
@@ -378,13 +341,6 @@ private:
 
     std::vector<Mat4> mteszt;
 
-    void set_bone_matrix()
-    {
-        for (int i = 0; i < b.size(); i++)
-        {
-            b[i].M = Mat4();
-        }
-    }
     // for the animation api (it is simpal)
     Skelton skel;
     Skelton fab;

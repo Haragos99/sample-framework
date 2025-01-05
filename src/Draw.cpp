@@ -183,7 +183,7 @@ void MyViewer::draw() {
         glPointSize(1.0);
         glEnable(GL_LIGHTING);
     }
-    dm.draw();
+
     //drawDelta();
     if (transparent2)
     {

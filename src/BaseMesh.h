@@ -12,6 +12,7 @@ public:
 	virtual void movement(int selected, const Vector& position) override;
 	virtual void rotate(int selected, Vec angel) override;
 	virtual void animate(float time) override;
+	virtual void scale(float scale)override;
 	virtual MyMesh& getMesh();
 	bool open();
 	void addcolor(Vec& color);

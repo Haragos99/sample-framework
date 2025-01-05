@@ -33,6 +33,7 @@ struct ControlPoint :Object3D {
     void drawWithNames(Visualization& vis) const override;
     Vec postSelection(const int p) override;
     void draw(Visualization& vis) override;
+    void scale(float scale) override;
     void movement(int selected, const Vector& position) override;
     void rotate(int selected, Vec angel) override;
 

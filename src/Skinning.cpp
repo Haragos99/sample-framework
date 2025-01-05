@@ -17,6 +17,37 @@ void Skinning::clean(MyMesh& mesh, Skelton& skelton)
 }
 
 
+
+void Skinning::animatemesh(BaseMesh& basemesh, Skelton& skelton)
+{
+    MyMesh& mesh = basemesh.getMesh();
+    for (auto v : mesh.vertices())
+    {
+        // tezstként lehet leutánozni a fabrikot
+        Mat4 M_result = Mat4(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
+        for (int i = 0; i < skelton.bones.size(); i++)
+        {
+            double w = mesh.data(v).weigh[i];
+            Mat4 M = skelton.bones[i].end->M.skalar(w);
+            M_result += M;
+        }
+        Vec4 point4;
+        //origanal részt újra gondolni
+        if (false)
+        {
+            point4 = Vec4(mesh.point(v)[0], mesh.point(v)[1], mesh.point(v)[2], 1);
+        }
+        else {
+            point4 = Vec4(mesh.data(v).original[0], mesh.data(v).original[1], mesh.data(v).original[2], 1);
+        }
+
+        Vec4 result = point4 * M_result;
+        OpenMesh::Vec3d newposition = OpenMesh::Vec3d(result.x, result.y, result.z);
+        mesh.point(v) = newposition;
+        mesh.data(v).M = M_result;
+    }
+}
+
 void Skinning::execute(BaseMesh& basemesh, Skelton& skelton)
 {
     MyMesh& mesh = basemesh.getMesh();

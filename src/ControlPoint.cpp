@@ -69,3 +69,7 @@ void ControlPoint::rotate(int selected, Vec angel)
 
 }
 
+void ControlPoint::scale(float scale)
+{
+
+}

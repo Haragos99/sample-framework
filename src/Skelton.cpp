@@ -29,7 +29,10 @@ void Skelton::animate(float current_time, MyMesh& mesh)
     root->transform_point(root);
     animate_mesh(mesh, true);
 }
+void Skelton::scale(float scale)
+{
 
+}
 
 void Skelton::drawWithNames(Visualization& vis) const
 {

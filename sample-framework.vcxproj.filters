@@ -142,6 +142,9 @@
     <ClCompile Include="src\PoissonSampleGenerator.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="src\Lines.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <QtMoc Include="src\MyViewer.h">
@@ -286,6 +289,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="src\PoissonResurses.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Lines.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

@@ -13,7 +13,10 @@ BaseMesh::BaseMesh(MyMesh& _mesh)
     mesh = _mesh;
 }
 
+void BaseMesh::scale(float scale)
+{
 
+}
 
 
 

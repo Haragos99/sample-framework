@@ -399,6 +399,20 @@ void MyViewer::updateMesh(bool update_mean_range) {
 }
 
 
+
+
+
+void MyViewer::addObject(std::shared_ptr<Object3D> object) {
+    objects.push_back(object);
+}
+
+void MyViewer::addObjects(const std::vector<std::shared_ptr<Object3D>>& newObjects) {
+    objects.insert(objects.end(), newObjects.begin(), newObjects.end());
+}
+
+
+
+
 void MyViewer::setupCameraBone() {
     // Set camera on the model
     Vector box_min, box_max;

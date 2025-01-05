@@ -42,7 +42,7 @@ public:
     std::vector<Bone> bones;
     std::vector<Vec> po;
     std::vector<Joint*> joint;
-
+    //Skinning skinningtec;
     Skelton(std::vector<Vec> point, std::vector<std::vector<int>> _childrenMatrix, std::vector< std::pair<int, int>> _indexes) {
         points = point;
         Tpose = point;
@@ -122,6 +122,8 @@ public:
     void movement(int selected, const Vector& position) override;
 
     void rotate(int selected, Vec angel) override;
+
+    void scale(float scale) override;
 
     void animate(float time) override;
 
