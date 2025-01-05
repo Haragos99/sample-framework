@@ -10,7 +10,6 @@ struct ControlPoint :Object3D {
     Vec color;
     int jointid;
     int id;
-    std::vector<Keyframe> keyframes;
 
     ControlPoint() {}
     ControlPoint(Vec _position)
@@ -30,12 +29,13 @@ struct ControlPoint :Object3D {
     void addkeyframe(Keyframe& k) { keyframes.push_back(k); }
     void animate(float time) override;
     void draw();
-    void drawWithNames(Visualization& vis) const override;
+    void drawWithNames(Vis::Visualization& vis) const override;
     Vec postSelection(const int p) override;
-    void draw(Visualization& vis) override;
+    void draw(Vis::Visualization& vis) override;
     void scale(float scale) override;
     void movement(int selected, const Vector& position) override;
     void rotate(int selected, Vec angel) override;
+    void setCameraFocus(Vector& min, Vector& max) override;
 
 
 };

@@ -1,7 +1,7 @@
 #include "Lines.h"
 
 
-void Line::draw(Visualization& vis)
+void Line::draw(Vis::Visualization& vis)
 {
 	glLineWidth(width);
 	glBegin(GL_LINES);
@@ -10,7 +10,7 @@ void Line::draw(Visualization& vis)
 	glVertex3dv(end);
 	glEnd();
 }
-void Line::drawWithNames(Visualization& vis) const
+void Line::drawWithNames(Vis::Visualization& vis) const
 {
 	//TODO: implementation this
 }
@@ -47,14 +47,20 @@ Vec Line::getEnd() { return end; }
 
 void Line::setcolor(Vec& _color) { color = _color; }
 
-void DeltaLines::draw(Visualization& vis)
+
+void Line::setCameraFocus(Vector& min, Vector& max)
+{
+
+}
+
+void DeltaLines::draw(Vis::Visualization& vis)
 {
 	for (auto line : lines)
 	{
 		line->draw(vis);
 	}
 }
-void DeltaLines::drawWithNames(Visualization& vis) const
+void DeltaLines::drawWithNames(Vis::Visualization& vis) const
 {
 	for (auto line : lines)
 	{
@@ -101,4 +107,9 @@ void DeltaLines::setDeltas(std::vector<Eigen::Vector4d> deltas)
 void DeltaLines::addLine(std::shared_ptr<Line> line)
 {
 	lines.push_back(line);
+}
+
+void DeltaLines::setCameraFocus(Vector& min, Vector& max)
+{
+
 }

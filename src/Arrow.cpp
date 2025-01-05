@@ -43,13 +43,7 @@ void MyViewer::drawWithNames() {
     switch (model_type) {
     case ModelType::NONE: break;
     case ModelType::MESH:
-        if (!show_wireframe)
-            return;
-        for (auto v : mesh.vertices()) {
-            glPushName(v.idx());
-            glRasterPos3dv(mesh.point(v).data());
-            glPopName();
-        }
+
         break;
     case ModelType::BEZIER_SURFACE:
         if (!show_control_points)
@@ -73,6 +67,15 @@ void MyViewer::drawWithNames() {
         skel.root->drawarrow(skel.root);
         break;
     }
+    
+    for (size_t i = 0; i < objects.size(); ++i) {
+        //glPushName(i);
+        objects[i]->drawWithNames(vis);
+        //glPopName();
+    }
+
+
+
 }
 
 void MyViewer::drawAxesWithNames() const {
@@ -106,8 +109,7 @@ void MyViewer::postSelection(const QPoint& p) {
     }
 
     selected_vertex = sel;
-    if (model_type == ModelType::MESH)
-        axes.position = Vec(mesh.point(MyMesh::VertexHandle(sel)).data());
+
     if (model_type == ModelType::BEZIER_SURFACE)
         axes.position = control_points[sel];
     if (model_type == ModelType::SKELTON)
@@ -121,6 +123,15 @@ void MyViewer::postSelection(const QPoint& p) {
         
         axes.position = cps[sel].position;
     }
+
+
+    ///New Version
+    if (!objects.empty())
+    {
+        axes.position = objects[0]->postSelection(sel);
+    }
+
+
     double depth = camera()->projectedCoordinatesOf(axes.position)[2];
     Vec q1 = camera()->unprojectedCoordinatesOf(Vec(0.0, 0.0, depth));
     Vec q2 = camera()->unprojectedCoordinatesOf(Vec(width(), height(), depth));

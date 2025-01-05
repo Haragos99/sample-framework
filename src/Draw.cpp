@@ -12,12 +12,19 @@ void MyViewer::draw() {
 
 
     //kinect.update();
-    kinect.draw();
+   // kinect.draw();
 
     if (model_type == ModelType::BEZIER_SURFACE && show_control_points)
         drawControlNet();
 
     //transparent = true;
+
+
+
+
+
+
+
     if (transparent) {
         glEnable(GL_BLEND);
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
@@ -155,7 +162,10 @@ void MyViewer::draw() {
         }
     }
 
-    
+    for (auto object : objects)
+    {
+        object->draw(vis);
+    }
 
     if (show_solid && show_wireframe) {
         glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);

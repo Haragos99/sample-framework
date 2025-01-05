@@ -1,4 +1,5 @@
 #include "Skelton.h"
+#include <src/Skinning.h>
 
 
 
@@ -34,7 +35,7 @@ void Skelton::scale(float scale)
 
 }
 
-void Skelton::drawWithNames(Visualization& vis) const
+void Skelton::drawWithNames(Vis::Visualization& vis) const
 {
     for (int i = 0; i < points.size(); i++)
     {
@@ -48,7 +49,22 @@ void Skelton::drawWithNames(Visualization& vis) const
 }
 
 
-void Skelton::draw(Visualization& vis)
+
+void Skelton::setSkinning(std::unique_ptr<Skinning> skinning)
+{
+    skinningtechnic = std::move(skinning);
+}
+
+
+void Skelton::setCameraFocus(Vector& min, Vector& max)
+{
+    for (auto v : points) {
+        min.minimize(Vector(v.x, v.y, v.z));
+        max.maximize(Vector(v.x, v.y, v.z));
+    }
+}
+
+void Skelton::draw(Vis::Visualization& vis)
 {
     for (auto b : bones)
     {

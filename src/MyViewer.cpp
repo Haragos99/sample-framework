@@ -416,11 +416,7 @@ void MyViewer::addObjects(const std::vector<std::shared_ptr<Object3D>>& newObjec
 void MyViewer::setupCameraBone() {
     // Set camera on the model
     Vector box_min, box_max;
-    box_min = box_max = Vector(points.front().x, points.front().y, points.front().z);
-    for (auto v : points) {
-        box_min.minimize(Vector(v.x, v.y, v.z));
-        box_max.maximize(Vector(v.x, v.y, v.z));
-    }
+   
     camera()->setSceneBoundingBox(Vec(box_min.data()), Vec(box_max.data()));
     camera()->showEntireScene();
 
@@ -458,11 +454,11 @@ void MyViewer::setupCameraMC(MyMesh& _mesh)
 
 void MyViewer::setupCamera() {
     // Set camera on the model
-    Vector box_min, box_max;
-    box_min = box_max = mesh.point(*mesh.vertices_begin());
-    for (auto v : mesh.vertices()) {
-        box_min.minimize(mesh.point(v));
-        box_max.maximize(mesh.point(v));
+    double large = std::numeric_limits<double>::max();
+    Vector box_min(large, large, large), box_max(-large, -large, -large);
+    for(auto object : objects)
+    {
+        object->setCameraFocus(box_min, box_max);
     }
     camera()->setSceneBoundingBox(Vec(box_min.data()), Vec(box_max.data()));
     camera()->showEntireScene();
@@ -800,7 +796,7 @@ void MyViewer::keyPressEvent(QKeyEvent* e) {
             update();
             break;
         case Qt::Key_1:
-            if (points.size() != 0 && mesh.n_vertices() != 0)
+            if ( mesh.n_vertices() != 0)
             {
                 model_type = ModelType::SKELTON;
                 visualization = Visualization::WEIGH2;
@@ -878,16 +874,17 @@ void MyViewer::keyPressEvent(QKeyEvent* e) {
             }
             break;
         case Qt::Key_W:
-            show_wireframe = !show_wireframe;
+            //show_wireframe = !show_wireframe;
+            vis.show_wireframe = !vis.show_wireframe;
             update();
             break;
 
 
         case Qt::Key_F:
             //fairMesh();
-            points = kinect.skelton.getPointlist();
+            
             kinect.CreateFirstConnected();
-            setupCameraBone();
+            //setupCameraBone();
             model_type = ModelType::SKELTON;
             update();
             break;

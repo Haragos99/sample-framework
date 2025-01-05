@@ -186,7 +186,7 @@ public:
     void Reset();
     int wi = 2;
     void index_of_weight() {
-        if (points.size() != 0 && mesh.n_vertices() != 0)
+        if (mesh.n_vertices() != 0)
         {
             model_type = ModelType::SKELTON;
             visualization = Visualization::WEIGH2;
@@ -280,7 +280,8 @@ private:
     //////////////////////
 
     std::vector<std::shared_ptr<Object3D>> objects;
-
+    size_t selected_object;
+    Vis::Visualization vis;
     enum class ModelType { NONE, MESH, BEZIER_SURFACE, SKELTON, INVERZ } model_type;
     enum class SkelltonType { MAN, WRIST, ARM, FACE } skellton_type;
     // Mesh
@@ -348,8 +349,7 @@ private:
     std::vector<Vec>FABRIK_p;
     void createL_smooot(MyMesh& m);
     int elapsedTime;
-    std::vector<int>indexes;
-    std::vector<Vec> points;
+
     std::vector<Vec> selected_points_storage;
     float startAnimationTime_ = 0.0;
     float endanimation = 0.0;

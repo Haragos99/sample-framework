@@ -37,19 +37,25 @@ private:
     Vec(0.1, 0.7, 0.3),
     };
     MyMesh* mesh;
+    std::unique_ptr<Skinning> skinningtechnic;
 public:
     Joint* root;
     std::vector<Bone> bones;
     std::vector<Vec> po;
     std::vector<Joint*> joint;
-    //Skinning skinningtec;
+
     Skelton(std::vector<Vec> point, std::vector<std::vector<int>> _childrenMatrix, std::vector< std::pair<int, int>> _indexes) {
         points = point;
         Tpose = point;
         childrenMatrix = _childrenMatrix;
         indexes = _indexes;
+        skinningtechnic = std::make_unique<Skinning>();
     }
     Skelton() {  }//delete
+
+
+
+    void setSkinning(std::unique_ptr<Skinning> skinning);
 
     int getSize() { return bones.size(); }
 
@@ -115,14 +121,16 @@ public:
         root->draw(root);
     }
 
-    void draw(Visualization& vis) override;
+    void draw(Vis::Visualization& vis) override;
 
-    void drawWithNames(Visualization& vis) const override;
+    void drawWithNames(Vis::Visualization& vis) const override;
 
     void movement(int selected, const Vector& position) override;
 
     void rotate(int selected, Vec angel) override;
-
+     
+    void setCameraFocus(Vector& min, Vector& max) override;
+    
     void scale(float scale) override;
 
     void animate(float time) override;
