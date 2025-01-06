@@ -21,6 +21,7 @@ protected:
 
 	double distance(Vec p, Vec p1);
 	void clean(MyMesh& mesh, std::vector<Bone>& bones);
+	void addColor(std::shared_ptr<BaseMesh> basemesh, std::vector<Bone>& bones);
 	std::vector<std::shared_ptr<Object3D>> debugMeshes;
 
 };

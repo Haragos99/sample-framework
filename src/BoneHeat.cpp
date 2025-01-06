@@ -127,7 +127,7 @@ nnz(v.idx()) = 1;
 Eigen::SparseMatrix<double>  BoneHeat::createDiagolaleMatrix(MyMesh& mesh)
 {
     int n = mesh.n_vertices();
-
+    epsilon = 0.001;
 
     Eigen::SparseMatrix<double> Diagolal(n, n);
     Eigen::VectorXd nnz = Eigen::VectorXd::Zero(n);
@@ -152,6 +152,7 @@ void BoneHeat::execute(std::shared_ptr<BaseMesh> basemesh, std::vector<Bone>& bo
 {
     MyMesh& mesh = basemesh->getMesh();
     calculateSkinning(mesh, bones);
+    addColor(basemesh, bones);
     auto LaplaceM = createLaplaceMatrix(mesh);
     auto DiagolalM = createDiagolaleMatrix(mesh);
     Eigen::SparseMatrix<double> O = -LaplaceM + DiagolalM;

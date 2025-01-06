@@ -37,8 +37,8 @@ private:
     Vec(0.1, 0.3, 0.7),
     Vec(0.1, 0.7, 0.3),
     };
-    MyMesh* mesh;
     std::unique_ptr<Skinning> skinningtechnic;
+    std::shared_ptr<BaseMesh> mesh;
 public:
     Joint* root;
     std::vector<Bone> bones;

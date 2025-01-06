@@ -74,6 +74,7 @@ void DeltaMush::execute(std::shared_ptr<BaseMesh> basemesh, std::vector<Bone>& b
     debugMeshes.clear();
     delta.clear();
     calculateSkinning(basemesh->getMesh(), bones);
+    addColor(basemesh, bones);
     Delta_Mush(basemesh);
 }
 

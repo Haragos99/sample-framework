@@ -17,7 +17,10 @@ void BaseMesh::scale(float scale)
 {
 
 }
-
+void BaseMesh::addcolor(Vec& color)
+{
+    colors.push_back(color);
+}
 
 
 void BaseMesh::draw(Vis::Visualization& vis)
@@ -31,8 +34,22 @@ void BaseMesh::draw(Vis::Visualization& vis)
         for (auto f : mesh.faces()) {
             glBegin(GL_POLYGON);
             for (auto v : mesh.fv_range(f)) {
-
-                Vec color = Vec(1, 1, 1);
+                Vec color;
+                if (vis.type == Vis::VisualType::PLAIN)//refact this
+                {
+                    color = Vec(1, 1, 1);
+                }
+                else if(vis.type == Vis::VisualType::WEIGH)
+                {
+                    for (int i = 0; i < colors.size(); i++)
+                    {
+                        if (mesh.data(v).weigh[i] != 0)
+                        {
+                            color += (mesh.data(v).weigh[i] * colors[i]);
+                        }
+                    }
+                }
+                
                 glColor3d(color.x, color.y, color.z);
                 glNormal3dv(mesh.normal(v).data());
                 glVertex3dv(mesh.point(v).data());

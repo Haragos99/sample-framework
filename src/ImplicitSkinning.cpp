@@ -37,6 +37,7 @@ void ImplicitSkinning::seperateMesh(std::shared_ptr<BaseMesh> basemesh, int nbon
 
 void ImplicitSkinning::execute(std::shared_ptr<BaseMesh> basemesh, std::vector<Bone>& bones)
 {
+	addColor(basemesh, bones);
 	seperateMesh(basemesh, bones.size());
 	generatesampels();
 	for (int i = 0; i < implicitspaces.size(); i++)

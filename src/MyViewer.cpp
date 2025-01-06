@@ -687,7 +687,17 @@ void MyViewer::Error(MyMesh& m, HRBF& h) {
     n_error;
 }
 
-
+void MyViewer::skining()
+{
+    vis.type = Vis::VisualType::WEIGH;
+    if (auto skeleton = std::dynamic_pointer_cast<Skelton>(objects[0]))
+    {
+        if (auto mesh = std::dynamic_pointer_cast<BaseMesh>(objects[1]))
+        {
+            skeleton->skinning(mesh);
+        }
+    }
+}
 
 void MyViewer::createControlPoins(Joint* j)
 {
@@ -891,7 +901,18 @@ void MyViewer::keyPressEvent(QKeyEvent* e) {
 
         case Qt::Key_Z:
             //showSmooth = !showSmooth;
-            kinect.setSkeltonTracking();
+            //kinect.setSkeltonTracking();
+
+            vis.type = Vis::VisualType::WEIGH;
+            if (auto skeleton = std::dynamic_pointer_cast<Skelton>(objects[0]))
+            {
+                if (auto mesh = std::dynamic_pointer_cast<BaseMesh>(objects[1]))
+                {
+                    skeleton->skinning(mesh);
+                }
+            }
+
+
             update();
             break;
        

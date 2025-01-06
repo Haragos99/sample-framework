@@ -67,7 +67,7 @@ public:
     float bright = 0.5;
     float deltaMushFactor = 1.0;
     void draw_smooth(); 
-    void skining() { visualization = Visualization::WEIGH; }
+    void skining();
     void Laplace() {
         smooth = mesh;
         bright = 0.1;

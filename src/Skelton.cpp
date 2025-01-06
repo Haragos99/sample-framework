@@ -28,7 +28,7 @@ void Skelton::animate(float current_time, MyMesh& mesh)
 
     }
     root->transform_point(root);
-    animate_mesh(mesh, true);
+   
 }
 void Skelton::scale(float scale)
 {
@@ -55,9 +55,11 @@ void Skelton::setSkinning(std::unique_ptr<Skinning> skinning)
     skinningtechnic = std::move(skinning);
 }
 
-void  Skelton::skinning(std::shared_ptr<BaseMesh> basemesh)
+void Skelton::skinning(std::shared_ptr<BaseMesh> basemesh)
 {
-
+    skinningtechnic = std::make_unique<Skinning>();
+    mesh = basemesh;
+    skinningtechnic->execute(mesh, bones);
 }
 void Skelton::setCameraFocus(Vector& min, Vector& max)
 {
@@ -323,7 +325,8 @@ void Skelton::animate(float time)
 
     }
     root->transform_point(root);
-    // Toodo Animate the mesh 
+    skinningtechnic->animatemesh(mesh, bones);
+     
 }
 
 Vec Skelton::postSelection(const int p)

@@ -46,8 +46,8 @@ void MyViewer::draw() {
 
     if (model_type == ModelType::SKELTON || model_type == ModelType::INVERZ)
     {
-        skel.draw();
-        if (true)
+        //skel.draw();
+        if (false)
         {
            // auto jointaxes = skel.arrows();
             auto jointaxes = kinect.skelton.arrows();
@@ -59,7 +59,7 @@ void MyViewer::draw() {
     
     if (model_type == ModelType::SKELTON|| model_type == ModelType::INVERZ)
     {
-        drawSkleton();
+        //drawSkleton();
         //target.draw();
         for (auto cp : cps)
         {

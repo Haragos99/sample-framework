@@ -52,6 +52,16 @@ void Skinning::execute(std::shared_ptr<BaseMesh> basemesh, std::vector<Bone>& bo
 {
     MyMesh& mesh = basemesh->getMesh();
     calculateSkinning(mesh, bones);
+    addColor(basemesh, bones);
+}
+
+
+void Skinning::addColor(std::shared_ptr<BaseMesh> basemesh, std::vector<Bone>& bones)
+{
+    for (auto& bone : bones)
+    {
+        basemesh->addcolor(bone.color);
+    }
 }
 
 void Skinning::calculateSkinning(MyMesh& mesh, std::vector<Bone>& bones)
