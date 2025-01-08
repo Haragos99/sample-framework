@@ -40,7 +40,7 @@ void Skelton::drawWithNames(Vis::Visualization& vis) const
     for (int i = 0; i < points.size(); i++)
     {
         Joint* j = root->searchbyid(root, i);
-        Vec const& p = points[j->id];
+        Vec const& p = j->point;
         glPushName(j->id);
         glRasterPos3fv(p);
         glPopName();
@@ -139,15 +139,53 @@ void Skelton::buildTree(std::vector<Joint*>& joints)
 }
 
 
-//TODO: Rewrite
-void Skelton::calculateMatrix()
+Joint* Skelton::getSelectedJoint(int id)
 {
+    Joint* joint = root->searchbyid(root, id);
+    return joint;
+}
 
+
+
+
+//TODO: Rewrite
+void Skelton::calculateMatrix(std::vector<Vec>& ik, Joint* join)
+{
+    int n = ik.size();
+    joint.clear();
+    auto joints = getJointtoList(join);
+
+    for (int i = 1; i < n; ++i)
+    {
+        Joint* joint = joints[i];
+        Vec oldpoint = joints[i]->Tpose;
+        Vec prevoldpoint = joints[i - 1]->Tpose;
+        Vec old_diff = oldpoint - prevoldpoint;
+        Vec new_diff = ik[i] - ik[i - 1];
+        old_diff = old_diff.unit();
+        new_diff = new_diff.unit();
+        Vec axis = old_diff ^ new_diff;
+        float dot = old_diff.x * new_diff.x + old_diff.y * new_diff.y + old_diff.z * new_diff.z;
+        float rotAngle = std::atan2(axis.norm(), dot);
+        Vec pivot = joint->parent->Tpose;
+        Mat4 T1 = TranslateMatrix(-pivot);
+        Mat4 T2 = TranslateMatrix(pivot);
+        Mat4 R;
+        if (axis.norm() > 1E-12) {
+            axis = axis.unit();
+            R = RotationMatrix(rotAngle, axis);
+        }
+        joint->R = R;
+        Mat4 M = T1 * R * TranslateMatrix(joint->parent->point);  // * T2;
+        Vec4 newpoint = Vec4(joint->Tpose) * M;
+        joint->M = M;
+        joint->point = Vec(newpoint.x, newpoint.y, newpoint.z);
+    }
 }
 
 void Skelton::loadFile(const std::string& filename)
 {
-    std::ifstream file(filename); // Replace "data.txt" with your file name
+    std::ifstream file(filename); 
     std::vector<int> children;
     std::string line;
     while (getline(file, line)) {
@@ -225,9 +263,11 @@ bool Skelton::hasMultipleChildren(Joint* j) {
     {
         if (j->children.size() > 1)
         {
+            joint.clear();
             return false;
         }
     }
+    joint.clear();
     return true;
 }
 
@@ -275,7 +315,17 @@ bool Skelton::save(const std::string& filename)
 void Skelton::movement(int selected, const Vector& position)
 {
    Joint* joint = root->searchbyid(root, selected);
-   joint->point += Vec(position.data());
+   joint->point = Vec(position.data());
+   animateMesh();
+}
+
+
+void Skelton::animateMesh()
+{
+    if (skinningtechnic != nullptr && mesh != nullptr)
+    {
+        skinningtechnic->animatemesh(mesh, bones);
+    }
 }
 
 
@@ -284,7 +334,8 @@ void Skelton::rotate(int selected, Vec angel)
     Joint* joint = root->searchbyid(root, selected);
     root->change_all_rotason(joint, joint->point, angel);
     // Toodo Animate the mesh 
-
+    animateMesh();
+    
 }
 
 
@@ -325,7 +376,7 @@ void Skelton::animate(float time)
 
     }
     root->transform_point(root);
-    skinningtechnic->animatemesh(mesh, bones);
+    animateMesh();
      
 }
 

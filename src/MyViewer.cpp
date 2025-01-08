@@ -701,40 +701,46 @@ void MyViewer::skining()
 
 void MyViewer::createControlPoins(Joint* j)
 {
-    Joint* leaf = j->getLeaf(j);
-    ControlPoint cp = ControlPoint(leaf->point*1.1, cps.size());
-    cp.jointid = j->id;
-    cps.push_back(cp);
+
 }
 
 
 
+
+
+/// <summary>
+///  TODO: Refactor this for a clener code
+/// </summary>
 void MyViewer::createCP() {
     auto dlg = std::make_unique<QDialog>(this);
     auto* hb1 = new QHBoxLayout;
     auto* vb = new QVBoxLayout;
     QLabel* text;
     bool IKok;
-    Joint* j = skel.root->searchbyid(skel.root, selected_vertex);
-    IKok = skel.hasMultipleChildren(j);
-    skel.joint.clear();
-
-    if (IKok)
+    if (auto skeleton = std::dynamic_pointer_cast<Skelton>(objects[selected_object]))
     {
-        createControlPoins(j);
-    }
-    else
-    {
-        text = new QLabel(tr("Error: No mesh or skellton"));
-        hb1->addWidget(text);
-        vb->addLayout(hb1);
-        dlg->setWindowTitle(tr("Message"));
-        dlg->setLayout(vb);
-        if (dlg->exec() == QDialog::Accepted) {
+        Joint* j = skeleton->getSelectedJoint(selected_vertex);
+        IKok = skeleton->hasMultipleChildren(j);
+        if (IKok)
+        {
+            Joint* leaf = j->getLeaf(j);
+            std::shared_ptr<ControlPoint> cp = std::make_shared<ControlPoint>(leaf->point * 1.1, controlPointId, skeleton);
+            cp->jointid = j->id;
+            objects.push_back(cp);
+            controlPointId++;
+            //cps.push_back(cp);
+        }
+        else
+        {
+            text = new QLabel(tr("Error: No mesh or skellton"));
+            hb1->addWidget(text);
+            vb->addLayout(hb1);
+            dlg->setWindowTitle(tr("Message"));
+            dlg->setLayout(vb);
+            if (dlg->exec() == QDialog::Accepted) {
+            }
         }
     }
-    
-
 }
 
 
@@ -901,18 +907,7 @@ void MyViewer::keyPressEvent(QKeyEvent* e) {
 
         case Qt::Key_Z:
             //showSmooth = !showSmooth;
-            //kinect.setSkeltonTracking();
-
-            vis.type = Vis::VisualType::WEIGH;
-            if (auto skeleton = std::dynamic_pointer_cast<Skelton>(objects[0]))
-            {
-                if (auto mesh = std::dynamic_pointer_cast<BaseMesh>(objects[1]))
-                {
-                    skeleton->skinning(mesh);
-                }
-            }
-
-
+            kinect.setSkeltonTracking();
             update();
             break;
        
@@ -941,6 +936,31 @@ void MyViewer::keyPressEvent(QKeyEvent* e) {
 void MyViewer::startTimer() {
     if (!timer->isActive()) {
         timer->start(10);  
+    }
+}
+
+
+void MyViewer::endSelection(const QPoint& point) {
+    glFlush();
+    GLint nbHits = glRenderMode(GL_RENDER);
+    if (nbHits <= 0)
+        setSelectedName(-1);
+    else {
+        const GLuint* ptr = selectBuffer();
+        GLuint zMin = std::numeric_limits<GLuint>::max();
+        for (int i = 0; i < nbHits; ++i, ptr += 4) {
+            GLuint names = ptr[0];
+            if (ptr[1] < zMin) {
+                zMin = ptr[1];
+                if (names == 2) {
+                    selected_object = ptr[3];
+                    ptr++;
+                }
+                setSelectedName(ptr[3]);
+            }
+            else if (names == 2)
+                ptr++;
+        }
     }
 }
 
@@ -983,6 +1003,77 @@ Vec MyViewer::calcCentriod(MyMesh& _mesh) {
 
     return Vec(centroid);
 }
+
+
+
+
+float  MyViewer::Epsil() {
+    auto dlg = std::make_unique<QDialog>(this);
+    auto* hb1 = new QHBoxLayout;
+    auto* vb = new QVBoxLayout;
+    auto* ok = new QPushButton(tr("Ok"));
+    connect(ok, SIGNAL(pressed()), dlg.get(), SLOT(accept()));
+    ok->setDefault(true);
+    QLabel* text;
+    auto* sb_H = new QDoubleSpinBox;
+    sb_H->setDecimals(4);
+    sb_H->setSingleStep(0.0001);
+    sb_H->setRange(0.0001, 1);
+    hb1->addWidget(sb_H);
+    hb1->addWidget(ok);
+    vb->addLayout(hb1);
+    dlg->setWindowTitle(tr("Skalar"));
+    dlg->setLayout(vb);
+    float epsilo = 0;
+    if (dlg->exec() == QDialog::Accepted) {
+        epsilo = sb_H->value();
+        update();
+    }
+
+    return epsilo;
+}
+
+
+
+
+void MyViewer::Boneheat()
+{
+    auto dlg = std::make_unique<QDialog>(this);
+    auto* hb1 = new QHBoxLayout;
+    auto* vb = new QVBoxLayout;
+
+    QLabel* text;
+    if (mesh.n_vertices() != 0)
+    {
+
+        Epsil();
+        if (isweight == true && mehet == true)
+        {
+            Smooth();
+            model_type = ModelType::SKELTON;
+
+            text = new QLabel(tr("Success"));
+
+        }
+        else
+        {
+            text = new QLabel(tr("Error: No weight in the mesh"));
+        }
+    }
+    else
+    {
+        text = new QLabel(tr("Error: No mesh or skellton"));
+    }
+    hb1->addWidget(text);
+    vb->addLayout(hb1);
+    dlg->setWindowTitle(tr("Message"));
+    dlg->setLayout(vb);
+    if (dlg->exec() == QDialog::Accepted) {
+        update();
+    }
+}
+
+
 
 void MyViewer::generateMesh(size_t resolution) {
     mesh.clear();
@@ -1043,20 +1134,12 @@ void MyViewer::mouseMoveEvent(QMouseEvent* e) {
         d = (p - axes.grabbed_pos) * axis;
         axes.position[axes.selected_axis] = axes.original_pos[axes.selected_axis] + d;
     }
-
-    if (model_type == ModelType::MESH)
-        mesh.set_point(MyMesh::VertexHandle(selected_vertex),
-            Vector(static_cast<double*>(axes.position)));
-    if (model_type == ModelType::BEZIER_SURFACE)
-        control_points[selected_vertex] = axes.position;
-
     if (model_type == ModelType::INVERZ)
     {
         //target.position = axes.position;
-        cps[selected_vertex].position = axes.position;
-        Joint* j = skel.root->searchbyid(skel.root, cps[selected_vertex].jointid);
 
-        inverse_kinematics(cps[selected_vertex], j);
+
+        //inverse_kinematics(cps[selected_vertex], j);
         
     }
 
@@ -1071,8 +1154,9 @@ void MyViewer::mouseMoveEvent(QMouseEvent* e) {
         Joint* j = skel.root->searchbyid(skel.root, selected_vertex);
         skel.root->change_all_position(j, dif);
     }
+
+    objects[selected_object]->movement(selected_vertex, Vector(static_cast<double*>(axes.position)));
     
-    //updateMesh();
     update();
 }
 

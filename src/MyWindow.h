@@ -19,7 +19,7 @@ private slots:
 
   void set2bone() { viewer->setBone(); viewer->update(); }
   void set2mesh() { viewer->setMesh(); viewer->update(); }
-  void skining()  { viewer->weigh(); viewer->update(); }
+  void skining()  { viewer->skining(); viewer->update(); }
   void boneheat() { viewer->Boneheat(); }
   void getpoint() { viewer->selectedvert(); viewer->update(); }
   void wierframeon() { viewer->wierframe(); }

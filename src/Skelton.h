@@ -50,7 +50,7 @@ public:
         Tpose = point;
         childrenMatrix = _childrenMatrix;
         indexes = _indexes;
-        skinningtechnic = std::make_unique<Skinning>();
+        
     }
     Skelton() {  }//delete
 
@@ -92,7 +92,7 @@ public:
 
     void build();
 
-    void calculateMatrix();
+    void calculateMatrix(std::vector<Vec>& ik, Joint* joint);
 
     std::vector<Vec> getPointlist() { return points; }
 
@@ -111,15 +111,6 @@ public:
             glPopName();
 
         }
-    }
-
-    void draw()
-    {
-        for (auto b : bones)
-        {
-            b.draw();
-        }
-        root->draw(root);
     }
 
     void draw(Vis::Visualization& vis) override;
@@ -141,6 +132,11 @@ public:
     bool save(const std::string& filename);
 
     void reset() { root->reset_all(root); }
+
+    Joint* getSelectedJoint(int id);
+
+    void animateMesh();
+
     ~Skelton(){}
 
 };

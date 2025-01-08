@@ -28,9 +28,11 @@ struct Joint {
     void setMatrix(Vec& angel);
 
     Joint* searchbyid(Joint* j, int key);
+
     void drawarrow(Joint* j);
 
     void draw(Joint* j);
+
     void draw();
 
     void change_all_position(Joint* j, Vec dif);
@@ -52,7 +54,8 @@ struct Joint {
     Joint* getLeaf(Joint* j);
 
     void calculateMatrecies(Joint* j, Vec pivot, Vec angels);
-
+    
+    void to_array(Joint* j,std::vector<Vec>& target);
 
 };
 

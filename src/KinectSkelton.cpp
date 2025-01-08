@@ -206,7 +206,7 @@ KinectSkelton::~KinectSkelton()
 
 void KinectSkelton::draw()
 {
-    skelton.draw();
+   // skelton.draw();
    
     for (auto j : joints)
     {

@@ -61,10 +61,7 @@ void MyViewer::draw() {
     {
         //drawSkleton();
         //target.draw();
-        for (auto cp : cps)
-        {
-            cp.draw();
-        }
+
     }
 
     glPolygonMode(GL_FRONT_AND_BACK, !show_solid && show_wireframe ? GL_LINE : GL_FILL);

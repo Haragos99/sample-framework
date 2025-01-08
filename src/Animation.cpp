@@ -9,12 +9,7 @@ void MyViewer::animate()
     //TODO: finish this
     if (startAnimationTime_ < endanimation) {
         FrameSecond = startAnimationTime_;
-        for (auto& cp : cps)
-        {
-            cp.animate(startAnimationTime_);
-            Joint* j = skel.root->searchbyid(skel.root, cp.jointid);
-            inverse_kinematics(cp, j);
-        }
+
        // skel.animate(startAnimationTime_, mesh);
         //skel.set_deafult_matrix();
         startAnimationTime_ += 1;
@@ -61,9 +56,9 @@ void MyViewer::keyframe_add()
 
         if (model_type == ModelType::INVERZ)
         {
-            Keyframe k = Keyframe(sb->value(), cps[selected_vertex].position,cps[selected_vertex].id);
-            cps[selected_vertex].addkeyframe(k);
-            keyframes_.push_back(k);
+         //   Keyframe k = Keyframe(sb->value(), cps[selected_vertex].position,cps[selected_vertex].id);
+         //   cps[selected_vertex].addkeyframe(k);
+         //   keyframes_.push_back(k);
         }
         else
         {

@@ -200,6 +200,7 @@
     <ClCompile Include="src\BVH.cpp" />
     <ClCompile Include="src\Collison.cpp" />
     <ClCompile Include="src\ControlPoint.cpp" />
+    <ClCompile Include="src\InverseKinematics.cpp" />
     <ClCompile Include="src\KinectSkelton.cpp" />
     <ClCompile Include="src\Lines.cpp" />
     <ClCompile Include="src\mclccd\BVHLeaf.cpp" />
@@ -238,6 +239,7 @@
     <ClInclude Include="src\ControlPoint.h" />
     <ClInclude Include="src\gif.h" />
     <ClInclude Include="src\ImplicitSkinning.h" />
+    <ClInclude Include="src\InverseKinematics.h" />
     <ClInclude Include="src\Keyframe.h" />
     <ClInclude Include="src\KinectSkelton.h" />
     <ClInclude Include="src\Lines.h" />

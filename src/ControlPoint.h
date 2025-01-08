@@ -2,29 +2,22 @@
 #include <QGLViewer/qglviewer.h>
 #include "Keyframe.h"
 #include "Object3D.h"
-
+#include "Joint.h"
+#include "InverseKinematics.h"
 using qglviewer::Vec;
 
-struct ControlPoint :Object3D {
-    Vec position;
+class ControlPoint : public  Object3D {
+
+public:
+    Vec position_;
     Vec color;
     int jointid;
     int id;
-
-    ControlPoint() {}
-    ControlPoint(Vec _position)
-    {
-        position = _position;
-        color = Vec(1, 0, 0);
-
-    }
-    ControlPoint(Vec _position, int _id)
-    {
-        position = _position;
-        color = Vec(1, 0, 0);
-        id = _id;
-    }
-    Vec interpolatedPosition(float t);
+    Joint* joint;
+    ControlPoint() = default;
+    ControlPoint(Vec _position);
+    ControlPoint(Vec _position, int _id);
+    ControlPoint(Vec _position, int _id, std::shared_ptr<Skelton> skelton);
     void drawarrow();
     void addkeyframe(Keyframe& k) { keyframes.push_back(k); }
     void animate(float time) override;
@@ -36,6 +29,10 @@ struct ControlPoint :Object3D {
     void movement(int selected, const Vector& position) override;
     void rotate(int selected, Vec angel) override;
     void setCameraFocus(Vector& min, Vector& max) override;
-
+    void inversekinematics(std::shared_ptr<Skelton> skelton);
+    ~ControlPoint() = default;
+private:
+    
+    std::unique_ptr<InverseKinematics> IK;
 
 };

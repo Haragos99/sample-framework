@@ -88,6 +88,7 @@ void BaseMesh::drawWithNames(Vis::Visualization& vis) const {
 
 void BaseMesh::movement(int selected, const Vector& pos) {
     mesh.set_point(MyMesh::VertexHandle(selected), pos);
+    updateMesh();
 }
 
 

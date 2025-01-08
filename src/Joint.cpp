@@ -108,7 +108,14 @@ Joint* Joint::getLeaf(Joint* j)
     }
 }
 
-
+void Joint::to_array(Joint* j, std::vector<Vec>& target)
+{
+    target.push_back(j->point);
+    for (int i = 0; i < j->children.size(); i++)
+    {
+        to_array(j->children[i], target);
+    }
+}
 
 void Joint::drawarrow(Joint* j)
 {

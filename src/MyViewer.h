@@ -90,42 +90,7 @@ public:
     }
     void poission() {  }
 
-    void Boneheat()
-    {
-        auto dlg = std::make_unique<QDialog>(this);
-        auto* hb1 = new QHBoxLayout;
-        auto* vb = new QVBoxLayout;
-
-        QLabel* text;
-        if (mesh.n_vertices() != 0)
-        {
-
-            Epsil();
-            if (isweight == true && mehet == true)
-            {
-                Smooth();
-                model_type = ModelType::SKELTON;
-
-                text = new QLabel(tr("Success"));
-
-            }
-            else
-            {
-                text = new QLabel(tr("Error: No weight in the mesh"));
-            }
-        }
-        else
-        {
-            text = new QLabel(tr("Error: No mesh or skellton"));
-        }
-        hb1->addWidget(text);
-        vb->addLayout(hb1);
-        dlg->setWindowTitle(tr("Message"));
-        dlg->setLayout(vb);
-        if (dlg->exec() == QDialog::Accepted) {
-            update();
-        }
-    }
+    void Boneheat();
 
     void setSlider(int value) {
         deltaMushFactor = (float)value/100.0f;
@@ -152,30 +117,7 @@ public:
     void DeltaMush2(std::vector<Eigen::Vector4d> v);
 
 
-    void Epsil() {
-        auto dlg = std::make_unique<QDialog>(this);
-        auto* hb1 = new QHBoxLayout;
-        auto* vb = new QVBoxLayout;
-        auto* ok = new QPushButton(tr("Ok"));
-        connect(ok, SIGNAL(pressed()), dlg.get(), SLOT(accept()));
-        ok->setDefault(true);
-        QLabel* text;
-        auto* sb_H = new QDoubleSpinBox;
-        sb_H->setDecimals(4);
-        sb_H->setSingleStep(0.0001);
-        sb_H->setRange(0.0001, 1);
-        hb1->addWidget(sb_H);
-        hb1->addWidget(ok);
-        vb->addLayout(hb1);
-        dlg->setWindowTitle(tr("Skalar"));
-        dlg->setLayout(vb);
-        if (dlg->exec() == QDialog::Accepted) {
-            epsilon = sb_H->value();
-            update();
-        }
-
-
-    }
+    float  Epsil();
 
     KinectSkelton kinect;
     QTimer* timer;
@@ -237,6 +179,7 @@ protected:
     virtual void animate()override;
     virtual void drawWithNames() override;
     virtual void postSelection(const QPoint& p) override;
+    virtual void endSelection(const QPoint& point) override;
     virtual void keyPressEvent(QKeyEvent* e) override;
     virtual void mouseMoveEvent(QMouseEvent* e) override;
     virtual QString helpString() const override;
@@ -288,7 +231,7 @@ private:
     MyMesh mesh;
     bool showSampels;
     bool showSmooth;
-
+    int controlPointId = 0;
     std::vector<int> index;
     void TestDelta(std::vector<Eigen::Vector4d> v);
     MyMesh smooth;
@@ -368,7 +311,6 @@ private:
     }
     void tree_to_array(Joint* j);
     std::vector<Vec> ik;
-    std::vector<ControlPoint> cps;
     std::vector<HRBF> hrbf;
     void createControlPoins(Joint* j);
     MarchingCubes mc;

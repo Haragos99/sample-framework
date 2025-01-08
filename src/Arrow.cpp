@@ -57,10 +57,7 @@ void MyViewer::drawWithNames() {
         break;
 
     case  ModelType::INVERZ:
-        for (auto cp : cps)
-        {
-            cp.drawarrow();
-        }       
+      
         break;
     case  ModelType::SKELTON:
         //sk.drawarrow(sk);
@@ -69,9 +66,9 @@ void MyViewer::drawWithNames() {
     }
     
     for (size_t i = 0; i < objects.size(); ++i) {
-        //glPushName(i);
+        glPushName(i);
         objects[i]->drawWithNames(vis);
-        //glPopName();
+        glPopName();
     }
 
 
@@ -121,14 +118,14 @@ void MyViewer::postSelection(const QPoint& p) {
     if (model_type == ModelType::INVERZ)
     {
         
-        axes.position = cps[sel].position;
+        //axes.position = cps[sel].position;
     }
 
 
     ///New Version
     if (!objects.empty())
     {
-        axes.position = objects[0]->postSelection(sel);
+        axes.position = objects[selected_object]->postSelection(sel);
     }
 
 
