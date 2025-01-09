@@ -18,7 +18,7 @@ void Skinning::clean(MyMesh& mesh, std::vector<Bone>& bones)
 
 
 
-void Skinning::animatemesh(std::shared_ptr<BaseMesh> basemesh, std::vector<Bone>& bones)
+void Skinning::animatemesh(std::shared_ptr<BaseMesh> basemesh, std::vector<Bone>& bones, bool inv)
 {
     MyMesh& mesh = basemesh->getMesh();
     for (auto v : mesh.vertices())
@@ -33,7 +33,7 @@ void Skinning::animatemesh(std::shared_ptr<BaseMesh> basemesh, std::vector<Bone>
         }
         Vec4 point4;
         //origanal részt újra gondolni
-        if (true)
+        if (!inv)
         {
             point4 = Vec4(mesh.point(v)[0], mesh.point(v)[1], mesh.point(v)[2], 1);
         }

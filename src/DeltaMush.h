@@ -13,7 +13,7 @@ class DeltaMush : public Skinning
 public:
 	DeltaMush(){ deltaMushFactor = 1.0f; }
 	void execute(std::shared_ptr<BaseMesh> basemesh, std::vector<Bone>& bones) override;
-	virtual void animatemesh(std::shared_ptr<BaseMesh> basemesh, std::vector<Bone>& bones) override;
+	virtual void animatemesh(std::shared_ptr<BaseMesh> basemesh, std::vector<Bone>& bones, bool inv = false) override;
 	~DeltaMush(){}
 	float deltaMushFactor;
 

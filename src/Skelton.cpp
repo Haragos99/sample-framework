@@ -50,14 +50,13 @@ void Skelton::drawWithNames(Vis::Visualization& vis) const
 
 
 
-void Skelton::setSkinning(std::unique_ptr<Skinning> skinning)
+void Skelton::setSkinning(std::shared_ptr<Skinning> skinning)
 {
-    skinningtechnic = std::move(skinning);
+    skinningtechnic = skinning;
 }
 
 void Skelton::skinning(std::shared_ptr<BaseMesh> basemesh)
 {
-    skinningtechnic = std::make_unique<Skinning>();
     mesh = basemesh;
     skinningtechnic->execute(mesh, bones);
 }
@@ -319,12 +318,12 @@ void Skelton::movement(int selected, const Vector& position)
    animateMesh();
 }
 
-
-void Skelton::animateMesh()
+// Bool inv
+void Skelton::animateMesh(bool inv)
 {
     if (skinningtechnic != nullptr && mesh != nullptr)
     {
-        skinningtechnic->animatemesh(mesh, bones);
+        skinningtechnic->animatemesh(mesh, bones, inv);
     }
 }
 

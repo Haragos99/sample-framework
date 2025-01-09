@@ -4,27 +4,6 @@
 
 void MyViewer::draw() {
 
-   /* drawText(10, int(1.5 * ((QApplication::font().pixelSize() > 0)
-        ? QApplication::font().pixelSize()
-        : QApplication::font().pointSize())),
-        QString("Frame:") + QString(std::to_string(FrameSecond).c_str()));*/
-
-
-
-    //kinect.update();
-   // kinect.draw();
-
-    if (model_type == ModelType::BEZIER_SURFACE && show_control_points)
-        drawControlNet();
-
-    //transparent = true;
-
-
-
-
-
-
-
     if (transparent) {
         glEnable(GL_BLEND);
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
@@ -32,8 +11,6 @@ void MyViewer::draw() {
     else {
         glDisable(GL_BLEND);
     }
-
-
     glColor3d(0.0, 1.0, 0.0);
     glBegin(GL_POINTS);
     for (const auto& p : FABRIK_p)
@@ -46,21 +23,12 @@ void MyViewer::draw() {
 
     if (model_type == ModelType::SKELTON || model_type == ModelType::INVERZ)
     {
-        //skel.draw();
         if (false)
         {
            // auto jointaxes = skel.arrows();
             auto jointaxes = kinect.skelton.arrows();
             drawJointAxes(jointaxes);
         }
-
-    }
-
-    
-    if (model_type == ModelType::SKELTON|| model_type == ModelType::INVERZ)
-    {
-        //drawSkleton();
-        //target.draw();
 
     }
 
@@ -85,12 +53,6 @@ void MyViewer::draw() {
             glBindTexture(GL_TEXTURE_1D, slicing_texture);
             glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_DECAL);
             glEnable(GL_TEXTURE_1D);
-        }
-
-
-        if (showSmooth)
-        {
-            draw_smooth();
         }
         for (auto f : mesh.faces()) {
             glBegin(GL_POLYGON);
@@ -191,12 +153,7 @@ void MyViewer::draw() {
         glEnable(GL_LIGHTING);
     }
 
-    //drawDelta();
-    if (transparent2)
-    {
-        //drawTransparent();
-    }
-    //
+
     if (isAnimating_)
     {
         QImage frame = QOpenGLWidget::grabFramebuffer();
@@ -263,45 +220,6 @@ void MyViewer::drawMesh() {
         }
         i++;
     }
-
-}
-
-
-/// <summary>
-/// ezt rajzoljuk ku
-/// </summary>
-void MyViewer::drawSkleton()
-{
-
-    glPointSize(30.0);
-    glColor3d(0.3, 0.0, 1.0);
-    glLineWidth(200.0);
-    int i = 0;
-
-    for (const auto& p : b)
-    {
-        if (i < b.size())
-        {
-            glBegin(GL_LINES);
-            if (transparent)
-            {
-                double color = 0.8;
-                glColor3d(p.x* color, p.y* color, p.z* color);
-            }
-            else
-            {
-                double color = 0.8;
-                glColor3d(p.x, p.y, p.z);
-            }
-           
-            glVertex3dv(p.start);
-            glVertex3dv(p.End);
-            glEnd();
-        }
-        i++;
-
-    }
-
 
 }
 

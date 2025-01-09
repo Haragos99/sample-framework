@@ -73,6 +73,7 @@ void DeltaMush::execute(std::shared_ptr<BaseMesh> basemesh, std::vector<Bone>& b
 {
     debugMeshes.clear();
     delta.clear();
+    lines = std::make_shared<DeltaLines>();
     calculateSkinning(basemesh->getMesh(), bones);
     addColor(basemesh, bones);
     Delta_Mush(basemesh);
@@ -83,6 +84,8 @@ void DeltaMush::Delta_Mush(std::shared_ptr<BaseMesh> basemesh)
     auto mesh = basemesh->getMesh();
     auto smooth_basemesh = smoothMesh(basemesh);
     auto smooth_mesh = smooth_basemesh->getMesh();
+    smooth_mesh.request_face_normals();
+    smooth_mesh.request_vertex_normals();
     smooth_mesh.update_normals();
     for (auto ve : smooth_mesh.vertices()) {
 
@@ -93,14 +96,10 @@ void DeltaMush::Delta_Mush(std::shared_ptr<BaseMesh> basemesh)
         p_vector << mesh.point(ve)[0], mesh.point(ve)[1], mesh.point(ve)[2], 1;
         R.resize(4, 4);
         MyMesh::Normal normal = smooth_mesh.normal(ve);
-        Vec t;
-        Vec b;
-        for (MyMesh::VertexOHalfedgeIter voh_it = smooth_mesh.voh_iter(ve); voh_it.is_valid(); ++voh_it) {
-            MyMesh::HalfedgeHandle heh = *voh_it;
-            auto ed = smooth_mesh.calc_edge_vector(heh);
-            t = Vec((ed - (ed | normal) * normal).normalize());
-            b = (t ^ Vec(normal)).unit();
-        }
+        MyMesh::HalfedgeHandle heh = *smooth_mesh.voh_iter(ve);
+        auto ed = smooth_mesh.calc_edge_vector(heh);
+        Vec t = Vec((ed - (ed | normal) * normal).normalize());
+        Vec b = (t ^ Vec(normal)).unit();
         R = BuiledMatrix(normal, t, b, Vec(smooth_mesh.point(ve).data()));
         Eigen::MatrixXd I(4, 4);
         I.setIdentity();
@@ -123,7 +122,7 @@ void DeltaMush::Delta_Mush(std::shared_ptr<BaseMesh> basemesh)
 void DeltaMush::createDeltaline(Vec& start, Vec& end)
 {
     Vec red = Vec(1, 0, 0);
-    std::shared_ptr<Line> line;
+    std::shared_ptr<Line> line = std::make_shared<Line>();
     line->setStart(start);
     line->setEnd(end);
     line->setcolor(red);
@@ -144,9 +143,9 @@ std::vector<Eigen::Vector4d> DeltaMush::setMushFactor(std::vector<Eigen::Vector4
     return v;
 }
 
-void DeltaMush::animatemesh(std::shared_ptr<BaseMesh> basemesh, std::vector<Bone>& bones)
+void DeltaMush::animatemesh(std::shared_ptr<BaseMesh> basemesh, std::vector<Bone>& bones, bool inv)
 {
-    Skinning::animatemesh(basemesh,bones);
+    Skinning::animatemesh(basemesh,bones,inv);
     Delta_Mush_two(basemesh);
 }
 
@@ -160,10 +159,12 @@ void DeltaMush::Delta_Mush_two(std::shared_ptr<BaseMesh> basemesh)
 {
     auto v_d = setMushFactor(delta);
     modifyDeltaLine(v_d);
-    auto m = basemesh->getMesh();
+    auto& m = basemesh->getMesh();
     std::vector<Vec> smoothed;
     auto smooth_basemesh = smoothMesh(basemesh);
     auto smooth_mesh = smooth_basemesh->getMesh();
+    smooth_mesh.request_face_normals();
+    smooth_mesh.request_vertex_normals();
     smooth_mesh.update_normals();
     int size = smoothed.size();
     for (auto ve : m.vertices()) {
@@ -172,17 +173,14 @@ void DeltaMush::Delta_Mush_two(std::shared_ptr<BaseMesh> basemesh)
         Eigen::Vector4d v_vector;
         p_vector << m.point(ve)[0], m.point(ve)[1], m.point(ve)[2], 1;
         MyMesh::Normal normal = smooth_mesh.normal(ve);
-        Vec t;
-        Vec b;
-        for (MyMesh::VertexOHalfedgeIter voh_it = smooth_mesh.voh_iter(ve); voh_it.is_valid(); ++voh_it) {
-            MyMesh::HalfedgeHandle heh = *voh_it;
-            auto ed = smooth_mesh.calc_edge_vector(heh);
-            t = Vec((ed - (ed | normal) * normal).normalize());
-            b = -(t ^ Vec(normal)).unit();
-        }
+        MyMesh::HalfedgeHandle heh = *smooth_mesh.voh_iter(ve);
+        auto ed = smooth_mesh.calc_edge_vector(heh);
+        Vec t = Vec((ed - (ed | normal) * normal).normalize());
+        Vec b = (t ^ Vec(normal)).unit();
 
         C = BuiledMatrix(normal, t, b, Vec(smooth_mesh.point(ve).data()));
         auto d = C * v_d[ve.idx()];
         m.point(ve) = MyMesh::Point(d[0], d[1], d[2]);
     }
+    //basemesh->setMesh(m);
 }

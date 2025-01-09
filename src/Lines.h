@@ -28,6 +28,7 @@ private:
 
 class DeltaLines : public Object3D {
 public:
+	DeltaLines() = default;
 	void draw(Vis::Visualization& vis);
 	void drawWithNames(Vis::Visualization& vis) const override;
 	Vec postSelection(const int p) override;

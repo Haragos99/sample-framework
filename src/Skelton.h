@@ -37,7 +37,7 @@ private:
     Vec(0.1, 0.3, 0.7),
     Vec(0.1, 0.7, 0.3),
     };
-    std::unique_ptr<Skinning> skinningtechnic;
+    std::shared_ptr<Skinning> skinningtechnic;
     std::shared_ptr<BaseMesh> mesh;
 public:
     Joint* root;
@@ -56,7 +56,7 @@ public:
 
     void skinning(std::shared_ptr<BaseMesh> basemesh);
 
-    void setSkinning(std::unique_ptr<Skinning> skinning);
+    void setSkinning(std::shared_ptr<Skinning> skinning);
 
     int getSize() { return bones.size(); }
 
@@ -135,7 +135,7 @@ public:
 
     Joint* getSelectedJoint(int id);
 
-    void animateMesh();
+    void animateMesh(bool inv = false);
 
     ~Skelton(){}
 

@@ -15,7 +15,7 @@ public:
 	const std::vector<std::shared_ptr<Object3D>>& getDebugMeshes() const {
 		return debugMeshes;
 	}
-	virtual void animatemesh(std::shared_ptr<BaseMesh> basemesh, std::vector<Bone>& bones);
+	virtual void animatemesh(std::shared_ptr<BaseMesh> basemesh, std::vector<Bone>& bones, bool inv = false);
 	virtual ~Skinning();
 protected:
 

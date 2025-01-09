@@ -29,7 +29,7 @@
 #include <QTimer>
 #include "ImplicitSkinning.h"
 #include "Object3D.h"
-
+//#include "BoneHeat.h"
 
 using qglviewer::Vec;
 
@@ -74,20 +74,7 @@ public:
         transparent = true;
         createL_smooot(smooth); update(); 
     }
-    void delta(){
-        weigh();
-        SetDistance();
-       
-       
-        MushHelper = mesh;
-        Helper = mesh;
-        //dm.Delta_Mush();
-        //DirectMush();
-        Delta_Mush(vec);
-        delatamush = true;
-        mtransperent = mesh;
-        update();
-    }
+    void delta();
     void poission() {  }
 
     void Boneheat();
@@ -318,11 +305,6 @@ private:
     void createCP();
     void IK_matrices(Joint *j);
     double sum_len();
-    /// <summary>
-    /// 
-    /// </summary>
-    /// <param name="edgeHandle"></param>
-
     void setupCameraBone();
     bool mehet = false;
     bool isweight = false;

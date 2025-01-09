@@ -2,7 +2,7 @@
 #include <cmath>
 #include <map>
 #include "Bone.h"
-
+#include "BoneHeat.h"
 
 #ifdef BETTER_MEAN_CURVATURE
 #include "Eigen/Eigenvalues"
@@ -519,7 +519,7 @@ void MyViewer::init() {
 void MyViewer::Rotate()
 {
 
-    skel.set_deafult_matrix();
+    //skel.set_deafult_matrix();
     auto dlg = std::make_unique<QDialog>(this);
     auto* hb1 = new QHBoxLayout,
         * hb2 = new QHBoxLayout,
@@ -565,12 +565,8 @@ void MyViewer::Rotate()
         Vec angles = Vec(hr, pr, br);
         angels = angles;
         rotation = angles;
-        Joint* jo = skel.root->searchbyid(skel.root, selected_vertex);
-        // itt vátoztatjuk meg a kordinátát
-        skel.root->change_all_rotason(jo, jo->point, angles);
-        //sk.used_points(*to);
-        
-        skel.animate_mesh(mesh,isweight);
+
+        objects[selected_object]->rotate(selected_vertex, angels);
         
         if (delatamush) {
             MushHelper = mesh;
@@ -583,7 +579,9 @@ void MyViewer::Rotate()
 
 }
 
-
+/// <summary>
+/// TODO Refact to for the OO
+/// </summary>
 void MyViewer::selectedjoin()
 {
     if (axes.shown)
@@ -621,7 +619,9 @@ void MyViewer::selectedjoin()
     }
 }
 
-
+/// <summary>
+/// TODO Refact to for the OO
+/// </summary>
 void MyViewer::selectedvert()
 {
 
@@ -694,6 +694,8 @@ void MyViewer::skining()
     {
         if (auto mesh = std::dynamic_pointer_cast<BaseMesh>(objects[1]))
         {
+            std::shared_ptr<Skinning> baseskinning = std::make_shared<Skinning>();
+            skeleton->setSkinning(baseskinning);
             skeleton->skinning(mesh);
         }
     }
@@ -704,7 +706,19 @@ void MyViewer::createControlPoins(Joint* j)
 
 }
 
-
+void MyViewer::delta()
+{
+    if (auto skeleton = std::dynamic_pointer_cast<Skelton>(objects[0]))
+    {
+        vis.type = Vis::VisualType::WEIGH;
+        std::shared_ptr<Skinning> delatmush = std::make_shared<DeltaMush>();
+        skeleton->setSkinning(delatmush);
+        if (auto mesh = std::dynamic_pointer_cast<BaseMesh>(objects[1]))
+        {
+            skeleton->skinning(mesh);
+        }
+    }
+}
 
 
 
@@ -728,7 +742,6 @@ void MyViewer::createCP() {
             cp->jointid = j->id;
             objects.push_back(cp);
             controlPointId++;
-            //cps.push_back(cp);
         }
         else
         {
@@ -802,8 +815,8 @@ void MyViewer::keyPressEvent(QKeyEvent* e) {
             break;
         case Qt::Key_I:
             //visualization = Visualization::ISOPHOTES;
-            model_type = ModelType::INVERZ;
-            // current_isophote_texture = isophote_texture;
+;
+            current_isophote_texture = isophote_texture;
             update();
             break;
         case Qt::Key_E:
@@ -875,7 +888,7 @@ void MyViewer::keyPressEvent(QKeyEvent* e) {
             update();
             break;
         case Qt::Key_S:
-            show_solid = !show_solid;
+            vis.show_solid = !vis.show_solid;
             update();
             break;
         case Qt::Key_7:
@@ -900,7 +913,6 @@ void MyViewer::keyPressEvent(QKeyEvent* e) {
             //fairMesh();
             
             kinect.CreateFirstConnected();
-            //setupCameraBone();
             model_type = ModelType::SKELTON;
             update();
             break;
@@ -1043,27 +1055,26 @@ void MyViewer::Boneheat()
     auto* vb = new QVBoxLayout;
 
     QLabel* text;
-    if (mesh.n_vertices() != 0)
+
+
+    Epsil();
+    if (auto skeleton = std::dynamic_pointer_cast<Skelton>(objects[0]))
     {
-
-        Epsil();
-        if (isweight == true && mehet == true)
+        vis.type = Vis::VisualType::WEIGH;
+        std::shared_ptr<Skinning> boneheat = std::make_shared<BoneHeat>();
+        skeleton->setSkinning(boneheat);
+        if (auto mesh = std::dynamic_pointer_cast<BaseMesh>(objects[1]))
         {
-            Smooth();
-            model_type = ModelType::SKELTON;
-
-            text = new QLabel(tr("Success"));
-
+            skeleton->skinning(mesh);
         }
-        else
-        {
-            text = new QLabel(tr("Error: No weight in the mesh"));
-        }
+        text = new QLabel(tr("Success"));
     }
     else
     {
-        text = new QLabel(tr("Error: No mesh or skellton"));
+        text = new QLabel(tr("Error: No weight in the mesh"));
     }
+    
+
     hb1->addWidget(text);
     vb->addLayout(hb1);
     dlg->setWindowTitle(tr("Message"));
@@ -1134,29 +1145,7 @@ void MyViewer::mouseMoveEvent(QMouseEvent* e) {
         d = (p - axes.grabbed_pos) * axis;
         axes.position[axes.selected_axis] = axes.original_pos[axes.selected_axis] + d;
     }
-    if (model_type == ModelType::INVERZ)
-    {
-        //target.position = axes.position;
-
-
-        //inverse_kinematics(cps[selected_vertex], j);
-        
-    }
-
-    if (model_type == ModelType::SKELTON)
-    {
-        /*
-        *
-        * megkersük a kiválasztot ágakat
-        */
-
-        Vec dif = axes.position - old_pos;
-        Joint* j = skel.root->searchbyid(skel.root, selected_vertex);
-        skel.root->change_all_position(j, dif);
-    }
-
     objects[selected_object]->movement(selected_vertex, Vector(static_cast<double*>(axes.position)));
-    
     update();
 }
 
