@@ -148,6 +148,9 @@
     <ClCompile Include="src\InverseKinematics.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="src\ImprovedDeltaMush.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <QtMoc Include="src\MyViewer.h">
@@ -298,6 +301,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="src\InverseKinematics.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\ImprovedDeltaMush.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
