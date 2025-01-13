@@ -77,9 +77,9 @@ void ImprovedDeltaMush::smoothcollison(std::set<MyMesh::VertexHandle> verteces, 
 //TODO: Must Refact this 
 void ImprovedDeltaMush::SetDistance(std::shared_ptr<BaseMesh> basemesh, std::vector<Bone>& bones)
 {
-	int index = 1;
+	int index = 0;
 	MyMesh& mesh = basemesh->getMesh();
-	float factor = 1.5;
+	float factor = 2;
 	colliedverteces.clear();
 	colliedfaces.clear();
 	colliededges.clear();

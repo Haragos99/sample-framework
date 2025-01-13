@@ -97,8 +97,7 @@ public:
     std::set<MyMesh::VertexHandle> colliedverteces;
     std::set<MyMesh::FaceHandle> colliedfaces;
     std::set<MyMesh::EdgeHandle> colliededges;
-    void smoothcollison(std::set<MyMesh::VertexHandle> verteces);
-
+ 
     bool Mydelta;
 
     void DeltaMush2(std::vector<Eigen::Vector4d> v);
@@ -136,6 +135,8 @@ public:
         update();
     }
 
+
+    void improveDeltaMush();
 
     void startTimer();
 

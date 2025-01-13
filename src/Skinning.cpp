@@ -18,12 +18,12 @@ void Skinning::clean(MyMesh& mesh, std::vector<Bone>& bones)
 
 
 
+
 void Skinning::animatemesh(std::shared_ptr<BaseMesh> basemesh, std::vector<Bone>& bones, bool inv)
 {
     MyMesh& mesh = basemesh->getMesh();
     for (auto v : mesh.vertices())
     {
-        // tezstként lehet leutánozni a fabrikot
         Mat4 M_result = Mat4(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
         for (int i = 0; i < bones.size(); i++)
         {
@@ -32,7 +32,6 @@ void Skinning::animatemesh(std::shared_ptr<BaseMesh> basemesh, std::vector<Bone>
             M_result += M;
         }
         Vec4 point4;
-        //origanal részt újra gondolni
         if (!inv)
         {
             point4 = Vec4(mesh.point(v)[0], mesh.point(v)[1], mesh.point(v)[2], 1);

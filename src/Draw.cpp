@@ -78,26 +78,8 @@ void MyViewer::draw() {
                     }
                     else {
                         glColor3d(color.x,color.y,color.z);
-                    }
+                    }                
                     
-                    
-                    
-                    
-                }
-                else if (visualization == Visualization::WEIGH2)
-                {
-                    if (wi == b.size())
-                    {
-                        wi = 0;
-                    }
-                    Vec color = mesh.data(v).weigh[wi] * (b[wi].getColor());
-
-                    if (transparent) {
-                        glColor4d(color.x, color.y, color.z, bright);
-                    }
-                    else {
-                        glColor3d(color.x, color.y, color.z);
-                    }
                 }
                
                 glNormal3dv(mesh.normal(v).data());
@@ -125,35 +107,6 @@ void MyViewer::draw() {
     {
         object->draw(vis);
     }
-
-    if (show_solid && show_wireframe) {
-        glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-        glColor3d(0.0, 0.0, 0.0);
-        glDisable(GL_LIGHTING);
-        for (auto f : mesh.faces()) {
-            glBegin(GL_POLYGON);
-            for (auto v : mesh.fv_range(f))
-                glVertex3dv(mesh.point(v).data());
-            glEnd();
-        }
-        glEnable(GL_LIGHTING);
-    }
-
-    drawMesh();
-    mc.draw();
-    //col.draw(mesh);
-    if(false)
-    {
-        glColor3d(0.0, 1.0, 0.0);
-        glBegin(GL_POINTS);
-        for (const auto& p : sampels)
-            glVertex3dv(p.data());
-        glEnd();
-        glPointSize(1.0);
-        glEnable(GL_LIGHTING);
-    }
-
-
     if (isAnimating_)
     {
         QImage frame = QOpenGLWidget::grabFramebuffer();

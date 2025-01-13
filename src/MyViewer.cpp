@@ -3,6 +3,7 @@
 #include <map>
 #include "Bone.h"
 #include "BoneHeat.h"
+#include "ImprovedDeltaMush.h"
 
 #ifdef BETTER_MEAN_CURVATURE
 #include "Eigen/Eigenvalues"
@@ -757,6 +758,22 @@ void MyViewer::createCP() {
 }
 
 
+
+void MyViewer::improveDeltaMush()
+{
+    if (auto skeleton = std::dynamic_pointer_cast<Skelton>(objects[0]))
+    {
+        vis.type = Vis::VisualType::WEIGH;
+        std::shared_ptr<Skinning> mymush = std::make_shared<ImprovedDeltaMush>();
+        skeleton->setSkinning(mymush);
+        if (auto mesh = std::dynamic_pointer_cast<BaseMesh>(objects[1]))
+        {
+            skeleton->skinning(mesh);
+        }
+    }
+}
+
+
 void MyViewer::keyPressEvent(QKeyEvent* e) {
 
     auto dlg = std::make_unique<QDialog>(this);
@@ -841,7 +858,7 @@ void MyViewer::keyPressEvent(QKeyEvent* e) {
         case Qt::Key_H:
             //smoothcollison(col.verteces);
             //smoothpoints();
-            smoothcollison(vert);
+            improveDeltaMush();
             update();
             break;
 

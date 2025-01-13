@@ -179,6 +179,7 @@ void DeltaMush::Delta_Mush_two(std::shared_ptr<BaseMesh> basemesh)
         Vec b = (t ^ Vec(normal)).unit();
 
         C = BuiledMatrix(normal, t, b, Vec(smooth_mesh.point(ve).data()));
+        m.data(ve).C = C;
         auto d = C * v_d[ve.idx()];
         m.point(ve) = MyMesh::Point(d[0], d[1], d[2]);
     }

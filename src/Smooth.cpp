@@ -275,7 +275,7 @@ void MyViewer::Delta_Mush_two(std::vector<Eigen::Vector4d> v)
 
     emit displayMessage(std::to_string(tt).c_str());
     vert = co.verteces;
-    smoothcollison(vert);
+    //smoothcollison(vert);
 }
 
 Eigen::Vector3f toEigenVec(const MyMesh::Point& v) {

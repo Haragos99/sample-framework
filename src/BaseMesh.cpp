@@ -48,6 +48,7 @@ void BaseMesh::draw(Vis::Visualization& vis)
                             color += (mesh.data(v).weigh[i] * colors[i]);
                         }
                     }
+                    color = mesh.data(v).color == Vec(0, 0, 0) ? color : mesh.data(v).color;
                 }
                 
                 glColor3d(color.x, color.y, color.z);
