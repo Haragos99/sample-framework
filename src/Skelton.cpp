@@ -1,70 +1,51 @@
 #include "Skelton.h"
 
-
-
-
-void Skelton::animate(float current_time, MyMesh& mesh)
+void Skelton::scale(float scale)
 {
 
-    for (int k = 0; k < n_joint; k++)
-    {
-        Joint* j = root->searchbyid(root, k);
-        if (j->keyframes.size() != 0 && j->keyframes.back().time() >= current_time)
-        {
-            for (size_t i = 0; i < j->keyframes.size() - 1; ++i) {
-
-                if (current_time >= j->keyframes[i].time() && current_time <= j->keyframes[i + 1].time())
-                {
-                    Vec pivot = j->point;
-                    Vec rotated = (j->keyframes[i + 1].angeles() - j->keyframes[i].angeles());
-                    float timediff_key = (j->keyframes[i + 1].time() - j->keyframes[i].time());
-                    float step = 1;
-                    float r = timediff_key * step;
-                    Vec angels = rotated / r;
-                    j->calculateMatrecies(j, pivot, angels);
-                }
-            }
-        }
-
-    }
-    root->transform_point(root);
-    animate_mesh(mesh, true);
 }
 
-
-
-void Skelton::animate_mesh(MyMesh& mesh, bool isweight, bool inv)
+void Skelton::drawWithNames(Vis::Visualization& vis) const
 {
-    if (isweight)
+    for (int i = 0; i < points.size(); i++)
     {
-        for (auto v : mesh.vertices())
-        {
-            // tezstként lehet leutánozni a fabrikot
-            Mat4 M_result = Mat4(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
-            for (int i = 0; i < bones.size(); i++)
-            {
-                double w = mesh.data(v).weigh[i];
-                Mat4 M = bones[i].end->M.skalar(w);
-                M_result += M;
-            }
-            Vec4 point4;
-            //origanal részt újra gondolni
-            if (!inv)
-            {
-                point4 = Vec4(mesh.point(v)[0], mesh.point(v)[1], mesh.point(v)[2], 1);
-            }
-            else {
-                point4 = Vec4(mesh.data(v).original[0], mesh.data(v).original[1], mesh.data(v).original[2], 1);
-            }
+        Joint* j = root->searchbyid(root, i);
+        Vec const& p = j->point;
+        glPushName(j->id);
+        glRasterPos3fv(p);
+        glPopName();
 
-            Vec4 result = point4 * M_result;
-            OpenMesh::Vec3d diffrents = OpenMesh::Vec3d(result.x, result.y, result.z);
-            mesh.point(v) = diffrents;
-            mesh.data(v).M = M_result;
-        }
     }
 }
 
+
+
+void Skelton::setSkinning(std::shared_ptr<Skinning> skinning)
+{
+    skinningtechnic = skinning;
+}
+
+void Skelton::skinning(std::shared_ptr<BaseMesh> basemesh)
+{
+    mesh = basemesh;
+    skinningtechnic->execute(mesh, bones);
+}
+void Skelton::setCameraFocus(Vector& min, Vector& max)
+{
+    for (auto v : points) {
+        min.minimize(Vector(v.x, v.y, v.z));
+        max.maximize(Vector(v.x, v.y, v.z));
+    }
+}
+
+void Skelton::draw(Vis::Visualization& vis)
+{
+    for (auto b : bones)
+    {
+        b.draw();
+    }
+    root->draw(root);
+}
 
 
 void Skelton::addJoint(Joint* parent, Joint* child) {
@@ -74,15 +55,12 @@ void Skelton::addJoint(Joint* parent, Joint* child) {
     }
     else {
         parent->children.push_back(child);
+        child->parent = parent;
     }
 }
 
-
-
-
 void Skelton::buildTree(std::vector<Joint*>& joints)
 {
-
     for (int i = 0; i < childrenMatrix.size(); ++i)
     {
         for (int j = 0; j < childrenMatrix[i].size(); ++j)
@@ -99,26 +77,59 @@ void Skelton::buildTree(std::vector<Joint*>& joints)
 }
 
 
-//TODO: Rewrite
-void Skelton::calculateMatrix()
+Joint* Skelton::getSelectedJoint(int id)
 {
-
+    Joint* joint = root->searchbyid(root, id);
+    return joint;
 }
 
 
+
+
+//TODO: Rewrite
+void Skelton::calculateMatrix(std::vector<Vec>& ik, Joint* join)
+{
+    int n = ik.size();
+    joint.clear();
+    auto joints = getJointtoList(join);
+
+    for (int i = 1; i < n; ++i)
+    {
+        Joint* joint = joints[i];
+        Vec oldpoint = joints[i]->Tpose;
+        Vec prevoldpoint = joints[i - 1]->Tpose;
+        Vec old_diff = oldpoint - prevoldpoint;
+        Vec new_diff = ik[i] - ik[i - 1];
+        old_diff = old_diff.unit();
+        new_diff = new_diff.unit();
+        Vec axis = old_diff ^ new_diff;
+        float dot = old_diff.x * new_diff.x + old_diff.y * new_diff.y + old_diff.z * new_diff.z;
+        float rotAngle = std::atan2(axis.norm(), dot);
+        Vec pivot = joint->parent->Tpose;
+        Mat4 T1 = TranslateMatrix(-pivot);
+        Mat4 T2 = TranslateMatrix(pivot);
+        Mat4 R;
+        if (axis.norm() > 1E-12) {
+            axis = axis.unit();
+            R = RotationMatrix(rotAngle, axis);
+        }
+        joint->R = R;
+        Mat4 M = T1 * R * TranslateMatrix(joint->parent->point);  // * T2;
+        Vec4 newpoint = Vec4(joint->Tpose) * M;
+        joint->M = M;
+        joint->point = Vec(newpoint.x, newpoint.y, newpoint.z);
+    }
+}
+
 void Skelton::loadFile(const std::string& filename)
 {
-    std::ifstream file(filename); // Replace "data.txt" with your file name
-
+    std::ifstream file(filename); 
     std::vector<int> children;
-
-
     std::string line;
     while (getline(file, line)) {
         std::stringstream ss(line);
         char type;
         ss >> type;
-
         if (type == 'b') {
             char dummy;
             double x, y, z;
@@ -147,12 +158,10 @@ void Skelton::loadFile(const std::string& filename)
     }
 
     file.close();
-
 }
 
 void Skelton::build()
 {
-
     std::vector<Joint*> joints;
     for (int i = 0; i < points.size(); i++)
     {
@@ -161,19 +170,15 @@ void Skelton::build()
     n_joint = joints.size();
 
     //Build tree by BFS
-
     root = joints[0];
 
-
     buildTree(joints);
-
 
     // build the bones
     int size = indexes.size();
     for (int i = 0; i < size; i++)
     {
         bones.push_back(Bone(joints[indexes[i].first], joints[indexes[i].second], i, colors_bone[i]));
-
     }
 
 }
@@ -189,6 +194,20 @@ std::vector<Axes>Skelton::arrows()
     return result;
 }
 
+
+bool Skelton::hasMultipleChildren(Joint* j) {
+    getList(j);
+    for (auto j : joint)
+    {
+        if (j->children.size() > 1)
+        {
+            joint.clear();
+            return false;
+        }
+    }
+    joint.clear();
+    return true;
+}
 
 void Skelton::setJointMatrix(int id, Vec& angle)
 {
@@ -223,14 +242,102 @@ bool Skelton::save(const std::string& filename)
             }
             f << line << std::endl;
         }
-
-
     }
     catch (std::ifstream::failure&) {
         return false;
     }
 
-
     return true;
 }
 
+void Skelton::movement(int selected, const Vector& position)
+{
+   Joint* joint = root->searchbyid(root, selected);
+   joint->point = Vec(position.data());
+   animateMesh();
+}
+
+// Bool inv
+void Skelton::animateMesh(bool inv)
+{
+    if (skinningtechnic != nullptr && mesh != nullptr)
+    {
+        skinningtechnic->animatemesh(mesh, bones, inv);
+    }
+}
+
+
+void Skelton::rotate(int selected, Vec angel)
+{
+    Joint* joint = root->searchbyid(root, selected);
+    root->change_all_rotason(joint, joint->point, angel);
+    // Toodo Animate the mesh 
+    animateMesh();
+    
+}
+
+void Skelton::addKeyframes(int selected, float timeline)
+{
+    Joint* joint = root->searchbyid(root, selected);
+    Keyframe k = Keyframe(timeline, joint->id, joint->angel);
+    root->addframe(joint,k);// TODO: Think about this solution
+}
+
+
+void Skelton::reset()
+{
+    root->reset_all(root);
+}
+
+
+
+void Skelton::getList(Joint* j)
+{
+    joint.push_back(j);
+    for (int i = 0; i < j->children.size(); i++)
+    {
+        getList(j->children[i]);
+    }
+}
+
+
+void Skelton::animate(float time)
+{
+    for (int i = 0; i < n_joint; i++)
+    {
+        Joint* joint = root->searchbyid(root, i);
+        if (joint->keyframes.size() != 0 && joint->keyframes.back().time() >= time)
+        {
+            for (size_t j = 0; j < joint->keyframes.size() - 1; ++j) {
+                Keyframe& startFrame = joint->keyframes[j];
+                Keyframe& endFrame = joint->keyframes[j + 1];
+                if (time >= startFrame.time() && time <= endFrame.time())
+                {
+                    Vec pivot = joint->point;
+                    Vec rotated = (endFrame.angeles() - startFrame.angeles());
+                    float timediff = (endFrame.time() - startFrame.time());
+                    float step = 1;
+                    float rate = timediff * step;
+                    Vec angels = rotated / rate;
+                    joint->calculateMatrecies(joint, pivot, angels);
+                }
+            }
+        }
+
+    }
+    root->transform_point(root);
+    animateMesh();
+    set_deafult_matrix();
+     
+}
+
+Vec Skelton::postSelection(const int p)
+{
+    Joint* joint = root->searchbyid(root, p);
+    return joint->point;
+}
+
+void Skelton::datainfo()
+{
+
+}

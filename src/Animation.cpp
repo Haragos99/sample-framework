@@ -1,22 +1,14 @@
 #include "MyViewer.h"
 
-
-
-
-
 void MyViewer::animate()
 {
     //TODO: finish this
     if (startAnimationTime_ < endanimation) {
         FrameSecond = startAnimationTime_;
-        for (auto& cp : cps)
+        for (auto object : objects)
         {
-            cp.animate(startAnimationTime_);
-            Joint* j = skel.root->searchbyid(skel.root, cp.jointid);
-            inverse_kinematics(cp, j);
+            object->animate(startAnimationTime_);
         }
-        skel.animate(startAnimationTime_, mesh);
-        skel.set_deafult_matrix();
         startAnimationTime_ += 1;
     }
     else
@@ -26,10 +18,13 @@ void MyViewer::animate()
         int s = render.sizeframes();
         stopAnimation();
     }  
-     
 }
 
-
+float MyViewer::currentTime() {
+    auto now = std::chrono::high_resolution_clock::now();
+    auto duration = now.time_since_epoch();
+    return std::chrono::duration_cast<std::chrono::duration<float>>(duration).count();
+}
 
 void MyViewer::keyframe_add()
 {
@@ -57,22 +52,9 @@ void MyViewer::keyframe_add()
 
     if (dlg->exec() == QDialog::Accepted) 
     {
-
-
-        if (model_type == ModelType::INVERZ)
-        {
-            Keyframe k = Keyframe(sb->value(), cps[selected_vertex].position,cps[selected_vertex].id);
-            cps[selected_vertex].addkeyframe(k);
-            keyframes_.push_back(k);
-        }
-        else
-        {
-            Joint* j = skel.root->searchbyid(skel.root, selected_vertex);
-            Keyframe k = Keyframe(sb->value(), j->id, angels);
-            skel.root->addframe(j, k);
-            keyframes_.push_back(k);
-        }
-
+        Keyframe k = Keyframe(sb->value(), 0, angels);
+        objects[selected_object]->addKeyframes(selected_vertex,sb->value());
+        keyframes_.push_back(k);
     }
 }
 
@@ -84,22 +66,16 @@ void MyViewer::Frame()
     startAnimationTime_ = currentTime();
     startAnimationTime_ = 0;
     endanimation = keyframes_.back().time();
-    //Invers();
     Reset();
     startAnimation();
 
 }
 
-
-
-
 void MyViewer::Reset()
 {
-    skel.reset();
-    for (auto v : mesh.vertices())
+    for (auto object : objects)
     {
-        mesh.point(v)= mesh.data(v).original;
-        mesh.data(v).color = Vec(0, 0, 0);
+        object->reset();
     }
     update();
 }

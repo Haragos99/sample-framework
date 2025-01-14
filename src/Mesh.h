@@ -19,3 +19,5 @@ struct MyTraits : public OpenMesh::DefaultTraits {
     VertexAttributes(OpenMesh::Attributes::Normal |
         OpenMesh::Attributes::Color | OpenMesh::Attributes::Status);
 };
+using MyMesh = OpenMesh::TriMesh_ArrayKernelT<MyTraits>;
+using Vector = OpenMesh::VectorT<double, 3>;

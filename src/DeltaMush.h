@@ -3,32 +3,29 @@
 #include <Eigen/Eigen>
 #include "Mesh.h"
 #include "mclccd\BVHTree.hpp"
+#include "Skinning.h"
+#include "Lines.h"
 
 using qglviewer::Vec;
-using MyMesh = OpenMesh::TriMesh_ArrayKernelT<MyTraits>;
-using Vector = OpenMesh::VectorT<double, 3>;
 
-class DeltaMush
+class DeltaMush : public Skinning
 {
 public:
-	DeltaMush(){}
-	DeltaMush(MyMesh& _mesh) { mesh = _mesh; MushHelper = _mesh; deltaMushFactor = 1.0f; }
-	void Delta_Mush_two(MyMesh& _mesh);
-	void Delta_Mush();
-	MyMesh smoothvectors(std::vector<Vec>& smoothed, MyMesh& _mesh);
-	void setHelper(MyMesh _mesh) { MushHelper = mesh; }
-	Eigen::MatrixXd BuiledMatrix(MyMesh::Normal normal, Vec t,Vec b,Vec s);
-	std::vector<Eigen::Vector4d> setMushFactor(std::vector<Eigen::Vector4d> v);
-	void draw();
+	DeltaMush(){ deltaMushFactor = 1.0f; }
+	virtual void execute(std::shared_ptr<BaseMesh> basemesh, std::vector<Bone>& bones) override;
+	virtual void animatemesh(std::shared_ptr<BaseMesh> basemesh, std::vector<Bone>& bones, bool inv = false) override;
 	~DeltaMush(){}
 	float deltaMushFactor;
 
-private:
-	MyMesh mesh;
-	MyMesh MushHelper;
-	MyMesh Smooth;
-	std::vector<Vec> smoothed;
+protected:
+	void createDeltaline(Vec& start, Vec& end);
+	void Delta_Mush_two(std::shared_ptr<BaseMesh> basemesh);
+	void Delta_Mush(std::shared_ptr<BaseMesh> basemesh);
+	std::shared_ptr<BaseMesh> smoothMesh(std::shared_ptr<BaseMesh> basemesh);
+	Eigen::MatrixXd BuiledMatrix(MyMesh::Normal normal, Vec t,Vec b,Vec s);
+	void modifyDeltaLine(std::vector<Eigen::Vector4d> deltavector);
+	std::vector<Eigen::Vector4d> setMushFactor(std::vector<Eigen::Vector4d> v);
 	std::vector<Eigen::Vector4d> delta;
-	mcl::BVHTree<double, 3> tree;
+	std::shared_ptr<DeltaLines> lines;
 };
 

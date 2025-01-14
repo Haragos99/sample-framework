@@ -110,10 +110,13 @@ void KinectSkelton::creatSkelton(NUI_SKELETON_DATA& skel)
         Vec point = Vec(skel.SkeletonPositions[i].x / skel.SkeletonPositions[i].w, skel.SkeletonPositions[i].y / skel.SkeletonPositions[i].w, skel.SkeletonPositions[i].z / skel.SkeletonPositions[i].w);
         //joints[i] = new Joint(poin, i);
         Joint* joint = skelton.root->searchbyid(skelton.root, i);
-        joint->point = point;
+        joints[i] = point;
         //joints[i] = point;
         const NUI_SKELETON_BONE_ORIENTATION& boneOrientation = boneOrientations[i];
-        Matrix4 m = boneOrientation.absoluteRotation.rotationMatrix;
+        Matrix4 m = boneOrientation.hierarchicalRotation.rotationMatrix;
+
+
+
         auto q = boneOrientation.absoluteRotation.rotationQuaternion;
         qglviewer::Quaternion quaternion(q.x, q.y, q.z, q.w);
         Mat4 matrix(m.M11, m.M12, m.M13, m.M14, 
@@ -123,13 +126,28 @@ void KinectSkelton::creatSkelton(NUI_SKELETON_DATA& skel)
         Vec axies;
         qreal angel;
 
+
         quaternion.getAxisAngle(axies, angel);
 
         joint->M = matrix;
 
         joint->R = matrix;
-        Vec4 p = Vec4(point) * matrix;
+        Vec pivot;
+        if (joint->parent!= nullptr)
+        {
+            pivot = joint->parent->Tpose;
+        }
+        else
+        {
+            pivot = joint->Tpose;
+        }
+
+        Mat4 T1 = TranslateMatrix(-pivot);
+        Mat4 T2 = TranslateMatrix(pivot);
+        Mat4 M = T1 * matrix * T2;
+        Vec4 p = Vec4(joint->Tpose) * M;
         //joint->point = Vec(p.x, p.y, p.z);
+        joint->point = Vec(p.x,p.y,p.z);
     }
 }
 
@@ -188,17 +206,17 @@ KinectSkelton::~KinectSkelton()
 
 void KinectSkelton::draw()
 {
-    skelton.draw();
+   // skelton.draw();
    
     for (auto j : joints)
     {
-        /*
+        
         glColor3d(0.0, 1.0, 0.0);
         glPointSize(50.0);
         glBegin(GL_POINTS);
         glVertex3dv(j);
         glEnd();
-        */
+        
     }
 }
 

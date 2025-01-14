@@ -15,6 +15,7 @@ void Joint::change_all_position(Joint* j, Vec dif)
 
 void Joint::change_all_rotason(Joint* j, Vec pivot, Vec angles)
 {
+    j->angel = angles;
     qglviewer::Quaternion qx = qglviewer::Quaternion(Vec(1, 0, 0), angles.x / 180.0 * M_PI);
     qglviewer::Quaternion qy = qglviewer::Quaternion(Vec(0, 1, 0), angles.y / 180.0 * M_PI);
     qglviewer::Quaternion qz = qglviewer::Quaternion(Vec(0, 0, 1), angles.z / 180.0 * M_PI);
@@ -108,7 +109,14 @@ Joint* Joint::getLeaf(Joint* j)
     }
 }
 
-
+void Joint::to_array(Joint* j, std::vector<Vec>& target)
+{
+    target.push_back(j->point);
+    for (int i = 0; i < j->children.size(); i++)
+    {
+        to_array(j->children[i], target);
+    }
+}
 
 void Joint::drawarrow(Joint* j)
 {
