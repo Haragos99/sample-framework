@@ -22,7 +22,9 @@ public:
 	void addcolor(Vec& color);
 	void setMesh(MyMesh& _mesh);
 	void setFilename(std::string _filename);
+	double voronoiWeight(MyMesh::HalfedgeHandle in_he);
 	void updateMesh();
+	void fairMesh();
 	virtual~BaseMesh();
 
 

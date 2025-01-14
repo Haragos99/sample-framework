@@ -3,6 +3,7 @@
 #include "Mesh.h"
 #include "Keyframe.h"
 #include "Visualization.h"
+#include <QDialog>
 
 
 class Object3D {
@@ -25,5 +26,6 @@ protected:
 	static int id;
 	std::string filename;
 	std::vector<Keyframe> keyframes;
+	std::unique_ptr<QDialog> window;
 
 };

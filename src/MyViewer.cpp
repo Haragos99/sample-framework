@@ -86,157 +86,6 @@ void MyViewer::localSystem(const MyViewer::Vector& normal,
     v = normal % u;
 }
 
-double MyViewer::voronoiWeight(MyViewer::MyMesh::HalfedgeHandle in_he) {
-    // Returns the area of the triangle bounded by in_he that is closest
-    // to the vertex pointed to by in_he.
-    if (mesh.is_boundary(in_he))
-        return 0;
-    auto next = mesh.next_halfedge_handle(in_he);
-    auto prev = mesh.prev_halfedge_handle(in_he);
-    double c2 = mesh.calc_edge_vector(in_he).sqrnorm();
-    double b2 = mesh.calc_edge_vector(next).sqrnorm();
-    double a2 = mesh.calc_edge_vector(prev).sqrnorm();
-    double alpha = mesh.calc_sector_angle(in_he);
-
-    if (a2 + b2 < c2)                // obtuse gamma
-        return 0.125 * b2 * std::tan(alpha);
-    if (a2 + c2 < b2)                // obtuse beta
-        return 0.125 * c2 * std::tan(alpha);
-    if (b2 + c2 < a2) {              // obtuse alpha
-        double b = std::sqrt(b2), c = std::sqrt(c2);
-        double total_area = 0.5 * b * c * std::sin(alpha);
-        double beta = mesh.calc_sector_angle(prev);
-        double gamma = mesh.calc_sector_angle(next);
-        return total_area - 0.125 * (b2 * std::tan(gamma) + c2 * std::tan(beta));
-    }
-
-    double r2 = 0.25 * a2 / std::pow(std::sin(alpha), 2); // squared circumradius
-    auto area = [r2](double x2) {
-        return 0.125 * std::sqrt(x2) * std::sqrt(std::max(4.0 * r2 - x2, 0.0));
-    };
-    return area(b2) + area(c2);
-}
-
-#ifndef BETTER_MEAN_CURVATURE
-void MyViewer::updateMeanCurvature() {
-    std::map<MyMesh::FaceHandle, double> face_area;
-    std::map<MyMesh::VertexHandle, double> vertex_area;
-
-    for (auto f : mesh.faces())
-        face_area[f] = mesh.calc_sector_area(mesh.halfedge_handle(f));
-
-    // Compute triangle strip areas
-    for (auto v : mesh.vertices()) {
-        vertex_area[v] = 0;
-        mesh.data(v).mean = 0;
-        for (auto f : mesh.vf_range(v))
-            vertex_area[v] += face_area[f];
-        vertex_area[v] /= 3.0;
-    }
-
-    // Compute mean values using dihedral angles
-    for (auto v : mesh.vertices()) {
-        for (auto h : mesh.vih_range(v)) {
-            auto vec = mesh.calc_edge_vector(h);
-            double angle = mesh.calc_dihedral_angle(h); // signed; returns 0 at the boundary
-            mesh.data(v).mean += angle * vec.norm();
-        }
-        mesh.data(v).mean *= 0.25 / vertex_area[v];
-    }
-}
-#else // BETTER_MEAN_CURVATURE
-void MyViewer::updateMeanCurvature() {
-    // As in the paper:
-    //   S. Rusinkiewicz, Estimating curvatures and their derivatives on triangle meshes.
-    //     3D Data Processing, Visualization and Transmission, IEEE, 2004.
-
-    std::map<MyMesh::VertexHandle, Vector> efgp; // 2nd principal form
-    std::map<MyMesh::VertexHandle, double> wp;   // accumulated weight
-
-    // Initial setup
-    for (auto v : mesh.vertices()) {
-        efgp[v].vectorize(0.0);
-        wp[v] = 0.0;
-    }
-
-    for (auto f : mesh.faces()) {
-        // Setup local edges, vertices and normals
-        auto h0 = mesh.halfedge_handle(f);
-        auto h1 = mesh.next_halfedge_handle(h0);
-        auto h2 = mesh.next_halfedge_handle(h1);
-        auto e0 = mesh.calc_edge_vector(h0);
-        auto e1 = mesh.calc_edge_vector(h1);
-        auto e2 = mesh.calc_edge_vector(h2);
-        auto n0 = mesh.normal(mesh.to_vertex_handle(h1));
-        auto n1 = mesh.normal(mesh.to_vertex_handle(h2));
-        auto n2 = mesh.normal(mesh.to_vertex_handle(h0));
-
-        Vector n = mesh.normal(f), u, v;
-        localSystem(n, u, v);
-
-        // Solve a LSQ equation for (e,f,g) of the face
-        Eigen::MatrixXd A(6, 3);
-        A << (e0 | u), (e0 | v), 0.0,
-            0.0, (e0 | u), (e0 | v),
-            (e1 | u), (e1 | v), 0.0,
-            0.0, (e1 | u), (e1 | v),
-            (e2 | u), (e2 | v), 0.0,
-            0.0, (e2 | u), (e2 | v);
-        Eigen::VectorXd b(6);
-        b << ((n2 - n1) | u),
-            ((n2 - n1) | v),
-            ((n0 - n2) | u),
-            ((n0 - n2) | v),
-            ((n1 - n0) | u),
-            ((n1 - n0) | v);
-        Eigen::Vector3d x = A.fullPivLu().solve(b);
-
-        Eigen::Matrix2d F;          // Fundamental matrix for the face
-        F << x(0), x(1),
-            x(1), x(2);
-
-        for (auto h : mesh.fh_range(f)) {
-            auto p = mesh.to_vertex_handle(h);
-
-            // Rotate the (up,vp) local coordinate system to be coplanar with that of the face
-            Vector np = mesh.normal(p), up, vp;
-            localSystem(np, up, vp);
-            auto axis = (np % n).normalize();
-            double angle = std::acos(std::min(std::max(n | np, -1.0), 1.0));
-            auto rotation = Eigen::AngleAxisd(angle, Eigen::Vector3d(axis.data()));
-            Eigen::Vector3d up1(up.data()), vp1(vp.data());
-            up1 = rotation * up1;    vp1 = rotation * vp1;
-            up = Vector(up1.data()); vp = Vector(vp1.data());
-
-            // Compute the vertex-local (e,f,g)
-            double e, f, g;
-            Eigen::Vector2d upf, vpf;
-            upf << (up | u), (up | v);
-            vpf << (vp | u), (vp | v);
-            e = upf.transpose() * F * upf;
-            f = upf.transpose() * F * vpf;
-            g = vpf.transpose() * F * vpf;
-
-            // Accumulate the results with Voronoi weights
-            double w = voronoiWeight(h);
-            efgp[p] += Vector(e, f, g) * w;
-            wp[p] += w;
-        }
-    }
-
-    // Compute the principal curvatures
-    for (auto v : mesh.vertices()) {
-        auto& efg = efgp[v];
-        efg /= wp[v];
-        Eigen::Matrix2d F;
-        F << efg[0], efg[1],
-            efg[1], efg[2];
-        auto k = F.eigenvalues();   // always real, because F is a symmetric real matrix
-        mesh.data(v).mean = (k(0).real() + k(1).real()) / 2.0;
-    }
-}
-#endif
-
 static Vec HSV2RGB(Vec hsv) {
     // As in Wikipedia
     double c = hsv[2] * hsv[1];
@@ -260,6 +109,8 @@ static Vec HSV2RGB(Vec hsv) {
 }
 
 
+
+
 static Vec RGB2HSV(Vec rgb) {
 
     Vec hsv;
@@ -270,10 +121,8 @@ static Vec RGB2HSV(Vec rgb) {
     b = rgb[2];
     min = r < g ? r : g;
     min = min < b ? min : b;
-
     max = r > g ? r : g;
     max = max > b ? max : b;
-
     delta = max - min;
     hsv.z = max;
     if (delta < 0.00001)
@@ -321,44 +170,6 @@ Vec MyViewer::meanMapColor(double d) const {
     return HSV2RGB({ green * (1 - alpha) + red * alpha, 1, 1 });
 }
 
-void MyViewer::fairMesh() {
-    if (model_type != ModelType::MESH)
-        return;
-
-    emit startComputation(tr("Fairing mesh..."));
-    OpenMesh::Smoother::JacobiLaplaceSmootherT<MyMesh> smoother(mesh);
-    smoother.initialize(OpenMesh::Smoother::SmootherT<MyMesh>::Normal, // or: Tangential_and_Normal
-        OpenMesh::Smoother::SmootherT<MyMesh>::C1);
-    for (size_t i = 1; i <= 10; ++i) {
-        smoother.smooth(10);
-        emit midComputation(i * 10);
-    }
-    emit endComputation();
-}
-
-#ifdef USE_JET_FITTING
-
-void MyViewer::updateWithJetFit(size_t neighbors) {
-    std::vector<Vector> points;
-    for (auto v : mesh.vertices())
-        points.push_back(mesh.point(v));
-
-    auto nearest = JetWrapper::Nearest(points, neighbors);
-
-    for (auto v : mesh.vertices()) {
-        auto jet = JetWrapper::fit(mesh.point(v), nearest, 2);
-        if ((mesh.normal(v) | jet.normal) < 0) {
-            mesh.set_normal(v, -jet.normal);
-            mesh.data(v).mean = (jet.k_min + jet.k_max) / 2;
-        }
-        else {
-            mesh.set_normal(v, jet.normal);
-            mesh.data(v).mean = -(jet.k_min + jet.k_max) / 2;
-        }
-    }
-}
-
-#endif // USE_JET_FITTING
 
 void MyViewer::addObject(std::shared_ptr<Object3D> object) {
     objects.push_back(object);
@@ -367,9 +178,6 @@ void MyViewer::addObject(std::shared_ptr<Object3D> object) {
 void MyViewer::addObjects(const std::vector<std::shared_ptr<Object3D>>& newObjects) {
     objects.insert(objects.end(), newObjects.begin(), newObjects.end());
 }
-
-
-
 
 void MyViewer::stopTimer() {
     if (timer->isActive()) {
@@ -400,7 +208,6 @@ void MyViewer::setupCamera() {
 
 void MyViewer::init() {
     glLightModeli(GL_LIGHT_MODEL_TWO_SIDE, 1);
-
 
     connect(timer, &QTimer::timeout, this, &MyViewer::callKinekcnUpdate);
 
@@ -433,12 +240,6 @@ void MyViewer::init() {
     glTexImage1D(GL_TEXTURE_1D, 0, GL_RGB, 2, 0, GL_RGB, GL_UNSIGNED_BYTE_3_3_2, &slicing_img);
     setAnimationPeriod(16);
 }
-
-
-
-
-
-
 
 
 void MyViewer::Rotate()
@@ -528,8 +329,6 @@ void MyViewer::selectedjoin()
         }
 
 
-
-
     }
 }
 
@@ -590,23 +389,6 @@ void MyViewer::selectedvert()
     }
 }
 
-
-void MyViewer::Error(MyMesh& m, HRBF& h) {
-
-    float p_error = 0;
-    float n_error = 0;
-    for (auto v : m.vertices())
-    {
-        auto p = m.point(v);
-
-        //h.eval(p);
-        auto n = h.grad(p);
-        n_error += (n | m.normal(v)) - 1;
-    }
-
-    n_error;
-}
-
 void MyViewer::skining()
 {
     vis.type = Vis::VisualType::WEIGH;
@@ -617,6 +399,7 @@ void MyViewer::skining()
             std::shared_ptr<Skinning> baseskinning = std::make_shared<Skinning>();
             skeleton->setSkinning(baseskinning);
             skeleton->skinning(mesh);
+            update();
         }
     }
 }
@@ -632,10 +415,11 @@ void MyViewer::delta()
     {
         vis.type = Vis::VisualType::WEIGH;
         std::shared_ptr<Skinning> delatmush = std::make_shared<DeltaMush>();
-        skeleton->setSkinning(delatmush);
         if (auto mesh = std::dynamic_pointer_cast<BaseMesh>(objects[1]))
         {
+            skeleton->setSkinning(delatmush);
             skeleton->skinning(mesh);
+            update();
         }
     }
 }
@@ -660,7 +444,8 @@ void MyViewer::createCP() {
             Joint* leaf = j->getLeaf(j);
             std::shared_ptr<ControlPoint> cp = std::make_shared<ControlPoint>(leaf->point * 1.1, controlPointId, skeleton);
             cp->jointid = j->id;
-            objects.push_back(cp);
+            addObject(cp);
+            setupCamera();
             controlPointId++;
         }
         else
@@ -683,11 +468,12 @@ void MyViewer::improveDeltaMush()
     if (auto skeleton = std::dynamic_pointer_cast<Skelton>(objects[0]))
     {
         vis.type = Vis::VisualType::WEIGH;
-        std::shared_ptr<Skinning> mymush = std::make_shared<ImprovedDeltaMush>();
-        skeleton->setSkinning(mymush);
+        std::shared_ptr<Skinning> mymush = std::make_shared<ImprovedDeltaMush>();       
         if (auto mesh = std::dynamic_pointer_cast<BaseMesh>(objects[1]))
         {
+            skeleton->setSkinning(mymush);
             skeleton->skinning(mesh);
+            update();
         }
     }
 }
@@ -787,11 +573,8 @@ void MyViewer::keyPressEvent(QKeyEvent* e) {
 
             startTimer();
             break;
-
-
         case Qt::Key_3:
             keyframe_add();
-
             update();
             break;
         case Qt::Key_C:
@@ -951,9 +734,9 @@ void MyViewer::Boneheat()
     {
         vis.type = Vis::VisualType::WEIGH;
         std::shared_ptr<Skinning> boneheat = std::make_shared<BoneHeat>();
-        skeleton->setSkinning(boneheat);
         if (auto mesh = std::dynamic_pointer_cast<BaseMesh>(objects[1]))
         {
+            skeleton->setSkinning(boneheat);
             skeleton->skinning(mesh);
         }
         text = new QLabel(tr("Success"));

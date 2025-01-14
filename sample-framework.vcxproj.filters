@@ -82,9 +82,6 @@
     <ClCompile Include="src\MarchingCubes.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\Smooth.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="src\mclccd\BVHTree.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>

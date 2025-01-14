@@ -5,7 +5,7 @@ bool MyViewer::openSkelton(const std::string& filename, bool update_view)
     std::shared_ptr<Skelton> skelton = std::make_shared<Skelton>();  
     skelton->loadFile(filename);
     skelton->build();
-    objects.push_back(skelton);
+    addObject(skelton);
     setupCamera();
     return true;
 }
@@ -37,7 +37,7 @@ bool MyViewer::openMesh(const std::string& filename, bool update_view) {
 
     std::shared_ptr<BaseMesh> mesh = std::make_shared<BaseMesh>(filename);
     bool sucsess = mesh->open();
-    objects.push_back(mesh);
+    addObject(mesh);
     setupCamera();
     return sucsess;
 }

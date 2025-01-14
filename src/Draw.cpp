@@ -16,6 +16,7 @@ void MyViewer::draw() {
 
     if (axes.shown)
         drawAxes();
+    glColor3d(1,1,1);
     glDisable(GL_LIGHTING);
     glDisable(GL_DEPTH_TEST);
     drawText(10, int(1.5 * ((QApplication::font().pixelSize() > 0)

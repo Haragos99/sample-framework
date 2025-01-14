@@ -223,7 +223,6 @@
     <ClCompile Include="src\Save.cpp" />
     <ClCompile Include="src\Skelton.cpp" />
     <ClCompile Include="src\Skinning.cpp" />
-    <ClCompile Include="src\Smooth.cpp" />
     <ClCompile Include="src\tight_inclusion\avx.cpp" />
     <ClCompile Include="src\tight_inclusion\ccd.cpp" />
     <ClCompile Include="src\tight_inclusion\interval.cpp" />

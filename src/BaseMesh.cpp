@@ -1,6 +1,6 @@
 #include "BaseMesh.h"
 #include <OpenMesh/Core/IO/MeshIO.hh>
-
+#include <OpenMesh/Tools/Smoother/JacobiLaplaceSmootherT.hh>
 
 
 BaseMesh::BaseMesh(std::string filename) : Object3D(filename)
@@ -184,7 +184,30 @@ void BaseMesh::updateVertexNormals()
 }
 void BaseMesh::updateMeanCurvature()
 {
+    std::map<MyMesh::FaceHandle, double> face_area;
+    std::map<MyMesh::VertexHandle, double> vertex_area;
 
+    for (auto f : mesh.faces())
+        face_area[f] = mesh.calc_sector_area(mesh.halfedge_handle(f));
+
+    // Compute triangle strip areas
+    for (auto v : mesh.vertices()) {
+        vertex_area[v] = 0;
+        mesh.data(v).mean = 0;
+        for (auto f : mesh.vf_range(v))
+            vertex_area[v] += face_area[f];
+        vertex_area[v] /= 3.0;
+    }
+
+    // Compute mean values using dihedral angles
+    for (auto v : mesh.vertices()) {
+        for (auto h : mesh.vih_range(v)) {
+            auto vec = mesh.calc_edge_vector(h);
+            double angle = mesh.calc_dihedral_angle(h); // signed; returns 0 at the boundary
+            mesh.data(v).mean += angle * vec.norm();
+        }
+        mesh.data(v).mean *= 0.25 / vertex_area[v];
+    }
 }
 
 
@@ -198,7 +221,18 @@ void BaseMesh::addKeyframes(int selected,float timeline)
 
 void BaseMesh::datainfo()
 {
+    
+}
 
+
+void BaseMesh::fairMesh()
+{
+    OpenMesh::Smoother::JacobiLaplaceSmootherT<MyMesh> smoother(mesh);
+    smoother.initialize(OpenMesh::Smoother::SmootherT<MyMesh>::Normal, // or: Tangential_and_Normal
+        OpenMesh::Smoother::SmootherT<MyMesh>::C1);
+    for (size_t i = 1; i <= 10; ++i) {
+        smoother.smooth(10);
+    }
 }
 
 
@@ -211,6 +245,41 @@ void BaseMesh::reset()
         mesh.data(v).color = Vec(0, 0, 0);
     }
 }
+
+
+
+double BaseMesh::voronoiWeight(MyMesh::HalfedgeHandle in_he) {
+    // Returns the area of the triangle bounded by in_he that is closest
+    // to the vertex pointed to by in_he.
+    if (mesh.is_boundary(in_he))
+        return 0;
+    auto next = mesh.next_halfedge_handle(in_he);
+    auto prev = mesh.prev_halfedge_handle(in_he);
+    double c2 = mesh.calc_edge_vector(in_he).sqrnorm();
+    double b2 = mesh.calc_edge_vector(next).sqrnorm();
+    double a2 = mesh.calc_edge_vector(prev).sqrnorm();
+    double alpha = mesh.calc_sector_angle(in_he);
+
+    if (a2 + b2 < c2)                // obtuse gamma
+        return 0.125 * b2 * std::tan(alpha);
+    if (a2 + c2 < b2)                // obtuse beta
+        return 0.125 * c2 * std::tan(alpha);
+    if (b2 + c2 < a2) {              // obtuse alpha
+        double b = std::sqrt(b2), c = std::sqrt(c2);
+        double total_area = 0.5 * b * c * std::sin(alpha);
+        double beta = mesh.calc_sector_angle(prev);
+        double gamma = mesh.calc_sector_angle(next);
+        return total_area - 0.125 * (b2 * std::tan(gamma) + c2 * std::tan(beta));
+    }
+
+    double r2 = 0.25 * a2 / std::pow(std::sin(alpha), 2); // squared circumradius
+    auto area = [r2](double x2) {
+        return 0.125 * std::sqrt(x2) * std::sqrt(std::max(4.0 * r2 - x2, 0.0));
+    };
+    return area(b2) + area(c2);
+}
+
+
 
 BaseMesh::~BaseMesh()
 {

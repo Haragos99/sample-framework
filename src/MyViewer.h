@@ -12,7 +12,6 @@
 #include <iostream>
 #include <vector>
 #include <OpenMesh/Core/IO/MeshIO.hh>
-#include <OpenMesh/Tools/Smoother/JacobiLaplaceSmootherT.hh>
 #include <QtGui/QKeyEvent>
 #include <QtWidgets>
 #include <map>
@@ -97,13 +96,9 @@ public:
         // Optionally refresh the viewer
         update();
     }
-
     void improveDeltaMush();
-
     void startTimer();
-
     void stopTimer();
-    void smoothpoints();
     void Frame();
     Vec angels;
     Vec ang;
@@ -127,14 +122,8 @@ protected:
 private:
     using MyMesh = OpenMesh::TriMesh_ArrayKernelT<MyTraits>;
     using Vector = OpenMesh::VectorT<double, 3>;
-#ifdef USE_JET_FITTING
-    void updateWithJetFit(size_t neighbors);
-#endif
     void localSystem(const Vector& normal, Vector& u, Vector& v);
-    double voronoiWeight(MyMesh::HalfedgeHandle in_he);
     void updateMeanMinMax();
-    void updateMeanCurvature();
-
     // Bezier
     static void bernsteinAll(size_t n, double u, std::vector<double>& coeff);
     void generateMesh(size_t resolution);
@@ -149,15 +138,10 @@ private:
     static Vec intersectLines(const Vec& ap, const Vec& ad, const Vec& bp, const Vec& bd);
     void addObject(std::shared_ptr<Object3D> object);
     void addObjects(const std::vector<std::shared_ptr<Object3D>>& newObjects);
-
     Render render;
-    // Other
-    void fairMesh();
-
     //////////////////////
     // Member variables //
     //////////////////////
-
     std::vector<std::shared_ptr<Object3D>> objects;
     size_t selected_object;
     Vis::Visualization vis;
@@ -165,10 +149,8 @@ private:
     // Mesh
     MyMesh mesh;
     int controlPointId = 0;
-    void TestDelta(std::vector<Eigen::Vector4d> v);
     float FrameSecond = 0.0;
     std::vector<Eigen::Vector4d> vec;
-    void smoothoriginal(std::vector<Vec>& smoothed);
     void drawDelta();
     void selectedjoin();
     // for the animation api (it is simpal)
@@ -186,7 +168,7 @@ private:
     Vec calcCentriod(MyMesh& _mesh);
     void createControlPoins(Joint* j);
     MarchingCubes mc;
-    void Error(MyMesh& m, HRBF& h);
+
     void createCP();
     // Visualization
     double mean_min, mean_max, cutoff_ratio;
