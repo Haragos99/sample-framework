@@ -12,6 +12,9 @@ public:
 	virtual void animate(float time) override;
 	virtual void scale(float scale) override;
 	virtual void setCameraFocus(Vector& min, Vector& max) override;
+	void addKeyframes(int selected,float timeline) override;
+	void reset()override;
+	void datainfo() override;
 	void setcolor(Vec& _color);
 	void setStart(Vec& _start);
 	void setEnd(Vec& _end);
@@ -37,6 +40,9 @@ public:
 	void animate(float time) override;
 	void scale(float scale) override;
 	void setCameraFocus(Vector& min, Vector& max) override;
+	void addKeyframes(int selected,float timeline) override;
+	void reset()override;
+	void datainfo() override;
 	void setDeltas(std::vector<Eigen::Vector4d> deltas);
 	void addLine(std::shared_ptr<Line> line);
 	~DeltaLines() {}

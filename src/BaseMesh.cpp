@@ -187,6 +187,31 @@ void BaseMesh::updateMeanCurvature()
 
 }
 
+
+void BaseMesh::addKeyframes(int selected,float timeline)
+{
+
+}
+
+
+
+
+void BaseMesh::datainfo()
+{
+
+}
+
+
+
+void BaseMesh::reset()
+{
+    for (auto v : mesh.vertices())
+    {
+        mesh.point(v) = mesh.data(v).original;
+        mesh.data(v).color = Vec(0, 0, 0);
+    }
+}
+
 BaseMesh::~BaseMesh()
 {
 

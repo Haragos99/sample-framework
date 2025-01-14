@@ -210,7 +210,6 @@
     <ClCompile Include="src\DeltaMush.cpp" />
     <ClCompile Include="src\Draw.cpp" />
     <ClCompile Include="src\ImplicitSkinning.cpp" />
-    <ClCompile Include="src\Inverse_Kinematics.cpp" />
     <ClCompile Include="src\Joint.cpp" />
     <ClCompile Include="src\MarchingCubes.cpp" />
     <ClCompile Include="src\MyViewer.cpp" />

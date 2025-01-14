@@ -39,7 +39,6 @@ MyViewer::MyViewer(QWidget* parent) :
     setSelectRegionHeight(10);
     axes.shown = false;
     isAnimating_ = false;
-    Mydelta = false;
 }
 
 MyViewer::~MyViewer() {
@@ -568,13 +567,8 @@ void MyViewer::Rotate()
         rotation = angles;
 
         objects[selected_object]->rotate(selected_vertex, angels);
+       
         
-        if (delatamush) {
-            MushHelper = mesh;
-            Delta_Mush_two(vec);
-            mtransperent= mesh;
-        }
-           
         update();
     }
 
@@ -620,6 +614,12 @@ void MyViewer::selectedjoin()
     }
 }
 
+
+void MyViewer::index_of_weight()
+{
+
+}
+
 /// <summary>
 /// TODO Refact to for the OO
 /// </summary>
@@ -638,7 +638,7 @@ void MyViewer::selectedvert()
 
         for (int i = 0; i < selcted_point.weigh.size(); i++)
         {
-            auto color = b[i].getColor() * 255;
+            auto color = Vec() * 255;
             QColor rgb(color[0], color[1], color[2]);
             QString style = QString("QLabel { background-color : rgb(%1, %2, %3) }").arg(rgb.red()).arg(rgb.green()).arg(rgb.blue());
 
@@ -774,6 +774,14 @@ void MyViewer::improveDeltaMush()
 }
 
 
+
+void MyViewer::setSlider(int value) {
+    deltaMushFactor = (float)value / 100.0f;
+    update();
+}
+
+
+
 void MyViewer::keyPressEvent(QKeyEvent* e) {
 
     auto dlg = std::make_unique<QDialog>(this);
@@ -852,7 +860,7 @@ void MyViewer::keyPressEvent(QKeyEvent* e) {
             break;
 
         case Qt::Key_J:
-            Mydelta = !Mydelta;
+           
             update();
             break;
         case Qt::Key_H:
@@ -863,13 +871,6 @@ void MyViewer::keyPressEvent(QKeyEvent* e) {
             break;
 
         case Qt::Key_G:
-            Delta_Mush_two(vec);
-            col.init(vec);
-            col.setAlfa(0);
-            col.colliedfaces = colliedfaces;
-            col.colliedverteces = colliedverteces;
-            col.colliededges = colliededges;
-            col.test(mesh, smooth);
             update();
             break;
         case Qt::Key_4:

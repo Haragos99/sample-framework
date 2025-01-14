@@ -15,6 +15,14 @@ ControlPoint::ControlPoint(Vec _position, int _id)
 
 
 
+void ControlPoint::datainfo()
+{
+
+}
+
+
+
+
 ControlPoint::ControlPoint(Vec _position, int _id, std::shared_ptr<Skelton> skelton)
 {
     position_ = _position;
@@ -55,11 +63,19 @@ void ControlPoint::animate(float time)
             float curent = (time - keyframes[i].time()) / (keyframes[i + 1].time() - keyframes[i].time());
 
             position_ = (qreal)(1.0f - curent) * start + (qreal)curent * end;
+            IK->setPosition(position_);
+            IK->execute(jointid);
         }
     }
 }
 
 
+
+
+void ControlPoint::reset()
+{
+
+}
 
 void ControlPoint::drawWithNames(Vis::Visualization& vis) const
 {
@@ -107,4 +123,9 @@ void ControlPoint::setCameraFocus(Vector& min, Vector& max)
 void ControlPoint::inversekinematics(std::shared_ptr<Skelton> skelton)
 {
     IK = std::make_unique<InverseKinematics>(skelton,position_);
+}
+void ControlPoint::addKeyframes(int selected,float timeline)
+{
+    Keyframe keyfram = Keyframe(timeline, position_, id);
+    keyframes.push_back(keyfram);
 }

@@ -1,35 +1,5 @@
 #include "Skelton.h"
 
-
-
-
-
-void Skelton::animate(float current_time, MyMesh& mesh)
-{
-    for (int k = 0; k < n_joint; k++)
-    {
-        Joint* j = root->searchbyid(root, k);
-        if (j->keyframes.size() != 0 && j->keyframes.back().time() >= current_time)
-        {
-            for (size_t i = 0; i < j->keyframes.size() - 1; ++i) {
-
-                if (current_time >= j->keyframes[i].time() && current_time <= j->keyframes[i + 1].time())
-                {
-                    Vec pivot = j->point;
-                    Vec rotated = (j->keyframes[i + 1].angeles() - j->keyframes[i].angeles());
-                    float timediff = (j->keyframes[i + 1].time() - j->keyframes[i].time());
-                    float step = 1;
-                    float rate = timediff * step;
-                    Vec angels = rotated / rate;
-                    j->calculateMatrecies(j, pivot, angels);
-                }
-            }
-        }
-
-    }
-    root->transform_point(root);
-   
-}
 void Skelton::scale(float scale)
 {
 
@@ -77,37 +47,6 @@ void Skelton::draw(Vis::Visualization& vis)
     root->draw(root);
 }
 
-void Skelton::animate_mesh(MyMesh& mesh, bool isweight, bool inv)
-{
-    if (isweight)
-    {
-        for (auto v : mesh.vertices())
-        {
-            // tezstként lehet leutánozni a fabrikot
-            Mat4 M_result = Mat4(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
-            for (int i = 0; i < bones.size(); i++)
-            {
-                double w = mesh.data(v).weigh[i];
-                Mat4 M = bones[i].end->M.skalar(w);
-                M_result += M;
-            }
-            Vec4 point4;
-            //origanal részt újra gondolni
-            if (!inv)
-            {
-                point4 = Vec4(mesh.point(v)[0], mesh.point(v)[1], mesh.point(v)[2], 1);
-            }
-            else {
-                point4 = Vec4(mesh.data(v).original[0], mesh.data(v).original[1], mesh.data(v).original[2], 1);
-            }
-
-            Vec4 result = point4 * M_result;
-            OpenMesh::Vec3d diffrents = OpenMesh::Vec3d(result.x, result.y, result.z);
-            mesh.point(v) = diffrents;
-            mesh.data(v).M = M_result;
-        }
-    }
-}
 
 void Skelton::addJoint(Joint* parent, Joint* child) {
     if (parent == nullptr)
@@ -337,6 +276,18 @@ void Skelton::rotate(int selected, Vec angel)
     
 }
 
+void Skelton::addKeyframes(int selected, float timeline)
+{
+    Joint* joint = root->searchbyid(root, selected);
+    Keyframe k = Keyframe(timeline, joint->id, joint->angel);
+    root->addframe(joint,k);// TODO: Think about this solution
+}
+
+
+void Skelton::reset()
+{
+    root->reset_all(root);
+}
 
 
 
@@ -376,6 +327,7 @@ void Skelton::animate(float time)
     }
     root->transform_point(root);
     animateMesh();
+    set_deafult_matrix();
      
 }
 
@@ -383,4 +335,9 @@ Vec Skelton::postSelection(const int p)
 {
     Joint* joint = root->searchbyid(root, p);
     return joint->point;
+}
+
+void Skelton::datainfo()
+{
+
 }

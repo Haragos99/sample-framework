@@ -15,6 +15,9 @@ public:
 	virtual void scale(float scale)override;
 	virtual MyMesh& getMesh();
 	virtual void setCameraFocus(Vector& min, Vector& max) override;
+	void addKeyframes(int selected,float timeline) override;
+	void reset()override;
+	void datainfo() override;
 	bool open();
 	void addcolor(Vec& color);
 	void setMesh(MyMesh& _mesh);

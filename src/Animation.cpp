@@ -9,9 +9,10 @@ void MyViewer::animate()
     //TODO: finish this
     if (startAnimationTime_ < endanimation) {
         FrameSecond = startAnimationTime_;
-
-       // skel.animate(startAnimationTime_, mesh);
-        //skel.set_deafult_matrix();
+        for (auto object : objects)
+        {
+            object->animate(startAnimationTime_);
+        }
         startAnimationTime_ += 1;
     }
     else
@@ -52,22 +53,9 @@ void MyViewer::keyframe_add()
 
     if (dlg->exec() == QDialog::Accepted) 
     {
-
-
-        if (model_type == ModelType::INVERZ)
-        {
-         //   Keyframe k = Keyframe(sb->value(), cps[selected_vertex].position,cps[selected_vertex].id);
-         //   cps[selected_vertex].addkeyframe(k);
-         //   keyframes_.push_back(k);
-        }
-        else
-        {
-            Joint* j = skel.root->searchbyid(skel.root, selected_vertex);
-            Keyframe k = Keyframe(sb->value(), j->id, angels);
-            skel.root->addframe(j, k);
-            keyframes_.push_back(k);
-        }
-
+        Keyframe k = Keyframe(sb->value(), 0, angels);
+        objects[selected_object]->addKeyframes(selected_vertex,sb->value());
+        keyframes_.push_back(k);
     }
 }
 
@@ -90,11 +78,9 @@ void MyViewer::Frame()
 
 void MyViewer::Reset()
 {
-    skel.reset();
-    for (auto v : mesh.vertices())
+    for (auto object : objects)
     {
-        mesh.point(v)= mesh.data(v).original;
-        mesh.data(v).color = Vec(0, 0, 0);
+        object->reset();
     }
     update();
 }

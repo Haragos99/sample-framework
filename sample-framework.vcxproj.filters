@@ -70,9 +70,6 @@
     <ClCompile Include="src\Bone.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\Inverse_Kinematics.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="src\DeltaMush.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>

@@ -40,39 +40,11 @@ void MyViewer::drawWithNames() {
     if (axes.shown)
         return drawAxesWithNames();
 
-    switch (model_type) {
-    case ModelType::NONE: break;
-    case ModelType::MESH:
-
-        break;
-    case ModelType::BEZIER_SURFACE:
-        if (!show_control_points)
-            return;
-        for (size_t i = 0, ie = control_points.size(); i < ie; ++i) {
-            Vec const& p = control_points[i];
-            glPushName(i);
-            glRasterPos3fv(p);
-            glPopName();
-        }
-        break;
-
-    case  ModelType::INVERZ:
-      
-        break;
-    case  ModelType::SKELTON:
-        //sk.drawarrow(sk);
-        skel.root->drawarrow(skel.root);
-        break;
-    }
-    
     for (size_t i = 0; i < objects.size(); ++i) {
         glPushName(i);
         objects[i]->drawWithNames(vis);
         glPopName();
     }
-
-
-
 }
 
 void MyViewer::drawAxesWithNames() const {
@@ -106,28 +78,11 @@ void MyViewer::postSelection(const QPoint& p) {
     }
 
     selected_vertex = sel;
-
-    if (model_type == ModelType::BEZIER_SURFACE)
-        axes.position = control_points[sel];
-    if (model_type == ModelType::SKELTON)
-    {
-        Joint* j = skel.root->searchbyid(skel.root, sel);
-        axes.position = j->point;
-       
-    }
-    if (model_type == ModelType::INVERZ)
-    {
-        
-        //axes.position = cps[sel].position;
-    }
-
-
     ///New Version
     if (!objects.empty())
     {
         axes.position = objects[selected_object]->postSelection(sel);
     }
-
 
     double depth = camera()->projectedCoordinatesOf(axes.position)[2];
     Vec q1 = camera()->unprojectedCoordinatesOf(Vec(0.0, 0.0, depth));

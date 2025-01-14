@@ -29,6 +29,9 @@ public:
     void movement(int selected, const Vector& position) override;
     void rotate(int selected, Vec angel) override;
     void setCameraFocus(Vector& min, Vector& max) override;
+    void addKeyframes(int selected,float timeline) override;
+    void reset()override;
+    void datainfo() override;
     void inversekinematics(std::shared_ptr<Skelton> skelton);
     ~ControlPoint() = default;
 private:

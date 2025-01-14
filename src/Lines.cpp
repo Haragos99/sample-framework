@@ -37,6 +37,25 @@ void Line::animate(float time)
 	//TODO: implementation this
 }
 
+void Line::addKeyframes(int selected ,float timeline)
+{
+	//TODO: implementation this
+
+}
+
+
+void Line::reset()
+{
+	//TODO: implementation this
+
+}
+
+
+void Line::datainfo()
+{
+
+}
+
 void Line::setStart(Vec& _start) { start = _start; }
 
 void Line::setEnd(Vec& _end) { end = _end; }
@@ -110,6 +129,19 @@ void DeltaLines::addLine(std::shared_ptr<Line> line)
 }
 
 void DeltaLines::setCameraFocus(Vector& min, Vector& max)
+{
+
+}
+void DeltaLines::addKeyframes(int selected,float timeline)
+{
+}
+
+void DeltaLines::reset()
+{
+
+}
+
+void DeltaLines::datainfo()
 {
 
 }

@@ -17,6 +17,9 @@ public:
 	virtual void scale(float scale) = 0;
 	virtual void animate(float time) = 0;
 	virtual void setCameraFocus(Vector& min, Vector& max) = 0;
+	virtual void addKeyframes(int selected,float timeline) = 0;
+	virtual void reset() = 0;
+	virtual void datainfo() = 0;
 	virtual ~Object3D(){}
 protected:
 	static int id;
