@@ -333,7 +333,6 @@ void MyViewer::fairMesh() {
         smoother.smooth(10);
         emit midComputation(i * 10);
     }
-    updateMesh(false);
     emit endComputation();
 }
 
@@ -361,47 +360,6 @@ void MyViewer::updateWithJetFit(size_t neighbors) {
 
 #endif // USE_JET_FITTING
 
-void MyViewer::updateVertexNormals() {
-    // Weights according to:
-    //   N. Max, Weights for computing vertex normals from facet normals.
-    //     Journal of Graphics Tools, Vol. 4(2), 1999.
-    for (auto v : mesh.vertices()) {
-        Vector n(0.0, 0.0, 0.0);
-        for (auto h : mesh.vih_range(v)) {
-            if (mesh.is_boundary(h))
-                continue;
-            auto in_vec = mesh.calc_edge_vector(h);
-            auto out_vec = mesh.calc_edge_vector(mesh.next_halfedge_handle(h));
-            double w = in_vec.sqrnorm() * out_vec.sqrnorm();
-            n += (in_vec % out_vec) / (w == 0.0 ? 1.0 : w);
-        }
-        double len = n.length();
-        if (len != 0.0)
-            n /= len;
-        mesh.set_normal(v, n);
-    }
-}
-
-void MyViewer::updateMesh(bool update_mean_range) {
-    if (model_type == ModelType::BEZIER_SURFACE)
-        generateMesh(50);
-    mesh.request_face_normals(); mesh.request_vertex_normals();
-    mesh.update_face_normals();
-#ifdef USE_JET_FITTING
-    mesh.update_vertex_normals();
-    updateWithJetFit(20);
-#else // !USE_JET_FITTING
-    updateVertexNormals();
-    updateMeanCurvature();
-#endif
-    if (update_mean_range)
-        updateMeanMinMax();
-}
-
-
-
-
-
 void MyViewer::addObject(std::shared_ptr<Object3D> object) {
     objects.push_back(object);
 }
@@ -413,44 +371,11 @@ void MyViewer::addObjects(const std::vector<std::shared_ptr<Object3D>>& newObjec
 
 
 
-void MyViewer::setupCameraBone() {
-    // Set camera on the model
-    Vector box_min, box_max;
-   
-    camera()->setSceneBoundingBox(Vec(box_min.data()), Vec(box_max.data()));
-    camera()->showEntireScene();
-
-    slicing_scaling = 20 / (box_max - box_min).max();
-
-    setSelectedName(-1);
-    axes.shown = false;
-
-    update();
-}
-
-
-void MyViewer::setupCameraMC(MyMesh& _mesh)
-{
-    if (_mesh.n_vertices() != 0)
-    {   
-        Vector box_min, box_max;
-        box_min = box_max = _mesh.point(*_mesh.vertices_begin());
-        for (auto v : _mesh.vertices()) {
-            box_min.minimize(_mesh.point(v));
-            box_max.maximize(_mesh.point(v));
-        }
-        camera()->setSceneBoundingBox(Vec(box_min.data()), Vec(box_max.data()));
-        camera()->showEntireScene();
-
-        slicing_scaling = 20 / (box_max - box_min).max();
-
-        setSelectedName(-1);
-        axes.shown = false;
-
-        update();
+void MyViewer::stopTimer() {
+    if (timer->isActive()) {
+        timer->stop();  // Stop the timer
     }
 }
-
 
 void MyViewer::setupCamera() {
     // Set camera on the model
@@ -518,8 +443,6 @@ void MyViewer::init() {
 
 void MyViewer::Rotate()
 {
-
-    //skel.set_deafult_matrix();
     auto dlg = std::make_unique<QDialog>(this);
     auto* hb1 = new QHBoxLayout,
         * hb2 = new QHBoxLayout,
@@ -565,13 +488,9 @@ void MyViewer::Rotate()
         Vec angles = Vec(hr, pr, br);
         angels = angles;
         rotation = angles;
-
-        objects[selected_object]->rotate(selected_vertex, angels);
-       
-        
+        objects[selected_object]->rotate(selected_vertex, angels); 
         update();
     }
-
 }
 
 /// <summary>
@@ -586,7 +505,7 @@ void MyViewer::selectedjoin()
             * hb2 = new QHBoxLayout,
             * hb3 = new QHBoxLayout;
         auto* vb = new QVBoxLayout;
-        Joint* jo = skel.root->searchbyid(skel.root, selected_vertex);
+        Joint* jo = nullptr;
 
         auto* text_H = new QLabel(tr("Matrix: "));
         auto* text_b = new QLabel(tr("Point: "));
@@ -788,10 +707,7 @@ void MyViewer::keyPressEvent(QKeyEvent* e) {
     auto* hb1 = new QHBoxLayout;
     auto* vb = new QVBoxLayout;
     QLabel* text;
-    int sizek;
-    //
-
-        
+    int sizek;  
     Vec ang = Vec(20, 0, 0);
     if (e->modifiers() == Qt::NoModifier)
 
@@ -826,20 +742,12 @@ void MyViewer::keyPressEvent(QKeyEvent* e) {
             update();
             break;
         case Qt::Key_V:
-            transparent = !transparent;
+           
             update();
             break;
 
-        case Qt::Key_5:
-            //ani = true;
-            
-            skel.setJointMatrix(selected_vertex,ang);
-            //startAnimation();
-            //animate();
-            update();
-            break;
         case Qt::Key_I:
-            //visualization = Visualization::ISOPHOTES;
+            visualization = Visualization::ISOPHOTES;
 ;
             current_isophote_texture = isophote_texture;
             update();
@@ -849,23 +757,8 @@ void MyViewer::keyPressEvent(QKeyEvent* e) {
             current_isophote_texture = environment_texture;
             update();
             break;
-        case Qt::Key_1:
-            if ( mesh.n_vertices() != 0)
-            {
-                model_type = ModelType::SKELTON;
-                visualization = Visualization::WEIGH2;
-                wi++;
-            }
-            update();
-            break;
 
-        case Qt::Key_J:
-           
-            update();
-            break;
         case Qt::Key_H:
-            //smoothcollison(col.verteces);
-            //smoothpoints();
             improveDeltaMush();
             update();
             break;
@@ -886,7 +779,7 @@ void MyViewer::keyPressEvent(QKeyEvent* e) {
             break;
 
         case Qt::Key_T:
-            showSampels = !showSampels;
+            
             mc.showSampels = !mc.showSampels;
             update();
             break;
@@ -909,34 +802,18 @@ void MyViewer::keyPressEvent(QKeyEvent* e) {
             vis.show_solid = !vis.show_solid;
             update();
             break;
-        case Qt::Key_7:
-            
-            text = new QLabel("#V = " + QString::number(mc.mesh_.n_vertices()));
-            hb1->addWidget(text);
-            vb->addLayout(hb1);
-            dlg->setWindowTitle(tr("Message"));
-            dlg->setLayout(vb);
-            if (dlg->exec() == QDialog::Accepted) {
-                update();
-            }
-            break;
         case Qt::Key_W:
-            //show_wireframe = !show_wireframe;
             vis.show_wireframe = !vis.show_wireframe;
             update();
             break;
-
-
         case Qt::Key_F:
             //fairMesh();
             
             kinect.CreateFirstConnected();
-            model_type = ModelType::SKELTON;
             update();
             break;
 
         case Qt::Key_Z:
-            //showSmooth = !showSmooth;
             kinect.setSkeltonTracking();
             update();
             break;
@@ -1034,9 +911,6 @@ Vec MyViewer::calcCentriod(MyMesh& _mesh) {
     return Vec(centroid);
 }
 
-
-
-
 float  MyViewer::Epsil() {
     auto dlg = std::make_unique<QDialog>(this);
     auto* hb1 = new QHBoxLayout;
@@ -1062,9 +936,6 @@ float  MyViewer::Epsil() {
 
     return epsilo;
 }
-
-
-
 
 void MyViewer::Boneheat()
 {

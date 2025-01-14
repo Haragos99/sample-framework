@@ -1,9 +1,5 @@
 #include "MyViewer.h"
 
-
-
-
-
 void MyViewer::animate()
 {
     //TODO: finish this
@@ -22,10 +18,13 @@ void MyViewer::animate()
         int s = render.sizeframes();
         stopAnimation();
     }  
-     
 }
 
-
+float MyViewer::currentTime() {
+    auto now = std::chrono::high_resolution_clock::now();
+    auto duration = now.time_since_epoch();
+    return std::chrono::duration_cast<std::chrono::duration<float>>(duration).count();
+}
 
 void MyViewer::keyframe_add()
 {
@@ -67,14 +66,10 @@ void MyViewer::Frame()
     startAnimationTime_ = currentTime();
     startAnimationTime_ = 0;
     endanimation = keyframes_.back().time();
-    //Invers();
     Reset();
     startAnimation();
 
 }
-
-
-
 
 void MyViewer::Reset()
 {

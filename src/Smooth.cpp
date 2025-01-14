@@ -4,42 +4,6 @@
 //#include <fbxsdk.h>
 #include "BVH.h"
 
-
-void MyViewer::createL_smooot(MyMesh& m)
-{
-    
-    double smootingfactor = 0.5;
-    auto mesh_ = m;
-    for (int i = 0; i < 2; i++)
-    {
-        auto smooth = mesh_;
-        for (auto v : m.vertices()) {
-
-            Vec Avg;
-            int n = 0;
-            for (auto vi : m.vv_range(v)) {
-                Vec vertex = Vec(mesh_.point(vi));
-                Avg += vertex;
-                n++;
-            }
-            Avg /= n;
-            MyMesh::Point pointavg = MyMesh::Point(Avg.x, Avg.y, Avg.z);
-
-            smooth.point(v) += smootingfactor * (pointavg - mesh_.point(v));
-
-        }
-
-        for (auto v : m.vertices()) {
-            mesh_.point(v) = smooth.point(v);
-        }
-    }
-    m = mesh_;
-}
-
-
-
-
-
 void MyViewer::smoothoriginal(std::vector<Vec>& smoothed)
 {
     double smootingfactor = 0.5;

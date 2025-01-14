@@ -29,7 +29,6 @@
 #include <QTimer>
 #include "ImplicitSkinning.h"
 #include "Object3D.h"
-//#include "BoneHeat.h"
 
 using qglviewer::Vec;
 
@@ -68,10 +67,8 @@ public:
     float deltaMushFactor = 1.0;
     void skining();
     void Laplace() {
-        smooth = mesh;
         bright = 0.1;
-        transparent = true;
-        createL_smooot(smooth); update();
+        update();
     }
     void delta();
     void poission() {  }
@@ -84,12 +81,9 @@ public:
 
     KinectSkelton kinect;
     QTimer* timer;
-    bool transparent = false;
-    bool transparent2 = true;
     float& getFrameSecond() { return FrameSecond; }
     double epsilon = 0.001;
     void Reset();
-    int wi = 2;
     void index_of_weight();
     void show() {
         show_solid = !show_solid;
@@ -108,11 +102,7 @@ public:
 
     void startTimer();
 
-    void stopTimer() {
-        if (timer->isActive()) {
-            timer->stop();  // Stop the timer
-        }
-    }
+    void stopTimer();
     void smoothpoints();
     void Frame();
     Vec angels;
@@ -137,9 +127,6 @@ protected:
 private:
     using MyMesh = OpenMesh::TriMesh_ArrayKernelT<MyTraits>;
     using Vector = OpenMesh::VectorT<double, 3>;
-    // Mesh
-    void updateMesh(bool update_mean_range = true);
-    void updateVertexNormals();
 #ifdef USE_JET_FITTING
     void updateWithJetFit(size_t neighbors);
 #endif
@@ -153,7 +140,6 @@ private:
     void generateMesh(size_t resolution);
 
     // Visualization
-    void setupCameraMC(MyMesh& _mesh);
     void setupCamera();
     Vec meanMapColor(double d) const;
     void drawControlNet() const;
@@ -178,35 +164,15 @@ private:
     enum class ModelType { NONE, MESH, BEZIER_SURFACE, SKELTON, INVERZ } model_type;
     // Mesh
     MyMesh mesh;
-    bool showSampels;
-    bool showSmooth;
     int controlPointId = 0;
     void TestDelta(std::vector<Eigen::Vector4d> v);
-    MyMesh smooth;
-    MyMesh MushHelper;
-    MyMesh Helper;
-    std::vector<float> tios;
-    std::vector<Vec4> delt;
-    std::vector<MyMesh::Point> sampels;
-    std::vector<MyMesh> im;
     float FrameSecond = 0.0;
-    QHBoxLayout* hb1 = new QHBoxLayout;
-    QLabel* text_ = new QLabel;
-    QVBoxLayout* vBox = new QVBoxLayout;
-    std::vector<std::pair<int, double>> sortedVector;
-    std::vector<std::pair<int, double>> finalarea;
-    std::map< MyMesh::FaceHandle, int> sortedMap;
     std::vector<Eigen::Vector4d> vec;
     void smoothoriginal(std::vector<Vec>& smoothed);
     void drawDelta();
     void selectedjoin();
     // for the animation api (it is simpal)
-    Skelton skel;
-    int wx = 0;
-    void createL_smooot(MyMesh& m);
     int elapsedTime;
-
-    std::vector<Vec> selected_points_storage;
     float startAnimationTime_ = 0.0;
     float endanimation = 0.0;
     float animationDuration_ = 1.0;
@@ -216,19 +182,12 @@ private:
     // Bezier
     size_t degree[2];
     std::vector<Vec> control_points;
-    float currentTime() {
-        auto now = std::chrono::high_resolution_clock::now();
-        auto duration = now.time_since_epoch();
-        return std::chrono::duration_cast<std::chrono::duration<float>>(duration).count();
-    }
+    float currentTime();
     Vec calcCentriod(MyMesh& _mesh);
-    std::vector<Vec> ik;
-    std::vector<HRBF> hrbf;
     void createControlPoins(Joint* j);
     MarchingCubes mc;
     void Error(MyMesh& m, HRBF& h);
     void createCP();
-    void setupCameraBone();
     // Visualization
     double mean_min, mean_max, cutoff_ratio;
     bool show_control_points, show_solid, show_wireframe, show_skelton;

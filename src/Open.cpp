@@ -1,8 +1,5 @@
 #include "MyViewer.h"
 
-
-
-
 bool MyViewer::openSkelton(const std::string& filename, bool update_view)
 {
     std::shared_ptr<Skelton> skelton = std::make_shared<Skelton>();  
@@ -30,7 +27,6 @@ bool MyViewer::openBezier(const std::string& filename, bool update_view) {
     }
     model_type = ModelType::BEZIER_SURFACE;
     last_filename = filename;
-    updateMesh(update_view);
     if (update_view)
         setupCamera();
     return true;
