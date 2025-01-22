@@ -84,18 +84,9 @@ public:
     double epsilon = 0.001;
     void Reset();
     void index_of_weight();
-    void show() {
-        show_solid = !show_solid;
-        update();
-    }
+    void show();
 
-    void callKinekcnUpdate() {
-        // Call the kinect's update function
-        kinect.update();
-
-        // Optionally refresh the viewer
-        update();
-    }
+    void callKinekcnUpdate();
     void improveDeltaMush();
     void startTimer();
     void stopTimer();

@@ -333,6 +333,21 @@ void MyViewer::selectedjoin()
 }
 
 
+
+void MyViewer::callKinekcnUpdate() {
+    // Call the kinect's update function
+    kinect.update();
+
+    // Optionally refresh the viewer
+    update();
+}
+
+
+void MyViewer::show() {
+    show_solid = !show_solid;
+    update();
+}
+
 void MyViewer::index_of_weight()
 {
 
