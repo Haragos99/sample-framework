@@ -52,9 +52,6 @@
     <ClCompile Include="src\Open.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\BoneHeat.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="src\Save.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -65,18 +62,6 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="src\Animation.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\Bone.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\DeltaMush.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\Joint.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\ImplicitSkinning.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="src\MarchingCubes.cpp">
@@ -124,13 +109,7 @@
     <ClCompile Include="src\KinectSkelton.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\Skelton.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="src\BaseMesh.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\Skinning.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="src\PoissonSampleGenerator.cpp">
@@ -142,7 +121,28 @@
     <ClCompile Include="src\InverseKinematics.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\ImprovedDeltaMush.cpp">
+    <ClCompile Include="src\skeleton\Bone.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\skeleton\Joint.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\skeleton\Skelton.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\skinning\BoneHeat.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\skinning\DeltaMush.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\skinning\ImplicitSkinning.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\skinning\ImprovedDeltaMush.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\skinning\Skinning.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -177,25 +177,16 @@
     </QtRcc>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="src\Bone.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="src\Matrix4.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="src\Mesh.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\Joint.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="src\HRBF.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="src\MarchingCubes.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src\DeltaMush.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="src\mclccd\BVHTree.hpp">
@@ -237,9 +228,6 @@
     <ClInclude Include="src\tight_inclusion\logger.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\tight_inclusion\timer.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="src\tight_inclusion\types.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -264,9 +252,6 @@
     <ClInclude Include="src\KinectSkelton.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\Skelton.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="src\BaseMesh.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -275,15 +260,6 @@
     </ClInclude>
     <ClInclude Include="src\Visualization.h">
       <Filter>Generated Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src\Skinning.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src\BoneHeat.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src\ImplicitSkinning.h">
-      <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="src\PoissonSampleGenerator.h">
       <Filter>Header Files</Filter>
@@ -297,7 +273,28 @@
     <ClInclude Include="src\InverseKinematics.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\ImprovedDeltaMush.h">
+    <ClInclude Include="src\skeleton\Bone.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\skeleton\Joint.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\skeleton\Skelton.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\skinning\BoneHeat.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\skinning\DeltaMush.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\skinning\ImplicitSkinning.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\skinning\ImprovedDeltaMush.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\skinning\Skinning.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

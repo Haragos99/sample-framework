@@ -1,9 +1,9 @@
 #include <algorithm>
 #include <cmath>
 #include <map>
-#include "Bone.h"
-#include "BoneHeat.h"
-#include "ImprovedDeltaMush.h"
+#include "skeleton/Bone.h"
+#include "skinning/BoneHeat.h"
+#include "skinning/ImprovedDeltaMush.h"
 
 #ifdef BETTER_MEAN_CURVATURE
 #include "Eigen/Eigenvalues"

@@ -1,7 +1,7 @@
 #pragma once
 #include "Bone.h"
-#include "Object3D.h"
-#include "Skinning.h"
+#include "../Object3D.h"
+#include "src/skinning/Skinning.h"
 
 
 class Skelton : public Object3D {

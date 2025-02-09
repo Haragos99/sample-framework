@@ -1,4 +1,4 @@
-#include "MyViewer.h"
+#include "../MyViewer.h"
 #include "ImplicitSkinning.h"
 
 

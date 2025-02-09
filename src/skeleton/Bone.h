@@ -1,9 +1,9 @@
 #pragma once
 
-#include "Matrix4.h"
+#include "../Matrix4.h"
 #include <fstream>
 #include <Eigen/Eigen>
-#include "Mesh.h"
+#include "../Mesh.h"
 #include "Joint.h"
 
 using qglviewer::Vec;

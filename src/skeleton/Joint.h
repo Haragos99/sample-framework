@@ -1,7 +1,7 @@
 #pragma once
 #include <QGLViewer/qglviewer.h>
-#include "Matrix4.h"
-#include "Keyframe.h"
+#include "../Matrix4.h"
+#include "../Keyframe.h"
 using qglviewer::Vec;
 
 

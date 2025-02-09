@@ -2,7 +2,7 @@
 #include <QGLViewer/qglviewer.h>
 #include "Keyframe.h"
 #include "Object3D.h"
-#include "Joint.h"
+#include "skeleton/Joint.h"
 #include "InverseKinematics.h"
 using qglviewer::Vec;
 

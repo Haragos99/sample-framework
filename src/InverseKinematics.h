@@ -1,5 +1,5 @@
 #pragma once
-#include "Skelton.h"
+#include "skeleton/Skelton.h"
 
 
 class InverseKinematics {

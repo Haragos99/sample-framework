@@ -1,4 +1,4 @@
-﻿#include "MyViewer.h"
+﻿#include "../MyViewer.h"
 #include "BoneHeat.h"
 
 Eigen::SparseMatrix<double>  BoneHeat::createDiagolaleMatrix(MyMesh& mesh)

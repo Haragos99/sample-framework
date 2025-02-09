@@ -1,6 +1,6 @@
 #pragma once
-#include "Bone.h"
-#include "BaseMesh.h"
+#include "src/skeleton/Bone.h"
+#include "src/BaseMesh.h"
 
 /*
 * TODO: Create a Skinning only for LBS and DQS and create Skinningstrategy for the other which they use for animation

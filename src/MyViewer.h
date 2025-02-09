@@ -7,7 +7,7 @@
 #include <QDir>
 #include <QTextStream>
 #include <QGLViewer/quaternion.h>
-#include "Skelton.h"
+#include "skeleton/Skelton.h"
 #include <fstream>
 #include <iostream>
 #include <vector>
@@ -18,7 +18,7 @@
 #include <algorithm>
 #include "HRBF.h"
 #include "MarchingCubes.h"
-#include "DeltaMush.h"
+#include "skinning/DeltaMush.h"
 #include "mclccd\BVHTree.hpp"
 #include "ControlPoint.h"
 #include "Render.h"
@@ -26,7 +26,7 @@
 #include "Collison.h"
 #include "KinectSkelton.h"
 #include <QTimer>
-#include "ImplicitSkinning.h"
+#include "skinning/ImplicitSkinning.h"
 #include "Object3D.h"
 
 using qglviewer::Vec;
