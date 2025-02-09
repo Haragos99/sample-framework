@@ -134,6 +134,7 @@ private:
     // Member variables //
     //////////////////////
     std::vector<std::shared_ptr<Object3D>> objects;
+    std::vector<std::shared_ptr<Skelton>> skeltons;
     size_t selected_object;
     Vis::Visualization vis;
     enum class ModelType { NONE, MESH, BEZIER_SURFACE, SKELTON, INVERZ } model_type;
