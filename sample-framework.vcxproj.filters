@@ -145,7 +145,7 @@
     <ClCompile Include="src\skinning\Skinning.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\skinning\DualQuaternionSkinning.cpp">
+    <ClCompile Include="src\skinning\DualQuaternion.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -300,7 +300,7 @@
     <ClInclude Include="src\skinning\Skinning.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\skinning\DualQuaternionSkinning.h">
+    <ClInclude Include="src\skinning\DualQuaternion.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

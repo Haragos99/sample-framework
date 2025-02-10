@@ -220,7 +220,7 @@
     <ClCompile Include="src\skeleton\Skelton.cpp" />
     <ClCompile Include="src\skinning\BoneHeat.cpp" />
     <ClCompile Include="src\skinning\DeltaMush.cpp" />
-    <ClCompile Include="src\skinning\DualQuaternionSkinning.cpp" />
+    <ClCompile Include="src\skinning\DualQuaternion.cpp" />
     <ClCompile Include="src\skinning\ImplicitSkinning.cpp" />
     <ClCompile Include="src\skinning\ImprovedDeltaMush.cpp" />
     <ClCompile Include="src\skinning\Skinning.cpp" />
@@ -255,7 +255,7 @@
     <ClInclude Include="src\skeleton\Skelton.h" />
     <ClInclude Include="src\skinning\BoneHeat.h" />
     <ClInclude Include="src\skinning\DeltaMush.h" />
-    <ClInclude Include="src\skinning\DualQuaternionSkinning.h" />
+    <ClInclude Include="src\skinning\DualQuaternion.h" />
     <ClInclude Include="src\skinning\ImplicitSkinning.h" />
     <ClInclude Include="src\skinning\ImprovedDeltaMush.h" />
     <ClInclude Include="src\skinning\Skinning.h" />

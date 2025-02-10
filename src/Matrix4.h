@@ -78,6 +78,13 @@ public:
         }
         return *this;
     }
+
+    float* getmatrix()
+    {
+        float* t;
+        return t;
+    }
+
     std::string to_string()
     {
         std::string r1 = std::to_string(rows[0][0]) + " " + std::to_string(rows[0][1]) + " " + std::to_string(rows[0][2]) + " " + std::to_string(rows[0][3]) + "\n";
