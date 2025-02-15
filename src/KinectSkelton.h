@@ -35,7 +35,7 @@ public:
 
 	KinectSkelton();
 
-	void draw();
+	void draw(Vis::Visualization& vis);
 
 	~KinectSkelton();
 	

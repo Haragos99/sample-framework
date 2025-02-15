@@ -148,6 +148,9 @@
     <ClCompile Include="src\skinning\DualQuaternion.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="src\skinning\DualQuaternionSkinning.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <QtMoc Include="src\MyViewer.h">
@@ -301,6 +304,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="src\skinning\DualQuaternion.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\skinning\DualQuaternionSkinning.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

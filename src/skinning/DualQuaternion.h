@@ -50,5 +50,6 @@ public:
 			Vec(0.f, 0.f, 0.f));
 	}
 
+	Vec transform(const Vec& p) const;
 
 };

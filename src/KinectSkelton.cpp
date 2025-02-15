@@ -102,7 +102,7 @@ void KinectSkelton::creatSkelton(NUI_SKELETON_DATA& skel)
     HRESULT hr = NuiSkeletonCalculateBoneOrientations(&skel, boneOrientations);
     if (FAILED(hr))
     {
-        
+        return;
     }
     for (int i = 0; i < NUI_SKELETON_POSITION_COUNT; ++i)
     {
@@ -204,9 +204,9 @@ KinectSkelton::~KinectSkelton()
     }
 }
 
-void KinectSkelton::draw()
+void KinectSkelton::draw(Vis::Visualization& vis)
 {
-   // skelton.draw();
+    skelton.draw(vis);
    
     for (auto j : joints)
     {
