@@ -19,6 +19,8 @@ public:
 	void reset()override;
 	void datainfo() override;
 	bool open();
+	void grab(int selected, const Vec& position);
+	double distance(Vec p, Vec p1);
 	void addcolor(Vec& color);
 	void setMesh(MyMesh& _mesh);
 	void setFilename(std::string _filename);

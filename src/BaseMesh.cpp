@@ -88,11 +88,30 @@ void BaseMesh::drawWithNames(Vis::Visualization& vis) const {
 }
 
 void BaseMesh::movement(int selected, const Vector& pos) {
+    //
+    Vec point = Vec(pos.data());
+    grab(selected, point);
     mesh.set_point(MyMesh::VertexHandle(selected), pos);
     updateMesh();
 }
 
-
+void BaseMesh::grab(int selected, const Vec& position)
+{
+    MyMesh::VertexHandle selectedHandle(selected);
+    Vec actualpoint =Vec(mesh.point(selectedHandle).data());
+    Vec diff = position - actualpoint;
+    for (auto v : mesh.vertices())
+    {
+        Vec point = Vec(mesh.point(v).data());
+        double dis = distance(actualpoint, point);
+        if (0.3 > dis)
+        {
+            double F = 1 - ((dis / 0.3));
+            Vec newdiff = diff *F;
+            mesh.point(v) += MyMesh::Point(newdiff.x, newdiff.y, newdiff.z);
+        }
+    }
+}
 
 
 void BaseMesh::rotate(int selected, Vec angel)
@@ -279,7 +298,11 @@ double BaseMesh::voronoiWeight(MyMesh::HalfedgeHandle in_he) {
     return area(b2) + area(c2);
 }
 
-
+double BaseMesh::distance(Vec p, Vec p1)
+{
+    double len = sqrt(pow(p.x - p1.x, 2) + pow(p.y - p1.y, 2) + pow(p.z - p1.z, 2));
+    return len;
+}
 
 BaseMesh::~BaseMesh()
 {
