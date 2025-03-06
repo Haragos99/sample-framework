@@ -1,29 +1,29 @@
 #pragma once
 #include <QGLViewer/quaternion.h>
-#include "../Matrix4.h"
+#include "../MyQuaternion.hpp"
 
 using qglviewer::Quaternion;
 using qglviewer::Vec;
 
 class DualQuaternion {
 private:
-	Quaternion rotation;
-	Quaternion translation;
+	MyQuaternion rotation;
+	MyQuaternion translation;
 
 
-	DualQuaternion dualquatfrom(const Quaternion& q, const Vec& t) const;
+	DualQuaternion dualquatfrom(const MyQuaternion& q, const Vec& t) const;
 
 public:
-	DualQuaternion(const Quaternion& q0, const Quaternion& qe);
-	DualQuaternion(const Quaternion& q, const Vec& t);
+	DualQuaternion(const MyQuaternion& q0, const MyQuaternion& qe);
+	DualQuaternion(const MyQuaternion& q, const Vec& t);
 
 	DualQuaternion(Mat4& matrix);
 	
 	void animate();
 
-	Quaternion getRotation() const { return rotation; }
+	MyQuaternion getRotation() const { return rotation; }
 
-	Quaternion getTranslation() const { return translation; }
+	MyQuaternion getTranslation() const { return translation; }
 
 	Quaternion addition(Quaternion a, Quaternion&& b);
 
@@ -35,18 +35,18 @@ public:
 
 	DualQuaternion operator+(const DualQuaternion& dq) 
 	{
-		return DualQuaternion(addition(rotation, dq.getRotation()), addition(translation, dq.getTranslation()));
+		return DualQuaternion(rotation + dq.getRotation(), translation + dq.getTranslation());
 	}
 
 
 	DualQuaternion operator*(float scalar) 
 	{
-		return DualQuaternion(Quaternionscalar(rotation, scalar), Quaternionscalar(translation, scalar));
+		return DualQuaternion(rotation * scalar, translation * scalar);
 	}
 
 	static DualQuaternion identity()
 	{
-		return DualQuaternion(Quaternion(0.f, 0.f, 0.f, 1.f),
+		return DualQuaternion(MyQuaternion(1.f, 0.f, 0.f, 0.f),
 			Vec(0.f, 0.f, 0.f));
 	}
 

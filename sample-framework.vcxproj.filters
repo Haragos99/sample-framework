@@ -309,5 +309,8 @@
     <ClInclude Include="src\skinning\DualQuaternionSkinning.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="src\MyQuaternion.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

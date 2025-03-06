@@ -248,9 +248,11 @@
     <ClInclude Include="src\mclccd\ccd_internal\Projection.hpp" />
     <ClInclude Include="src\mclccd\ccd_internal\rpoly.h" />
     <ClInclude Include="src\mclccd\NarrowPhase.hpp" />
+    <ClInclude Include="src\MyQuaternion.hpp" />
     <ClInclude Include="src\Object3D.h" />
     <ClInclude Include="src\PoissonResurses.h" />
     <ClInclude Include="src\PoissonSampleGenerator.h" />
+    <ClInclude Include="src\Sculpt.h" />
     <ClInclude Include="src\skeleton\Bone.h" />
     <ClInclude Include="src\skeleton\Joint.h" />
     <ClInclude Include="src\skeleton\Skelton.h" />

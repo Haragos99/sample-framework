@@ -3,10 +3,7 @@
 #include "../Matrix4.h"
 #include "../Keyframe.h"
 using qglviewer::Vec;
-
-
-
-
+using qglviewer::Quaternion;
 
 
 struct Joint {
@@ -18,6 +15,7 @@ struct Joint {
     Joint* parent;
     Vec angel;
     Vec pivot;
+    Quaternion quaternion;
     std::vector<Joint*> children;
     std::vector<Keyframe> keyframes;
     Joint() { point = Vec(); }

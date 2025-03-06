@@ -1,14 +1,14 @@
 #include "DualQuaternion.h"
 
 
-DualQuaternion::DualQuaternion(const Quaternion& q0, const Quaternion& qe)
+DualQuaternion::DualQuaternion(const MyQuaternion& q0, const MyQuaternion& qe)
 {
 	rotation = q0;
 	translation = qe;
 }
 
 
-DualQuaternion::DualQuaternion(const Quaternion& q, const Vec& t)
+DualQuaternion::DualQuaternion(const MyQuaternion& q, const Vec& t)
 {
 	DualQuaternion res = dualquatfrom(q, t);
 	*this = res;
@@ -18,27 +18,21 @@ DualQuaternion::DualQuaternion(const Quaternion& q, const Vec& t)
 
 DualQuaternion::DualQuaternion(Mat4& matrix)
 {
-	double m[3][3] = {
-	{ matrix[0][0], matrix[0][1], matrix[0][2] },
-	{ matrix[1][0], matrix[1][1], matrix[1][2] },
-	{ matrix[2][0], matrix[2][1], matrix[2][2] }
-	};
-	Quaternion q;
-	q.setFromRotationMatrix(m);
-	Vec t(matrix[3][0], matrix[2][1], matrix[3][2]);
+	MyQuaternion q(matrix);
+	Vec t(matrix[3][0], matrix[3][1], matrix[3][2]);
 	DualQuaternion res = dualquatfrom(q, t);
 	*this = res;
 }
 
 
-DualQuaternion DualQuaternion::dualquatfrom(const Quaternion& q, const Vec& t) const
+DualQuaternion DualQuaternion::dualquatfrom(const MyQuaternion& q, const Vec& t) const
 {
-	float w = -0.5f * (t.x *  q[0] + t.y  *  q[1] + t.z  * q[2]);
-	float i = 0.5f * (t.x  *  q[3] + t.y  *  q[2] - t.z  * q[1]);
-	float j = 0.5f * (-t.x *  q[2] + t.y  *  q[3] + t.z  * q[0]);
-	float k = 0.5f * (t.x  *  q[1] - t.y  *  q[1] + t.z  * q[3]);
+	float w = -0.5f * (t.x * q.i() + t.y * q.j() + t.z * q.k());
+	float i = 0.5f * (t.x * q.w() + t.y * q.k() - t.z * q.j());
+	float j = 0.5f * (-t.x * q.k() + t.y * q.w() + t.z * q.i());
+	float k = 0.5f * (t.x * q.j() - t.y * q.i() + t.z * q.w());
 
-	return DualQuaternion(q,Quaternion(i,j,k,w));
+	return DualQuaternion(q, MyQuaternion(w, i, j, k));
 }
 
 
@@ -69,7 +63,7 @@ Quaternion DualQuaternion::Quaternionscalar(Quaternion q, float scalar)
 
 Vec DualQuaternion::rotate(const Vec& v) const
 {
-	Quaternion tmp = rotation;
+	MyQuaternion tmp = rotation;
 	tmp.normalize();
 	return tmp.rotate(v);
 }
@@ -86,16 +80,20 @@ Vec DualQuaternion::transform(const Vec& p) const
 	// As the dual quaternions may be the results from a
 	// linear blending we have to normalize it :
 
-	Quaternion qblend_0 = rotation.normalized();
-	Quaternion qblend_e = translation.normalized();
+	float norm = rotation.norm();
+	MyQuaternion qblend_0 = rotation / norm;
+	MyQuaternion qblend_e = translation / norm;
 
 	// Translation from the normalized dual quaternion equals :
 	// 2.f * qblend_e * conjugate(qblend_0)
-	Vec v0 = Vec(qblend_0[0], qblend_0[1], qblend_0[2]);
-	Vec ve = Vec(qblend_e[0], qblend_e[1], qblend_e[2]);
-	Vec trans = (ve * qblend_0[3] - v0 * qblend_e[3] + (v0 ^ ve)) * 2.f;
+	Vec v0 = qblend_0.get_vec_part();
+	Vec ve = qblend_e.get_vec_part();
+	Vec trans = (ve * qblend_0.w() - v0 * qblend_e.w() + cross(v0 ,ve)) * 2.f;
+
+
+	auto d = (2.f * (qblend_e * qblend_0.conjugate()));
 
 	// Rotate
-	return qblend_0.rotate(p) + trans;
+	return qblend_0.rotate(p - trans) + trans ;
 }
 

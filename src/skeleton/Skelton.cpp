@@ -1,5 +1,5 @@
 #include "Skelton.h"
-
+#include "src/skinning/DualQuaternionSkinning.h"
 void Skelton::scale(float scale)
 {
 
@@ -263,6 +263,12 @@ void Skelton::animateMesh(bool inv)
     if (skinningtechnic != nullptr && mesh != nullptr)
     {
         skinningtechnic->animatemesh(mesh, bones, inv);
+        /*
+        DualQuaternionSkinning dq;
+        joint.clear();
+        getList(root);
+        dq.animatemesh(mesh, bones, inv);
+        */
     }
 }
 

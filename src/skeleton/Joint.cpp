@@ -34,6 +34,8 @@ void Joint::change_all_rotason(Joint* j, Vec pivot, Vec angles)
         j->M = j->M * M;
         Vec4 result = point4 * j->M;
         j->point = Vec(result.x, result.y, result.z);
+        j->quaternion = q;
+        j->pivot = pivot;
 
     }
     for (int i = 0; i < j->children.size(); i++)
