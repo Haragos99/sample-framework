@@ -14,6 +14,7 @@ void MyViewer::draw() {
         render.addframe(frame);
     }
 
+
     if (axes.shown)
         drawAxes();
     glColor3d(1,1,1);

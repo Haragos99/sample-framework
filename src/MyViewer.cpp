@@ -565,6 +565,7 @@ void MyViewer::keyPressEvent(QKeyEvent* e) {
             break;
 
         case Qt::Key_G:
+            createSculpt();       
             update();
             break;
         case Qt::Key_4:
@@ -641,6 +642,21 @@ void MyViewer::keyPressEvent(QKeyEvent* e) {
 void MyViewer::startTimer() {
     if (!timer->isActive()) {
         timer->start(10);  
+    }
+}
+
+
+
+void MyViewer::createSculpt()
+{
+
+    bool isVaildIndex = selected_object <= objects.size();
+    if (isVaildIndex)
+    {
+        if (auto mesh = std::dynamic_pointer_cast<BaseMesh>(objects[selected_object]))
+        {
+            sculpt = std::make_unique<Sculpt>(mesh);
+        }
     }
 }
 
@@ -771,6 +787,21 @@ void MyViewer::Boneheat()
     }
 }
 
+void MyViewer::drawCircle(float centerX, float centerY, float radius) {
+  
+    glColor3f(1.0, 0.0, 0.0);
+    glBegin(GL_LINE_LOOP);
+    const int numSegments = 50;
+
+    for (int i = 0; i < numSegments; ++i) 
+    {
+        float theta = 2.0f * M_PI * float(i) / float(numSegments);
+        float x = radius * cosf(theta);
+        float y = radius * sinf(theta);
+        glVertex3f(fa.x + x, fa.y + y, fa.z);
+    }
+    glEnd();
+}
 
 
 void MyViewer::generateMesh(size_t resolution) {
@@ -808,12 +839,16 @@ void MyViewer::generateMesh(size_t resolution) {
 }
 
 void MyViewer::mouseMoveEvent(QMouseEvent* e) {
+    
+
     if (!axes.shown ||
         (axes.selected_axis < 0 && !(e->modifiers() & Qt::ControlModifier)) ||
         !(e->modifiers() & (Qt::ShiftModifier | Qt::ControlModifier)) ||
         !(e->buttons() & Qt::LeftButton))
     {
-        //sk.makefalse(sk);
+        
+         
+ 
         return QGLViewer::mouseMoveEvent(e);
     }
     Vec p;
@@ -832,10 +867,29 @@ void MyViewer::mouseMoveEvent(QMouseEvent* e) {
         d = (p - axes.grabbed_pos) * axis;
         axes.position[axes.selected_axis] = axes.original_pos[axes.selected_axis] + d;
     }
-    objects[selected_object]->movement(selected_vertex, Vector(static_cast<double*>(axes.position)));
+    double de = camera()->projectedCoordinatesOf(axes.position)[2];
+    fa = camera()->unprojectedCoordinatesOf(qglviewer::Vec(e->x(), e->y(), de));
+
+    moveObject(objects[selected_object], selected_vertex, Vector(static_cast<double*>(axes.position)));
     update();
 }
 
+
+
+void MyViewer::moveObject(std::shared_ptr<Object3D> elemt, int selected, Vector position)
+{
+    if (auto mesh = std::dynamic_pointer_cast<BaseMesh>(elemt))
+    {
+        if (sculpt != nullptr)
+        {
+            sculpt->grab(selected_vertex, axes.position);
+        }
+    }
+    else
+    {
+        elemt->movement(selected, position);
+    }
+}
 
 
 

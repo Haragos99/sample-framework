@@ -28,6 +28,8 @@
 #include <QTimer>
 #include "skinning/ImplicitSkinning.h"
 #include "Object3D.h"
+#include "Circle.h"
+#include "Sculpt.h"
 
 using qglviewer::Vec;
 
@@ -77,6 +79,9 @@ public:
     void setSlider(int value);
 
     float Epsil();
+
+
+    
 
     KinectSkelton kinect;
     QTimer* timer;
@@ -129,7 +134,12 @@ private:
     static Vec intersectLines(const Vec& ap, const Vec& ad, const Vec& bp, const Vec& bd);
     void addObject(std::shared_ptr<Object3D> object);
     void addObjects(const std::vector<std::shared_ptr<Object3D>>& newObjects);
+    void moveObject(std::shared_ptr<Object3D> elemt, int selected, Vector position);
+    void createSculpt();
+
+    void drawCircle(float centerX, float centerY, float radius);
     Render render;
+    Vec fa;
     //////////////////////
     // Member variables //
     //////////////////////
@@ -160,7 +170,8 @@ private:
     Vec calcCentriod(MyMesh& _mesh);
     void createControlPoins(Joint* j);
     MarchingCubes mc;
-
+    std::unique_ptr<CursolCircle> cursol;
+    std::unique_ptr<Sculpt> sculpt;
     void createCP();
     // Visualization
     double mean_min, mean_max, cutoff_ratio;
