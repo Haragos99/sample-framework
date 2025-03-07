@@ -267,9 +267,6 @@
     <ClInclude Include="src\Object3D.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\Visualization.h">
-      <Filter>Generated Files</Filter>
-    </ClInclude>
     <ClInclude Include="src\PoissonSampleGenerator.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -319,6 +316,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="src\Sculpt.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Visualization.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

@@ -1,10 +1,9 @@
 #pragma once
-#include "Matrix4.h"
+#include "src/Matrix4.h"
 #include <Eigen/Eigen>
-#include "Mesh.h"
-#include "mclccd\BVHTree.hpp"
+#include "../Mesh.h"
 #include "Skinning.h"
-#include "Lines.h"
+#include "../Lines.h"
 
 using qglviewer::Vec;
 
