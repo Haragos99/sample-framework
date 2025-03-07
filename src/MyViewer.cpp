@@ -547,6 +547,16 @@ void MyViewer::keyPressEvent(QKeyEvent* e) {
             update();
             break;
 
+        case Qt::Key_1:
+            sculpt->addRaduis(0.1);
+            update();
+            break;
+
+        case Qt::Key_5:
+            sculpt->minusRaduis(0.1);
+            update();
+            break;
+
         case Qt::Key_I:
             visualization = Visualization::ISOPHOTES;
 ;
@@ -882,7 +892,7 @@ void MyViewer::moveObject(std::shared_ptr<Object3D> elemt, int selected, Vector 
     {
         if (sculpt != nullptr)
         {
-            sculpt->grab(selected_vertex, axes.position);
+            sculpt->excecut(selected_vertex, axes.position);
         }
     }
     else

@@ -3,7 +3,7 @@ namespace Vis
 {
 	enum class VisualType { PLAIN, MEAN, SLICING, ISOPHOTES, WEIGH, WEIGH2,TRANSPARENTS  };
 
-
+	enum class SculptType { GRAB, SMOOTH};
 
 
 	struct Visualization {
