@@ -30,6 +30,7 @@
 #include "Object3D.h"
 #include "Circle.h"
 #include "Sculpt.h"
+#include "Blendshape.h"
 
 using qglviewer::Vec;
 
@@ -172,6 +173,7 @@ private:
     MarchingCubes mc;
     std::unique_ptr<CursolCircle> cursol;
     std::unique_ptr<Sculpt> sculpt;
+    std::unique_ptr<Blendshape> blend;
     void createCP();
     // Visualization
     double mean_min, mean_max, cutoff_ratio;

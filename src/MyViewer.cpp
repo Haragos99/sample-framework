@@ -497,6 +497,8 @@ void MyViewer::improveDeltaMush()
 
 void MyViewer::setSlider(int value) {
     deltaMushFactor = (float)value / 100.0f;
+    blend->setWeight(0, deltaMushFactor);
+    blend->calculate();
     update();
 }
 
@@ -539,11 +541,11 @@ void MyViewer::keyPressEvent(QKeyEvent* e) {
             break;
         case Qt::Key_L:
             visualization = Visualization::SLICING;
-
             update();
             break;
         case Qt::Key_V:
-           
+            blend->setWeight(0, 0.1);
+            blend->calculate();
             update();
             break;
 
@@ -586,7 +588,11 @@ void MyViewer::keyPressEvent(QKeyEvent* e) {
             update();
             break;
         case Qt::Key_B:
-            show_skelton = !show_skelton;
+            //show_skelton = !show_skelton
+            if (auto mesh = std::dynamic_pointer_cast<BaseMesh>(objects[0]))
+            {
+               blend->addNewPostion(mesh);
+            }    
             update();
             break;
 

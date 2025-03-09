@@ -38,6 +38,7 @@ bool MyViewer::openMesh(const std::string& filename, bool update_view) {
     std::shared_ptr<BaseMesh> mesh = std::make_shared<BaseMesh>(filename);
     bool sucsess = mesh->open();
     addObject(mesh);
+    blend = std::make_unique<Blendshape>(mesh);
     setupCamera();
     return sucsess;
 }

@@ -21,15 +21,23 @@ void Blendshape::addNewPostion(std::shared_ptr<BaseMesh> basemesh)
 	PointsMap target;
 	for (auto& v : mesh.vertices())
 	{
-		target[v] = mesh.point(v);
+		if (mesh.point(v) != mesh.data(v).original)
+		{
+			target[v] = mesh.point(v);
+			modifyVerteces.insert(v);
+		}
+		
 	}
-	targets.push_back(std::pair<int,PointsMap>(1.0,target));
+	targets.push_back(std::pair<double,PointsMap>(0.0,target));
 }
 
 
 void Blendshape::setWeight(int i, double weigt)
 {
-	targets[i].first = weigt;
+	if (targets[i].first <= 1.0)
+	{
+		targets[i].first = weigt;
+	}
 }
 
 
@@ -52,7 +60,7 @@ void Blendshape::calculate()
 {
 	auto& mesh = blendshapemesh->getMesh();
 
-	for (auto& v : mesh.vertices())
+	for (auto& v : modifyVerteces)
 	{
 		mesh.point(v) = origanls[v] + getBlendMove(v);
 	}
