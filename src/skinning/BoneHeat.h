@@ -2,6 +2,7 @@
 #include <Eigen/Eigen>
 
 class BoneHeat : public Skinning {
+	Q_OBJECT
 public:
 	BoneHeat() = default;
 	void execute(std::shared_ptr<BaseMesh> basemesh, std::vector<Bone>& bones) override;

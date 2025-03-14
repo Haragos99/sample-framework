@@ -1,4 +1,5 @@
 #include "ImprovedDeltaMush.h"
+#include <QtWidgets>
 
 
 
@@ -31,6 +32,7 @@ void ImprovedDeltaMush::executeCCD(std::shared_ptr<BaseMesh> basemesh)
 {
 	Delta_Mush_two(basemesh);
 	Collison collison;
+
 	auto smooth_basemesh = smoothMesh(basemesh);
 	MyMesh& mesh = basemesh->getMesh();
 	MyMesh& smooth_mesh = smooth_basemesh->getMesh();
@@ -39,14 +41,18 @@ void ImprovedDeltaMush::executeCCD(std::shared_ptr<BaseMesh> basemesh)
 	collison.colliedfaces = colliedfaces;
 	collison.colliedverteces = colliedverteces;
 	collison.colliededges = colliededges;
+	emit startProgress(tr("Improve"));
 	while (collison.collisondetec(mesh, smooth_mesh))
 	{
 		Delta_Mush_two(basemesh);
 		float alfa = collison.getAlfa();
 		int percent = alfa * 100;
 		collison.setAlfa(0);
+		emit progressUpdated(percent);
 	}
-	smoothcollison(collison.verteces, basemesh->getMesh()); //TODO: Refactor
+	emit endProgress();
+	
+	//smoothcollison(collison.verteces, basemesh->getMesh()); //TODO: Refactor
 }
 
 
@@ -77,9 +83,9 @@ void ImprovedDeltaMush::smoothcollison(std::set<MyMesh::VertexHandle> verteces, 
 //TODO: Must Refact this 
 void ImprovedDeltaMush::SetDistance(std::shared_ptr<BaseMesh> basemesh, std::vector<Bone>& bones)
 {
-	int index = 0;
+	int index =0;
 	MyMesh& mesh = basemesh->getMesh();
-	float factor = 2;
+	float factor = 1.75;
 	colliedverteces.clear();
 	colliedfaces.clear();
 	colliededges.clear();

@@ -168,6 +168,21 @@
     <QtMoc Include="src\MyWindow.h">
       <Filter>Header Files</Filter>
     </QtMoc>
+    <QtMoc Include="src\skinning\Skinning.h">
+      <Filter>Header Files</Filter>
+    </QtMoc>
+    <QtMoc Include="src\skinning\ImprovedDeltaMush.h">
+      <Filter>Header Files</Filter>
+    </QtMoc>
+    <QtMoc Include="src\skinning\BoneHeat.h">
+      <Filter>Header Files</Filter>
+    </QtMoc>
+    <QtMoc Include="src\skinning\ImplicitSkinning.h">
+      <Filter>Header Files</Filter>
+    </QtMoc>
+    <QtMoc Include="src\skinning\DeltaMush.h">
+      <Filter>Header Files</Filter>
+    </QtMoc>
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="debug\moc_predefs.h.cbt">
@@ -289,21 +304,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="src\skeleton\Skelton.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src\skinning\BoneHeat.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src\skinning\DeltaMush.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src\skinning\ImplicitSkinning.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src\skinning\ImprovedDeltaMush.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src\skinning\Skinning.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="src\skinning\DualQuaternion.h">

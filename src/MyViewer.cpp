@@ -461,7 +461,7 @@ void MyViewer::createCP() {
             cp->jointid = j->id;
             addObject(cp);
             setupCamera();
-            controlPointId++;
+            ++controlPointId;
         }
         else
         {
@@ -486,6 +486,13 @@ void MyViewer::improveDeltaMush()
         std::shared_ptr<Skinning> mymush = std::make_shared<ImprovedDeltaMush>();       
         if (auto mesh = std::dynamic_pointer_cast<BaseMesh>(objects[1]))
         {
+            connect(mymush.get(), &Skinning::progressUpdated,
+                this, &MyViewer::midComputation);
+            connect(mymush.get(), &Skinning::startProgress,
+                this, &MyViewer::startComputation);
+            connect(mymush.get(), &Skinning::endProgress,
+                this, &MyViewer::endComputation);
+
             skeleton->setSkinning(mymush);
             skeleton->skinning(mesh);
             update();

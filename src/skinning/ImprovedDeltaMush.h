@@ -5,6 +5,7 @@
 
 
 class ImprovedDeltaMush : public DeltaMush {
+	Q_OBJECT
 public:
 	ImprovedDeltaMush() = default;
 	void execute(std::shared_ptr<BaseMesh> basemesh, std::vector<Bone>& bones) override;

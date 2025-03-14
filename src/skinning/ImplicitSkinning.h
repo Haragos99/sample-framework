@@ -1,9 +1,10 @@
 #pragma once
 #include "Skinning.h"
-#include "HRBF.h"
-#include "PoissonSampleGenerator.h"
+#include "src/HRBF.h"
+#include "src/PoissonSampleGenerator.h"
 
 class ImplicitSkinning :public Skinning {
+	Q_OBJECT
 public:
 	ImplicitSkinning() = default;
 	void execute(std::shared_ptr<BaseMesh> basemesh, std::vector<Bone>& bones);

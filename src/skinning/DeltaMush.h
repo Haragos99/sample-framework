@@ -9,6 +9,7 @@ using qglviewer::Vec;
 
 class DeltaMush : public Skinning
 {
+	Q_OBJECT
 public:
 	DeltaMush(){ deltaMushFactor = 1.0f; }
 	virtual void execute(std::shared_ptr<BaseMesh> basemesh, std::vector<Bone>& bones) override;
