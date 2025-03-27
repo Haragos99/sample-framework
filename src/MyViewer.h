@@ -137,7 +137,8 @@ private:
     void addObjects(const std::vector<std::shared_ptr<Object3D>>& newObjects);
     void moveObject(std::shared_ptr<Object3D> elemt, int selected, Vector position);
     void createSculpt();
-
+    void disconnectProcrecBar(std::shared_ptr<Skinning> skinning);
+    void connectProcrecBar(std::shared_ptr<Skinning> skinning);
     void drawCircle(float centerX, float centerY, float radius);
     Render render;
     Vec fa;

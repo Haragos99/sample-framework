@@ -476,7 +476,28 @@ void MyViewer::createCP() {
     }
 }
 
+void MyViewer::disconnectProcrecBar(std::shared_ptr<Skinning> skinning)
+{
+    disconnect(skinning.get(), &Skinning::progressUpdated,
+        this, &MyViewer::midComputation);
+    disconnect(skinning.get(), &Skinning::startProgress,
+        this, &MyViewer::startComputation);
+    disconnect(skinning.get(), &Skinning::endProgress,
+        this, &MyViewer::endComputation);
+}
 
+
+void MyViewer::connectProcrecBar(std::shared_ptr<Skinning> skinning)
+{
+    connect(skinning.get(), &Skinning::progressUpdated,
+        this, &MyViewer::midComputation);
+    connect(skinning.get(), &Skinning::startProgress,
+        this, &MyViewer::startComputation);
+    connect(skinning.get(), &Skinning::endProgress,
+        this, &MyViewer::endComputation);
+    connect(skinning.get(), &Skinning::displayMessage,
+        this, &MyViewer::displayMessage);
+}
 
 void MyViewer::improveDeltaMush()
 {
@@ -486,13 +507,8 @@ void MyViewer::improveDeltaMush()
         std::shared_ptr<Skinning> mymush = std::make_shared<ImprovedDeltaMush>();       
         if (auto mesh = std::dynamic_pointer_cast<BaseMesh>(objects[1]))
         {
-            connect(mymush.get(), &Skinning::progressUpdated,
-                this, &MyViewer::midComputation);
-            connect(mymush.get(), &Skinning::startProgress,
-                this, &MyViewer::startComputation);
-            connect(mymush.get(), &Skinning::endProgress,
-                this, &MyViewer::endComputation);
 
+            connectProcrecBar(mymush);
             skeleton->setSkinning(mymush);
             skeleton->skinning(mesh);
             update();
@@ -596,7 +612,7 @@ void MyViewer::keyPressEvent(QKeyEvent* e) {
             break;
         case Qt::Key_B:
             //show_skelton = !show_skelton
-            if (auto mesh = std::dynamic_pointer_cast<BaseMesh>(objects[0]))
+            if (auto mesh = std::dynamic_pointer_cast<BaseMesh>(objects[1]))
             {
                blend->addNewPostion(mesh);
             }    

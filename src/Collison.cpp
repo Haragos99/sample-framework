@@ -242,7 +242,7 @@ bool Collison::collisondetec(MyMesh& mesh, MyMesh& smooth)
 
     
 
-    alfa = alfa + (1 - alfa) * smallestTio;
+    alfa = smallestTio;
     prevTio = smallestTio;
 
     setSmalest(vindex, findex, eindex ,mesh);
@@ -322,7 +322,7 @@ void Collison::test(MyMesh& mesh, MyMesh& smooth)
     {
         
 
-        collisondetec(mesh, smooth);
+        //collisondetec(mesh, smooth);
 
     }
     //smoothpoints(mesh);

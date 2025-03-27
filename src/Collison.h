@@ -1,5 +1,5 @@
 #pragma once
-#include "Mesh.h"
+#include "BaseMesh.h"
 #include "tight_inclusion/ccd.hpp"
 #include <set>
 using MyMesh = OpenMesh::TriMesh_ArrayKernelT<MyTraits>;

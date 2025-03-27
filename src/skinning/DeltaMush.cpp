@@ -36,6 +36,7 @@ std::shared_ptr<BaseMesh> DeltaMush::smoothMesh(std::shared_ptr<BaseMesh> baseme
             mesh_.point(v) = smooth.point(v);         
         }
     }
+    smooth = mesh_;
     std::shared_ptr<BaseMesh> smooth = std::make_shared<BaseMesh>(mesh_);
     return smooth;
 }
@@ -159,7 +160,7 @@ void DeltaMush::Delta_Mush_two(std::shared_ptr<BaseMesh> basemesh)
 {
     auto v_d = setMushFactor(delta);
     modifyDeltaLine(v_d);
-    auto& m = basemesh->getMesh();
+    auto& mesh = basemesh->getMesh();
     std::vector<Vec> smoothed;
     auto smooth_basemesh = smoothMesh(basemesh);
     auto smooth_mesh = smooth_basemesh->getMesh();
@@ -167,11 +168,11 @@ void DeltaMush::Delta_Mush_two(std::shared_ptr<BaseMesh> basemesh)
     smooth_mesh.request_vertex_normals();
     smooth_mesh.update_normals();
     int size = smoothed.size();
-    for (auto ve : m.vertices()) {
+    for (auto ve : mesh.vertices()) {
         Eigen::MatrixXd C(4, 4);
         Eigen::Vector4d p_vector;
         Eigen::Vector4d v_vector;
-        p_vector << m.point(ve)[0], m.point(ve)[1], m.point(ve)[2], 1;
+        p_vector << mesh.point(ve)[0], mesh.point(ve)[1], mesh.point(ve)[2], 1;
         MyMesh::Normal normal = smooth_mesh.normal(ve);
         MyMesh::HalfedgeHandle heh = *smooth_mesh.voh_iter(ve);
         auto ed = smooth_mesh.calc_edge_vector(heh);
@@ -179,9 +180,9 @@ void DeltaMush::Delta_Mush_two(std::shared_ptr<BaseMesh> basemesh)
         Vec b = (t ^ Vec(normal)).unit();
 
         C = BuiledMatrix(normal, t, b, Vec(smooth_mesh.point(ve).data()));
-        m.data(ve).C = C;
+        mesh.data(ve).C = C;
         auto d = C * v_d[ve.idx()];
-        m.point(ve) = MyMesh::Point(d[0], d[1], d[2]);
+        mesh.point(ve) = MyMesh::Point(d[0], d[1], d[2]);
     }
     //basemesh->setMesh(m);
 }

@@ -21,6 +21,7 @@ public:
 signals:
 	void progressUpdated(int value);
 	void startProgress(QString message);
+	void displayMessage(QString message);
 	void endProgress();
 protected:
 

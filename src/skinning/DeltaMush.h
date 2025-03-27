@@ -18,6 +18,7 @@ public:
 	float deltaMushFactor;
 
 protected:
+	MyMesh smooth;
 	void createDeltaline(Vec& start, Vec& end);
 	void Delta_Mush_two(std::shared_ptr<BaseMesh> basemesh);
 	void Delta_Mush(std::shared_ptr<BaseMesh> basemesh);

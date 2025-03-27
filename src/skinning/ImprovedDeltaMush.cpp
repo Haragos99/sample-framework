@@ -1,6 +1,6 @@
 #include "ImprovedDeltaMush.h"
 #include <QtWidgets>
-
+#include <igl/Timer.h>
 
 
 void ImprovedDeltaMush::execute(std::shared_ptr<BaseMesh> basemesh, std::vector<Bone>& bones)
@@ -11,6 +11,7 @@ void ImprovedDeltaMush::execute(std::shared_ptr<BaseMesh> basemesh, std::vector<
 void ImprovedDeltaMush::animatemesh(std::shared_ptr<BaseMesh> basemesh, std::vector<Bone>& bones, bool inv)
 {
 	Skinning::animatemesh(basemesh, bones, inv);
+	meshm = basemesh->getMesh();
 	executeCCD(basemesh);
 }
 
@@ -30,30 +31,93 @@ void ImprovedDeltaMush::projectPointToPlane(const MyMesh::Point& P, const MyMesh
 
 void ImprovedDeltaMush::executeCCD(std::shared_ptr<BaseMesh> basemesh)
 {
-	Delta_Mush_two(basemesh);
+	igl::Timer timer;
+	timer.start();
+	DeltaMush2(delta,basemesh);
+	basemesh->setMesh(meshm);
 	Collison collison;
-
-	auto smooth_basemesh = smoothMesh(basemesh);
-	MyMesh& mesh = basemesh->getMesh();
-	MyMesh& smooth_mesh = smooth_basemesh->getMesh();
-
 	collison.init(delta);
 	collison.colliedfaces = colliedfaces;
 	collison.colliedverteces = colliedverteces;
 	collison.colliededges = colliededges;
+	auto sb = smoothMesh(basemesh);
+	auto m = sb->getMesh();
+
 	emit startProgress(tr("Improve"));
-	while (collison.collisondetec(mesh, smooth_mesh))
+	while (collison.collisondetec(meshm,smooth ))
 	{
-		Delta_Mush_two(basemesh);
+		DeltaMush2(delta, basemesh);
+		//basemesh->setMesh(meshm); //TODO CHECK THIS  IT WORKS
 		float alfa = collison.getAlfa();
 		int percent = alfa * 100;
-		collison.setAlfa(0);
 		emit progressUpdated(percent);
+		collison.setAlfa(0);		
 	}
+	timer.stop();
 	emit endProgress();
-	
-	//smoothcollison(collison.verteces, basemesh->getMesh()); //TODO: Refactor
+	double tt = timer.getElapsedTimeInSec(); 
+
+	emit displayMessage(std::to_string(tt).c_str());
+	basemesh->setMesh(meshm);
+	smoothcollison(collison.verteces, basemesh->getMesh()); //TODO: Refactor
 }
+
+
+
+// TODO: Rethink 
+void ImprovedDeltaMush::DeltaMush2(std::vector<Eigen::Vector4d> v, std::shared_ptr<BaseMesh> basemesh)
+{
+	for (int i = 0; i < v.size(); i++)
+	{
+		v[i][0] *= deltaMushFactor;
+		v[i][1] *= deltaMushFactor;
+		v[i][2] *= deltaMushFactor;
+	}
+	auto m = meshm;
+	auto smooth_Basemesh = smoothMesh(basemesh);
+	auto smooth_mesh = smooth_Basemesh->getMesh();
+	smooth_mesh.request_face_normals();
+	smooth_mesh.request_vertex_normals();
+	smooth_mesh.update_normals();
+	for (auto ve : m.vertices()) {
+		Eigen::MatrixXd C(4, 4);
+		MyMesh::Normal normal = smooth_mesh.normal(ve);
+
+		MyMesh::HalfedgeHandle heh = *smooth_mesh.voh_iter(ve);
+		auto ed = smooth_mesh.calc_edge_vector(heh);
+		Vec t = Vec((ed - (ed | normal) * normal).normalize());
+		Vec b = (t ^ Vec(normal)).unit();
+
+		C(0, 0) = t[0];
+		C(0, 1) = t[1];
+		C(0, 2) = t[2];
+		C(0, 3) = 0;
+
+		C(1, 0) = normal[0];
+		C(1, 1) = normal[1];
+		C(1, 2) = normal[2];
+		C(1, 3) = 0;
+
+		C(2, 0) = b[0];
+		C(2, 1) = b[1];
+		C(2, 2) = b[2];
+		C(2, 3) = 0;
+
+		C(3, 0) = smooth_mesh.point(ve)[0];
+		C(3, 1) = smooth_mesh.point(ve)[1];
+		C(3, 2) = smooth_mesh.point(ve)[2];
+		C(3, 3) = 1;
+
+		meshm.data(ve).C = C.transpose();
+
+		auto d = C.transpose() * v[ve.idx()];
+
+		meshm.point(ve) = MyMesh::Point(d[0], d[1], d[2]);
+
+
+	}
+}
+
 
 
 void ImprovedDeltaMush::smoothcollison(std::set<MyMesh::VertexHandle> verteces, MyMesh& mesh)
@@ -83,7 +147,7 @@ void ImprovedDeltaMush::smoothcollison(std::set<MyMesh::VertexHandle> verteces, 
 //TODO: Must Refact this 
 void ImprovedDeltaMush::SetDistance(std::shared_ptr<BaseMesh> basemesh, std::vector<Bone>& bones)
 {
-	int index =0;
+	int index =9;
 	MyMesh& mesh = basemesh->getMesh();
 	float factor = 1.75;
 	colliedverteces.clear();
