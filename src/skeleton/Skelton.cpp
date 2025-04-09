@@ -1,5 +1,5 @@
 #include "Skelton.h"
-#include "src/skinning/DualQuaternionSkinning.h"
+#include "../skinning/DualQuaternionSkinning.h"
 void Skelton::scale(float scale)
 {
 

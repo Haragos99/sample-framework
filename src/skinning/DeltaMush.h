@@ -1,5 +1,5 @@
 #pragma once
-#include "src/Matrix4.h"
+#include "../Matrix4.h"
 #include <Eigen/Eigen>
 #include "../Mesh.h"
 #include "Skinning.h"

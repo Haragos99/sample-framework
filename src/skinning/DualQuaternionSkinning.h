@@ -1,8 +1,8 @@
 #pragma once
 #include "DualQuaternion.h"
-#include "src/skeleton/Joint.h"
-#include "src/skeleton/Bone.h"
-#include "src/BaseMesh.h"
+#include "../skeleton/Joint.h"
+#include "../skeleton/Bone.h"
+#include "../BaseMesh.h"
 
 class DualQuaternionSkinning
 {

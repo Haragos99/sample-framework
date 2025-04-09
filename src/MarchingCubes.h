@@ -25,7 +25,7 @@ public:
 
     std::vector<std::vector<MyMesh::VertexHandle>> getVertices(GridCell& cell);
 
-    std::vector<std::vector<MyMesh::VertexHandle>> MarchingCubes::get_triangles(std::vector<MyMesh::VertexHandle>& intersections, int cubeIndex);
+    std::vector<std::vector<MyMesh::VertexHandle>> get_triangles(std::vector<MyMesh::VertexHandle>& intersections, int cubeIndex);
 
     int calculate_cube_index(GridCell& cell);
 

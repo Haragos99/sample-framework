@@ -1,6 +1,6 @@
 #include "ImprovedDeltaMush.h"
 #include <QtWidgets>
-#include <igl/Timer.h>
+//#include <igl/Timer.h>
 
 
 void ImprovedDeltaMush::execute(std::shared_ptr<BaseMesh> basemesh, std::vector<Bone>& bones)
@@ -31,8 +31,8 @@ void ImprovedDeltaMush::projectPointToPlane(const MyMesh::Point& P, const MyMesh
 
 void ImprovedDeltaMush::executeCCD(std::shared_ptr<BaseMesh> basemesh)
 {
-	igl::Timer timer;
-	timer.start();
+	//igl::Timer timer;
+	//timer.start();
 	DeltaMush2(delta,basemesh);
 	basemesh->setMesh(meshm);
 	Collison collison;
@@ -53,9 +53,9 @@ void ImprovedDeltaMush::executeCCD(std::shared_ptr<BaseMesh> basemesh)
 		emit progressUpdated(percent);
 		collison.setAlfa(0);		
 	}
-	timer.stop();
+	//timer.stop();
 	emit endProgress();
-	double tt = timer.getElapsedTimeInSec(); 
+	double tt = 0;//timer.getElapsedTimeInSec();
 
 	emit displayMessage(std::to_string(tt).c_str());
 	basemesh->setMesh(meshm);

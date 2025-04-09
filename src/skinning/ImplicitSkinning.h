@@ -1,7 +1,7 @@
 #pragma once
 #include "Skinning.h"
-#include "src/HRBF.h"
-#include "src/PoissonSampleGenerator.h"
+#include "../HRBF.h"
+#include "../PoissonSampleGenerator.h"
 
 class ImplicitSkinning :public Skinning {
 	Q_OBJECT
