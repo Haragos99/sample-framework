@@ -10,7 +10,7 @@ SOURCES = MyWindow.cpp MyViewer.cpp main.cpp jet-wrapper.cpp
 QMAKE_CXXFLAGS += -O3
 
 unix:INCLUDEPATH += /usr/include/eigen3
-unix:LIBS *= -lQGLViewer-qt5 -lOpenMeshCore -lGL -lGLU
+unix:LIBS *= -lQGLViewer-qt -lOpenMeshCore -lGL -lGLU
 
 RESOURCES = sample-framework.qrc
 

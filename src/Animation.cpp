@@ -1,3 +1,8 @@
+#include <qboxlayout.h>
+#include <QLabel>
+#include <qpushbutton.h>
+#include <qspinbox.h>
+
 #include "MyViewer.h"
 
 void MyViewer::animate()

@@ -13,24 +13,22 @@
 #include <vector>
 #include <OpenMesh/Core/IO/MeshIO.hh>
 #include <QtGui/QKeyEvent>
-#include <QtWidgets>
+
 #include <map>
 #include <algorithm>
 #include "HRBF.h"
 #include "MarchingCubes.h"
 #include "skinning/DeltaMush.h"
-#include "mclccd\BVHTree.hpp"
 #include "ControlPoint.h"
 #include "Render.h"
-#include <QOpenGLWidget>
-#include "Collison.h"
+#include <QGLViewer/qglviewer.h>
 #include "KinectSkelton.h"
 #include <QTimer>
 #include "skinning/ImplicitSkinning.h"
 #include "Object3D.h"
-#include "Circle.h"
 #include "Sculpt.h"
 #include "Blendshape.h"
+#include <QtOpenGLWidgets/QOpenGLWidget>
 
 using qglviewer::Vec;
 
@@ -172,7 +170,6 @@ private:
     Vec calcCentriod(MyMesh& _mesh);
     void createControlPoins(Joint* j);
     MarchingCubes mc;
-    std::unique_ptr<CursolCircle> cursol;
     std::unique_ptr<Sculpt> sculpt;
     std::unique_ptr<Blendshape> blend;
     void createCP();
@@ -193,5 +190,5 @@ private:
     std::string last_filename;
     std::ofstream of;
 };
-// idó kivonva a másikból
+// idï¿½ kivonva a mï¿½sikbï¿½l
 #include "MyViewer.hpp"

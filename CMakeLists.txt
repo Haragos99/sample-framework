@@ -29,13 +29,17 @@ find_package(OpenGL REQUIRED)
 find_package(OpenMesh REQUIRED)
 find_package(Eigen3 3.4 REQUIRED NO_MODULE)
 find_package(QGLViewer REQUIRED)
+find_package(fmt)
 #find_package(TBB REQUIRED)
 
 # Source files
+set(CMAKE_AUTORCC ON)
+file(GLOB_RECURSE HEADERS ${PROJECT_SOURCE_DIR}/src/*.h)
+qt6_wrap_cpp(sf_HEADERS_MOC ${HEADERS})
 file(GLOB_RECURSE SOURCES ${PROJECT_SOURCE_DIR}/src/*.cpp)
 
 # Add executable
-add_executable(${PROJECT_NAME} ${SOURCES})
+add_executable(${PROJECT_NAME} ${sf_HEADERS_MOC} ${SOURCES})
 
 
 message("ah6: ${QGLVIEWER_LIBRARY}")
@@ -49,4 +53,5 @@ target_link_libraries(${PROJECT_NAME} PUBLIC
         Qt6::Widgets
         Qt6::Xml
         ${QGLVIEWER_LIBRARY}
+        fmt::fmt
 )

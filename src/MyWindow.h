@@ -2,7 +2,8 @@
 #pragma once
 
 #include <QtWidgets/QMainWindow>
-
+#include <QLabel>
+#include <QSlider>
 #include "MyViewer.h"
 
 class QApplication;

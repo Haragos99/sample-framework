@@ -1,3 +1,5 @@
+#include <QApplication>
+
 #include "MyViewer.h"
 
 

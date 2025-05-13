@@ -18,6 +18,11 @@
 
 #include "MyViewer.h"
 
+#include <qboxlayout.h>
+#include <qlabel.h>
+#include <qpushbutton.h>
+#include <qspinbox.h>
+
 #ifdef _WIN32
 #define GL_CLAMP_TO_EDGE 0x812F
 #define GL_BGRA 0x80E1
@@ -647,12 +652,12 @@ void MyViewer::keyPressEvent(QKeyEvent* e) {
         case Qt::Key_F:
             //fairMesh();
             
-            kinect.CreateFirstConnected();
+            //kinect.CreateFirstConnected();
             update();
             break;
 
         case Qt::Key_Z:
-            kinect.setSkeltonTracking();
+           // kinect.setSkeltonTracking();
             update();
             break;
        
