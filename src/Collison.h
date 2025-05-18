@@ -39,7 +39,7 @@ public:
 	std::set<MyMesh::VertexHandle> verteces;
 	float getAlfa() { return alfa; }
 	void setAlfa(float newalfa) { alfa = newalfa; }
-
+	std::set<MyMesh::FaceHandle> faces;
 
 private:
 	Eigen::Vector3f toEigenVec(const MyMesh::Point& v) {return Eigen::Vector3f(v[0], v[1], v[2]);

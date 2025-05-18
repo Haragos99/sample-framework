@@ -148,7 +148,7 @@ public:
     bool Mydelta;
 
     void DeltaMush2(std::vector<Eigen::Vector4d> v);
-
+    std::set<MyMesh::FaceHandle> faces;
 
     void Epsil() {
         auto dlg = std::make_unique<QDialog>(this);

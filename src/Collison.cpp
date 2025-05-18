@@ -256,6 +256,7 @@ bool Collison::collisondetec(MyMesh& mesh, MyMesh& smooth)
 
 void Collison::setSmalest(MyMesh::VertexHandle& v, MyMesh::FaceHandle& f, std::vector<MyMesh::EdgeHandle>& edegs,  MyMesh& mesh)
 {
+    
     colors.clear();
     if (!mesh.is_valid_handle(edegs[0]))
     {
@@ -267,7 +268,11 @@ void Collison::setSmalest(MyMesh::VertexHandle& v, MyMesh::FaceHandle& f, std::v
         deltas[v.idx()].toi = alfa;
         setMeshTio(v, mesh);
         colors.emplace(v, Vec(0, 0, 1));
-        
+        for (auto fh : mesh.vf_range(v)) {
+            faces.insert(fh);
+        }
+
+        faces.insert(f);
         deltas[v.idx()].isCollied = true;
         for (auto vi : mesh.fv_range(f))
         {
@@ -282,9 +287,14 @@ void Collison::setSmalest(MyMesh::VertexHandle& v, MyMesh::FaceHandle& f, std::v
     {
         for (auto e : edegs)
         {
+            MyMesh::HalfedgeHandle heh0 = mesh.halfedge_handle(e, 1);  // First halfedge
             MyMesh::HalfedgeHandle heh1 = mesh.halfedge_handle(e, 0);  // First halfedge
             MyMesh::VertexHandle v0 = mesh.from_vertex_handle(heh1);   // Start vertex of edge 
             MyMesh::VertexHandle v1 = mesh.to_vertex_handle(heh1);     // End vertex of edge 
+            MyMesh::FaceHandle fh0 = mesh.face_handle(heh1);
+            MyMesh::FaceHandle fh1 = mesh.face_handle(heh0);
+            faces.insert(fh0);
+            faces.insert(fh1);
             mesh.data(v0).color = Vec(0.5, 0, 0);
             deltas[v0.idx()].toi = alfa;
             setMeshTio(v0, mesh);

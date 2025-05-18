@@ -196,7 +196,7 @@ void MyViewer::DeltaMush2(std::vector<Eigen::Vector4d> v)
         v[i][1] *= deltaMushFactor;
         v[i][2] *= deltaMushFactor;
     }
-    auto m = MushHelper;
+    auto m = MushHelper; // use mesh maybe
     std::vector<Vec> smoothed;
     auto smooth_mesh = smoothvectors(smoothed);
     smooth_mesh.request_face_normals();
@@ -246,7 +246,7 @@ void MyViewer::DeltaMush2(std::vector<Eigen::Vector4d> v)
 
 void MyViewer::Delta_Mush_two(std::vector<Eigen::Vector4d> v) 
 {
-    
+    faces.clear();
     igl::Timer timer;
     timer.start();
     DeltaMush2(v);
@@ -275,6 +275,20 @@ void MyViewer::Delta_Mush_two(std::vector<Eigen::Vector4d> v)
     emit displayMessage(std::to_string(tt).c_str());
     vert = co.verteces;
     smoothcollison(vert);
+    faces = co.faces;
+    for (auto vh : co.verteces)
+    {
+        for (auto fh : mesh.vf_range(vh)) {
+            if (fh.is_valid()) {
+                // Example: mark face for visualization
+                //faces.insert(fh);
+            }
+        }
+    }
+
+
+
+    //faces = co.faces;
     //emit endComputation();
     //col.test(mesh, smooth);
 
@@ -295,8 +309,8 @@ Eigen::Vector3f toEigenVec(const MyMesh::Point& v) {
 
 void MyViewer::SetDistance()
 {
-    int index = 9;
-    float factor = 1.0;
+    int index = 0;
+    float factor = 1.75f;
     colliedverteces.clear();
     colliedfaces.clear();
     colliededges.clear();

@@ -35,7 +35,7 @@ void MyViewer::draw() {
     if (model_type == ModelType::SKELTON || model_type == ModelType::INVERZ)
     {
         skel.draw();
-        if (true)
+        if (false)
         {
             auto jointaxes = skel.arrows();
             drawJointAxes(jointaxes);
@@ -80,54 +80,65 @@ void MyViewer::draw() {
 
         if (showSmooth)
         {
-            draw_smooth();
+            //draw_smooth();
         }
+        glDisable(GL_LIGHTING);
         for (auto f : mesh.faces()) {
             glBegin(GL_POLYGON);
+            bool isRed = faces.count(f) > 0;
+            if (isRed) {
+                glColor3d(1.0, 0.0, 0.0); // Set color to red
+            }
+            
             for (auto v : mesh.fv_range(f)) {
-                if (visualization == Visualization::MEAN)
-                    glColor3dv(meanMapColor(mesh.data(v).mean));
-                else if (visualization == Visualization::SLICING)
-                    glTexCoord1d(mesh.point(v) | slicing_dir * slicing_scaling);
-                else if (visualization == Visualization::WEIGH) //Itt adjuk meg a súlyokat
+                if (!isRed)
                 {
-                    
-                    Vec color = Vec(0, 0, 0);
-                    for (int i = 0; i < skel.getSize(); i++)
+
+
+                    if (visualization == Visualization::MEAN)
+                        glColor3dv(meanMapColor(mesh.data(v).mean));
+                    else if (visualization == Visualization::SLICING)
+                        glTexCoord1d(mesh.point(v) | slicing_dir * slicing_scaling);
+                    else if (visualization == Visualization::WEIGH) //Itt adjuk meg a súlyokat
                     {
-                        if (mesh.data(v).weigh[i] != 0)
+
+                        Vec color = Vec(1, 1, 1);
+                        for (int i = 0; i < skel.getSize(); i++)
                         {
-                            color += (mesh.data(v).weigh[i] * skel.bones[i].color);
+                            if (mesh.data(v).weigh[i] != 0)
+                            {
+                                //color += (mesh.data(v).weigh[i] * skel.bones[i].color);
+                            }
+                        }
+                        if (false)
+                            color = mesh.data(v).color == Vec(0, 0, 0) ? color : mesh.data(v).color;
+                        if (transparent) {
+                            glColor4d(color.x, color.y, color.z, 0.5);
+                        }
+                        else {
+                            glColor3d(color.x, color.y, color.z);
+                        }
+
+
+
+
+                    }
+                    else if (visualization == Visualization::WEIGH2)
+                    {
+                        if (wi == b.size())
+                        {
+                            wi = 0;
+                        }
+                        Vec color = mesh.data(v).weigh[wi] * (b[wi].getColor());
+
+                        if (transparent) {
+                            glColor4d(color.x, color.y, color.z, bright);
+                        }
+                        else {
+                            glColor3d(color.x, color.y, color.z);
                         }
                     }
-                    color = mesh.data(v).color == Vec(0, 0, 0) ? color : mesh.data(v).color;
-                    if (transparent) {
-                        glColor4d(color.x, color.y, color.z, 0.5);
-                    }
-                    else {
-                        glColor3d(color.x,color.y,color.z);
-                    }
-                    
-                    
-                    
-                    
                 }
-                else if (visualization == Visualization::WEIGH2)
-                {
-                    if (wi == b.size())
-                    {
-                        wi = 0;
-                    }
-                    Vec color = mesh.data(v).weigh[wi] * (b[wi].getColor());
-
-                    if (transparent) {
-                        glColor4d(color.x, color.y, color.z, bright);
-                    }
-                    else {
-                        glColor3d(color.x, color.y, color.z);
-                    }
-                }
-               
                 glNormal3dv(mesh.normal(v).data());
                 glVertex3dv(mesh.point(v).data());
 
@@ -135,7 +146,6 @@ void MyViewer::draw() {
             }
             glEnd();
         }
-
 
 
         if (visualization == Visualization::ISOPHOTES) {
@@ -149,7 +159,18 @@ void MyViewer::draw() {
         }
     }
 
-    
+    for (auto& f : faces)
+    {
+        glBegin(GL_POLYGON);
+        for (auto v : mesh.fv_range(f)) {
+
+            glColor3d(1, 0, 0);
+            glNormal3dv(mesh.normal(v).data());
+            glVertex3dv(mesh.point(v).data());
+        }
+        glEnd();
+    }
+
 
     if (show_solid && show_wireframe) {
         glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
